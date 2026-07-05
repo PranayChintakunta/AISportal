@@ -11,6 +11,60 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+
+  /* Surfaces */
+  --color-cream: #faf7ee;
+  --color-card-border: #c0bfbc;
+  --color-border-soft: #e7e2d4;
+  --color-row-soft: #f4f1e7;
+  --color-photo: #d0cdc4;
+  --color-photo-text: #8d8b84;
+
+  /* Brand blue */
+  --color-brand: #2f5fe8;
+  --color-brand-mid: #4f7bff;
+  --color-brand-dark: #1f3aa3;
+  --color-brand-soft: #e1e8ff;
+
+  /* Text */
+  --color-ink: #16161c;
+  --color-ink-muted: #55555f;
+  --color-ink-faint: #8a8a93;
+
+  /* Accents */
+  --color-green: #356b2e;
+  --color-orange: #f2a968;
+  --color-orange-soft: #fbe3cb;
+  --color-orange-ink: #7a4416;
+  --color-purple-dot: #9f95c7;
+
+  /* Auth / form surfaces */
+  --color-brand-button: #3a56e4;
+  --color-field: #ece9e2;
+  --color-field-ink: #9a958a;
+  --color-tab-track: #f0eee9;
+  --color-tab-muted: #8a877f;
+  --color-ink-card: #16161a;
+  --color-label-ink: #4a4740;
+  --color-helper-ink: #a39f95;
+
+  /* Apply page */
+  --color-purple-soft: #e9e5f6;
+  --color-purple-ink: #4b4178;
+  --color-purple-border: #ddd5f0;
+  --color-stone-soft: #efece3;
+  --color-stone-border: #e2ded2;
+  --color-stone-ink: #6a685f;
+
+  /* Admin console */
+  --color-search-field: #d8d6cf;
+  --color-search-ink: #74726b;
+  --color-skeleton: #dcdad2;
+  --color-danger-border: #f6dadf;
+  --color-danger-ink: #8c3a49;
+  --color-table-line: #ece9e0;
+
+  /* Fonts */
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 
