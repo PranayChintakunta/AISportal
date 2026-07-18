@@ -25,7 +25,7 @@ function RecommendedRow({ item }: { item: RecommendedItem }) {
           </div>
         </div>
       </div>
-      <Button variant="primary" size="sm">
+      <Button variant="primary" size="sm" className="font-black">
         RSVP
       </Button>
     </div>
@@ -46,9 +46,15 @@ export function RecommendedCard({ items }: { items: RecommendedItem[] }) {
           </a>
         }
       />
-      {items.map((item) => (
-        <RecommendedRow key={item.title} item={item} />
-      ))}
+      {items.length === 0 ? (
+        <div className="flex h-[160px] w-full items-center justify-center rounded-[8px] border border-dashed border-[#e2ded2] bg-[#f9f8f6]">
+          <span className="font-body text-[14px] text-ink-faint">No upcoming events.</span>
+        </div>
+      ) : (
+        items.map((item) => (
+          <RecommendedRow key={item.title} item={item} />
+        ))
+      )}
     </Card>
   );
 }

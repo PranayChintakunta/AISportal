@@ -8,6 +8,7 @@ import {
   Tektur,
   Plus_Jakarta_Sans,
   IBM_Plex_Mono,
+  Inter,
 } from "next/font/google";
 import "./globals.css";
 
@@ -50,6 +51,11 @@ const ibmPlexMono = IBM_Plex_Mono({
   subsets: ["latin"],
 });
 
+const inter = Inter({
+  variable: "--font-inter",
+  subsets: ["latin"],
+});
+
 export const metadata: Metadata = {
   title: "AIS Portal",
   description: "AI Society at UT Dallas — member portal",
@@ -63,7 +69,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} ${audiowide.variable} ${electrolize.variable} ${tektur.variable} ${jakarta.variable} ${ibmPlexMono.variable} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} ${audiowide.variable} ${electrolize.variable} ${tektur.variable} ${jakarta.variable} ${ibmPlexMono.variable} ${inter.variable} antialiased`}
       >
         <ClerkProvider>
           <header className="flex justify-end items-center p-4 gap-4 h-16">
