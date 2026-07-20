@@ -1,11 +1,15 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { type ChangeEvent, useEffect, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { Navbar } from "@/components/navbar";
 import { FormStepper } from "@/components/apply/form-stepper";
-import { FormField } from "@/components/ui/form-field";
-import { applicationSteps, personalFields } from "@/lib/data";
+import { FormField, FormTextarea } from "@/components/ui/form-field";
+import {
+  applicationFormStepFields,
+  applicationSteps,
+  personalFields,
+} from "@/lib/data";
 
 type ProfileResponse = {
   profile: {
@@ -36,9 +40,13 @@ type DraftResponse = {
   } | null;
 };
 
-type FieldValues = Record<(typeof personalFields)[number], string>;
+type FieldValues = Record<string, string>;
+type FieldErrors = Record<string, string>;
 
-const DEFAULT_FIELD_VALUES: FieldValues = personalFields.reduce(
+const stepFieldGroups: string[][] = applicationFormStepFields;
+const allFieldLabels = stepFieldGroups.flat();
+
+const DEFAULT_FIELD_VALUES: FieldValues = allFieldLabels.reduce(
   (acc, field) => {
     acc[field] = "";
     return acc;
@@ -47,7 +55,7 @@ const DEFAULT_FIELD_VALUES: FieldValues = personalFields.reduce(
 );
 
 function toFieldValues(values: Partial<FieldValues>) {
-  return personalFields.reduce((acc, field) => {
+  return allFieldLabels.reduce((acc, field) => {
     acc[field] = values[field] ?? "";
     return acc;
   }, { ...DEFAULT_FIELD_VALUES });
@@ -61,7 +69,7 @@ function extractStringValues(payload: unknown): Partial<FieldValues> {
   const record = payload as Record<string, unknown>;
   const values: Partial<FieldValues> = {};
 
-  for (const field of personalFields) {
+  for (const field of allFieldLabels) {
     const value = record[field];
     if (typeof value === "string") {
       values[field] = value;
@@ -86,6 +94,26 @@ function profileToFieldValues(profile: ProfileResponse["profile"]): Partial<Fiel
   };
 }
 
+function isRequiredField(label: string) {
+  return label.trim().endsWith("*");
+}
+
+function validateStep(values: FieldValues, fields: string[]) {
+  const nextErrors: FieldErrors = {};
+
+  for (const field of fields) {
+    if (!isRequiredField(field)) {
+      continue;
+    }
+
+    if (!values[field]?.trim()) {
+      nextErrors[field] = "This field is required.";
+    }
+  }
+
+  return nextErrors;
+}
+
 function LoadingState() {
   return (
     <div className="flex flex-col gap-[24px]">
@@ -100,8 +128,9 @@ function LoadingState() {
           </div>
         ))}
       </div>
-      <div className="flex w-full justify-end">
-        <div className="h-[44px] w-[48px] rounded-[11px] bg-[#f4f1ea]" />
+      <div className="flex w-full justify-between">
+        <div className="h-[44px] w-[88px] rounded-[11px] bg-[#f4f1ea]" />
+        <div className="h-[44px] w-[88px] rounded-[11px] bg-[#f4f1ea]" />
       </div>
     </div>
   );
@@ -119,6 +148,7 @@ export default function ApplyFormPage() {
   const searchParams = useSearchParams();
   const applicationId = searchParams.get("id");
   const [fieldValues, setFieldValues] = useState<FieldValues>(DEFAULT_FIELD_VALUES);
+  const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
   const [activeStep, setActiveStep] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -158,8 +188,14 @@ export default function ApplyFormPage() {
           ...extractStringValues(draftPayload.draft?.formPayloadJson),
         };
 
-        setFieldValues(toFieldValues(mergedValues));
-        setActiveStep(draftPayload.draft ? draftPayload.draft.stepIndex : 0);
+        const nextValues = toFieldValues(mergedValues);
+        setFieldValues(nextValues);
+        fieldValuesRef.current = nextValues;
+        setActiveStep(
+          draftPayload.draft
+            ? Math.min(Math.max(draftPayload.draft.stepIndex, 0), applicationSteps.length - 1)
+            : 0
+        );
 
         if (!draftResponse.ok && draftResponse.status === 404) {
           setError("Application draft not found.");
@@ -217,6 +253,79 @@ export default function ApplyFormPage() {
     }, 500);
   }
 
+  function handleNextStep() {
+    const currentFields = stepFieldGroups[activeStep] ?? [];
+    const nextErrors = validateStep(fieldValuesRef.current, currentFields);
+
+    if (Object.keys(nextErrors).length > 0) {
+      setFieldErrors(nextErrors);
+      return;
+    }
+
+    const nextStepIndex = Math.min(activeStep + 1, applicationSteps.length - 1);
+    setFieldErrors({});
+
+    if (nextStepIndex !== activeStep) {
+      setActiveStep(nextStepIndex);
+      scheduleDraftSave(fieldValuesRef.current, nextStepIndex);
+    }
+  }
+
+  function handleBackStep() {
+    const nextStepIndex = Math.max(activeStep - 1, 0);
+    setFieldErrors({});
+
+    if (nextStepIndex !== activeStep) {
+      setActiveStep(nextStepIndex);
+      scheduleDraftSave(fieldValuesRef.current, nextStepIndex);
+    }
+  }
+
+  function renderField(label: string) {
+    const value = fieldValues[label] ?? "";
+    const errorMessage = fieldErrors[label];
+    const commonProps = {
+      label,
+      value,
+      "aria-invalid": Boolean(errorMessage),
+      className: errorMessage ? "ring-1 ring-[#9a3b36]/35" : undefined,
+      onChange: (event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+        const nextValues = {
+          ...fieldValuesRef.current,
+          [label]: event.target.value,
+        };
+        fieldValuesRef.current = nextValues;
+        setFieldValues(nextValues);
+
+        if (fieldErrors[label]) {
+          setFieldErrors((current) => {
+            const nextErrors = { ...current };
+            delete nextErrors[label];
+            return nextErrors;
+          });
+        }
+      },
+      onBlur: () => {
+        scheduleDraftSave(fieldValuesRef.current, activeStep);
+      },
+    };
+
+    return (
+      <div key={label} className="flex flex-col gap-[6px]">
+        {activeStep === 0 ? (
+          <FormField {...commonProps} />
+        ) : (
+          <FormTextarea {...commonProps} />
+        )}
+        {errorMessage ? (
+          <p className="font-body text-[12px] leading-[17px] text-[#9a3b36]">
+            {errorMessage}
+          </p>
+        ) : null}
+      </div>
+    );
+  }
+
   return (
     <div className="flex min-h-screen w-full flex-col bg-cream">
       <Navbar active="Apply" />
@@ -243,37 +352,30 @@ export default function ApplyFormPage() {
               <>
                 {/* Field grid */}
                 <div className="grid grid-cols-1 gap-x-[28px] gap-y-[20px] sm:grid-cols-2">
-                  {personalFields.map((label) => (
-                    <FormField
-                      key={label}
-                      label={label}
-                      value={fieldValues[label]}
-                      onChange={(event) => {
-                        const nextValues = {
-                          ...fieldValues,
-                          [label]: event.target.value,
-                        };
-                        fieldValuesRef.current = nextValues;
-                        setFieldValues(nextValues);
-                      }}
-                      onBlur={() => {
-                        scheduleDraftSave(fieldValuesRef.current, activeStep);
-                      }}
-                    />
-                  ))}
+                  {(stepFieldGroups[activeStep] ?? []).map((label) => renderField(label))}
                 </div>
 
-                {/* Next */}
-                <div className="flex w-full justify-end">
+                {/* Navigation */}
+                <div className="flex w-full justify-between">
+                  <button
+                    type="button"
+                    className="flex h-[44px] items-center justify-center rounded-[11px] border border-border-soft bg-white px-[18px] font-body text-[14px] font-semibold leading-none text-ink-muted disabled:cursor-not-allowed disabled:opacity-50"
+                    onClick={handleBackStep}
+                    disabled={activeStep === 0}
+                  >
+                    Back
+                  </button>
                   <button
                     type="button"
                     aria-label="Next step"
-                    className="flex h-[44px] w-[48px] items-center justify-center rounded-[11px] bg-brand text-[20px] font-bold leading-none text-white"
+                    className="flex h-[44px] min-w-[96px] items-center justify-center rounded-[11px] bg-brand px-[18px] text-[14px] font-bold leading-none text-white disabled:cursor-not-allowed disabled:opacity-50"
+                    onClick={handleNextStep}
+                    disabled={activeStep >= applicationSteps.length - 1}
                     onBlur={() => {
                       scheduleDraftSave(fieldValuesRef.current, activeStep);
                     }}
                   >
-                    â€º
+                    {activeStep >= applicationSteps.length - 1 ? "Done" : "Next"}
                   </button>
                 </div>
               </>

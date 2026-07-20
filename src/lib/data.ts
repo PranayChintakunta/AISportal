@@ -432,6 +432,15 @@ export const personalFields = [
   "LinkedIn *",
 ];
 
+export const applicationFormStepFields = [
+  personalFields,
+  [
+    "Why do you want to join AIS? *",
+    "What skills or experience do you bring? *",
+  ],
+  ["Anything else you'd like the reviewers to know?"],
+];
+
 /* ------------------------------------------------------- Apply · Detail (roles) */
 
 const techTag = (label: string): TagData => ({
