@@ -1,9 +1,11 @@
+import type { ReactNode } from "react";
 import { Button } from "@/components/ui/button";
 
 type RowAction = {
   label: string;
   variant: "primary" | "accent" | "soft" | "ghost";
   pill?: boolean;
+  href?: string;
 };
 
 export type OpenApp = {
@@ -16,6 +18,7 @@ export type OpenApp = {
   metaMedium?: boolean;
   /** Slightly fades the not-yet-open row. */
   dim?: boolean;
+  statusBadge?: ReactNode;
   actions: RowAction[];
 };
 
@@ -30,6 +33,7 @@ export function OpenAppRow({
   borderColor,
   metaMedium = false,
   dim = false,
+  statusBadge,
   actions,
 }: OpenApp) {
   return (
@@ -53,17 +57,21 @@ export function OpenAppRow({
         </p>
       </div>
 
-      <div className="flex shrink-0 gap-[10px]">
-        {actions.map((action) => (
-          <Button
-            key={action.label}
-            variant={action.variant}
-            size="md"
-            pill={action.pill}
-          >
-            {action.label}
-          </Button>
-        ))}
+      <div className="flex shrink-0 flex-col items-start gap-[10px] sm:items-end">
+        {statusBadge ? <div>{statusBadge}</div> : null}
+        <div className="flex gap-[10px]">
+          {actions.map((action) => (
+            <Button
+              key={action.label}
+              href={action.href}
+              variant={action.variant}
+              size="md"
+              pill={action.pill}
+            >
+              {action.label}
+            </Button>
+          ))}
+        </div>
       </div>
     </div>
   );

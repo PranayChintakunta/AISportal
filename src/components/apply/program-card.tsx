@@ -76,7 +76,7 @@ export function ProgramCard({
         ))}
       </div>
 
-      <Button variant={cta} size="md" pill block>
+      <Button href="/applications/detail" variant={cta} size="md" pill block>
         Apply Now →
       </Button>
     </div>

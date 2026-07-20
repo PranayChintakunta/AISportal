@@ -172,7 +172,7 @@ export const openApps: OpenApp[] = [
     metaMedium: true,
     actions: [
       { label: "Learn more", variant: "soft" },
-      { label: "Apply", variant: "primary" },
+      { label: "Apply", variant: "primary", href: "/applications/detail" },
     ],
   },
   {
@@ -183,7 +183,7 @@ export const openApps: OpenApp[] = [
     metaMedium: true,
     actions: [
       { label: "Learn more", variant: "ghost" },
-      { label: "Apply", variant: "primary" },
+      { label: "Apply", variant: "primary", href: "/applications/detail" },
     ],
   },
   {
