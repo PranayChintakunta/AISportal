@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Show, UserButton } from "@clerk/nextjs";
 import { cn } from "@/lib/utils";
 
 const NAV_ITEMS = ["Events", "Apply", "Dashboard"] as const;
@@ -51,10 +52,27 @@ export function Navbar({ active = "Dashboard" }: NavbarProps) {
 
         {/* Account */}
         <div className="flex shrink-0 items-center gap-[11px] self-stretch border-l border-border-soft pl-[25px]">
-          <span className="size-[32px] rounded-full border border-[#8a8a93]" />
-          <span className="whitespace-nowrap font-body text-[15px] font-semibold text-ink-muted">
-            Member
-          </span>
+          <Show when="signed-out">
+            <Link
+              href="/onboarding?mode=login"
+              className="font-body text-[15px] font-semibold text-ink-muted"
+            >
+              Sign In
+            </Link>
+            <Link
+              href="/onboarding?mode=signup"
+              className="rounded-[10px] border border-brand bg-brand px-[15px] py-[9px] font-body text-[15px] font-semibold text-white"
+            >
+              Sign Up
+            </Link>
+          </Show>
+
+          <Show when="signed-in">
+            <UserButton />
+            <span className="whitespace-nowrap font-body text-[15px] font-semibold text-ink-muted">
+              Member
+            </span>
+          </Show>
         </div>
       </nav>
     </header>
