@@ -1,5 +1,78 @@
 import { NextResponse } from "next/server";
+import { prisma } from "@/lib/prisma";
+import { getAuthenticatedUser } from "@/lib/auth";
+import crypto from "crypto";
 
-export async function GET() {
-  return NextResponse.json({ message: "Draft route placeholder" });
+export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {
+  const user = await getAuthenticatedUser();
+
+  if (!user) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const { id: eventId } = await params;
+  const existingEvent = await prisma.event.findUnique({ where: { id: eventId } });
+
+  if (!existingEvent) {
+    return NextResponse.json({ error: "Event not found" }, { status: 404 });
+  }
+
+  const existingRsvp = await prisma.rSVP.findUnique({
+    where: {
+      userId_eventId: {
+        userId: user.id,
+        eventId,
+      },
+    },
+  });
+
+  if (existingRsvp?.status === "GOING") {
+    return NextResponse.json({ error: "Already RSVP'd" }, { status: 409 });
+  }
+
+  const tokenPayload = `${user.id}:${eventId}:${Date.now()}`;
+  const qrToken = crypto.createHash("sha256").update(tokenPayload).digest("hex");
+
+  const rsvp = await prisma.rSVP.create({
+    data: {
+      userId: user.id,
+      eventId,
+      status: "GOING",
+      qrToken,
+      qrPayload: JSON.stringify({ userId: user.id, eventId, token: qrToken }),
+      qrExpiresAt: new Date(Date.now() + 1000 * 60 * 60 * 24 * 7),
+    },
+  });
+
+  return NextResponse.json({ success: true, rsvp });
+}
+
+export async function DELETE(_request: Request, { params }: { params: Promise<{ id: string }> }) {
+  const user = await getAuthenticatedUser();
+
+  if (!user) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const { id: eventId } = await params;
+
+  const existing = await prisma.rSVP.findUnique({
+    where: {
+      userId_eventId: {
+        userId: user.id,
+        eventId,
+      },
+    },
+  });
+
+  if (!existing) {
+    return NextResponse.json({ error: "RSVP not found" }, { status: 404 });
+  }
+
+  await prisma.rSVP.update({
+    where: { id: existing.id },
+    data: { status: "CANCELED" },
+  });
+
+  return NextResponse.json({ success: true });
 }

@@ -1,3 +1,6 @@
+"use client";
+
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Tag } from "@/components/ui/tag";
 import type { TagData } from "@/components/dashboard/up-next-card";
@@ -8,13 +11,30 @@ export type EventGridItem = {
   meta: string;
   description: string;
   tags: TagData[];
+  eventId: string;
 };
 
 /**
  * Event card in the browse grid: photo placeholder, title, schedule, blurb,
  * category tags, and an RSVP button.
  */
-export function EventGridCard({ title, meta, description, tags }: EventGridItem) {
+export function EventGridCard({ title, meta, description, tags, eventId }: EventGridItem) {
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [message, setMessage] = useState<string | null>(null);
+
+  async function handleRsvp() {
+    setIsSubmitting(true);
+    setMessage(null);
+
+    const response = await fetch(`/api/events/${eventId}/rsvp`, {
+      method: "POST",
+    });
+
+    const payload = await response.json();
+    setMessage(response.ok ? "RSVP created" : payload.error ?? "Unable to RSVP");
+    setIsSubmitting(false);
+  }
+
   return (
     <div className="flex flex-col rounded-[16px] border border-border-soft bg-white p-[20px]">
       <div className="flex h-[150px] w-full items-center justify-center rounded-[12px] bg-photo">
@@ -37,9 +57,12 @@ export function EventGridCard({ title, meta, description, tags }: EventGridItem)
             <Tag key={t.label} label={t.label} bg={t.bg} color={t.color} />
           ))}
         </div>
-        <Button variant="primary" size="sm">
-          RSVP
-        </Button>
+        <div className="flex flex-col items-end gap-2">
+          <Button variant="primary" size="sm" onClick={handleRsvp} disabled={isSubmitting}>
+            {isSubmitting ? "Working..." : "RSVP"}
+          </Button>
+          {message ? <p className="text-[11px] text-ink-faint">{message}</p> : null}
+        </div>
       </div>
     </div>
   );
