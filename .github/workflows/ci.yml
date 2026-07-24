@@ -23,7 +23,7 @@ jobs:
     env:
       DATABASE_URL: ${{ secrets.DATABASE_URL }}
       DATABASE_URL_UNPOOLED: ${{ secrets.DATABASE_URL_UNPOOLED }}
-      
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v7.0.1
@@ -54,6 +54,7 @@ jobs:
       #   run: npm test
 
       - name: Production build
+        if: github.event_name == 'push'
         run: npm run build
 
   db-smoke:
