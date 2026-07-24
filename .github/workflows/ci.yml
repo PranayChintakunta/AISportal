@@ -19,6 +19,11 @@ jobs:
     name: PR validation
     runs-on: ubuntu-latest
 
+    # ADD THIS ENV BLOCK HERE:
+    env:
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      DATABASE_URL_UNPOOLED: ${{ secrets.DATABASE_URL_UNPOOLED }}
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v7.0.1
@@ -44,11 +49,12 @@ jobs:
       - name: Type check
         run: npx tsc --noEmit
 
-      # Add unit tests here if applicable:
+      # Add unit tests here when you make them:
       # - name: Run tests
       #   run: npm test
 
       - name: Production build
+        if: github.event_name == 'push'
         run: npm run build
 
   db-smoke:
@@ -58,7 +64,7 @@ jobs:
 
     env:
       DATABASE_URL: ${{ secrets.DATABASE_URL }}
-      DIRECT_URL: ${{ secrets.DIRECT_URL }}
+      DATABASE_URL_UNPOOLED: ${{ secrets.DATABASE_URL_UNPOOLED }}
 
     steps:
       - name: Checkout repository

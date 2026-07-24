@@ -18,7 +18,7 @@ export async function POST(req: Request) {
   }
 
   const body = await req.text();
-  const webhookSecret = process.env.CLERK_WEBHOOK_SECRET; // CHANGE DURING DEV TO WEBHOOK_SECRET
+  const webhookSecret = process.env.CLERK_WEBHOOK_SECRET; // Have the dev CLERK_WEBHOOK_SECRET (not prod) in your .env.local
 
   if (!webhookSecret) {
     console.error("CRITICAL ERROR: CLERK_WEBHOOK_SECRET is not loaded in process.env!");
