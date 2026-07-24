@@ -19,6 +19,11 @@ jobs:
     name: PR validation
     runs-on: ubuntu-latest
 
+    # ADD THIS ENV BLOCK HERE:
+    env:
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      DATABASE_URL_UNPOOLED: ${{ secrets.DATABASE_URL_UNPOOLED }}
+      
     steps:
       - name: Checkout repository
         uses: actions/checkout@v7.0.1
