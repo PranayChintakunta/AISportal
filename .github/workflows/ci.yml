@@ -44,7 +44,7 @@ jobs:
       - name: Type check
         run: npx tsc --noEmit
 
-      # Add unit tests here if applicable:
+      # Add unit tests here when you make them:
       # - name: Run tests
       #   run: npm test
 
@@ -58,7 +58,7 @@ jobs:
 
     env:
       DATABASE_URL: ${{ secrets.DATABASE_URL }}
-      DIRECT_URL: ${{ secrets.DATABASE_URL_UNPOOLED }}
+      DATABASE_URL_UNPOOLED: ${{ secrets.DATABASE_URL_UNPOOLED }}
 
     steps:
       - name: Checkout repository
