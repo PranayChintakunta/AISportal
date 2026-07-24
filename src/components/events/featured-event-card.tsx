@@ -1,3 +1,7 @@
+"use client";
+
+import { useRouter } from "next/navigation";
+import { useAuth } from "@clerk/nextjs";
 import { Button } from "@/components/ui/button";
 import { Tag } from "@/components/ui/tag";
 import type { TagData } from "@/components/dashboard/up-next-card";
@@ -19,6 +23,16 @@ export function FeaturedEventCard({
   description,
   tags,
 }: FeaturedEvent) {
+  const router = useRouter();
+  const { isSignedIn } = useAuth();
+
+  function handleRsvpNow() {
+    if (!isSignedIn) {
+      router.push("/onboarding?mode=login");
+      return;
+    }
+  }
+
   return (
     <div className="flex min-h-[300px] flex-1 flex-col justify-between self-stretch overflow-hidden rounded-[16px] border border-border-soft bg-brand-soft p-[28px]">
       <div>
@@ -39,7 +53,7 @@ export function FeaturedEventCard({
             <Tag key={t.label} label={t.label} bg={t.bg} color={t.color} />
           ))}
         </div>
-        <Button variant="primary" size="md" pill>
+        <Button variant="primary" size="md" pill onClick={handleRsvpNow} type="button">
           RSVP Now
         </Button>
       </div>

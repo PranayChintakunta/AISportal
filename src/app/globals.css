@@ -6,6 +6,9 @@
   --foreground: #171717;
 }
 
+/* Tokens whose values reference other CSS variables MUST be `inline`, so the
+   var() resolves on the using element (where next/font's --font-* vars live on
+   <body>) instead of on :root (where they are undefined). */
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -65,25 +68,34 @@
   /* Fonts */
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
-  --font-display: var(--font-tektur), sans-serif;
-  --font-body: var(--font-jakarta), sans-serif;
-  --font-logo: var(--font-audiowide), cursive;
-  --font-techno: var(--font-electrolize), sans-serif;
-  --font-grotesk: var(--font-hanken), sans-serif;
-  --font-chakra: var(--font-chakra), sans-serif;
-  --font-mono-alt: var(--font-space-mono), monospace;
 
-  /* Shadows */
-  --shadow-card: 0px 18px 40px 0px rgba(0,0,0,0.07);
-  --shadow-auth-card: 0px 16px 20px 0px rgba(20,30,90,0.22);
-  --shadow-tab: 0px 1px 1.5px 0px rgba(0,0,0,0.12);
+  /* AIS Portal brand fonts */
+  --font-display: var(--font-audiowide);
+  --font-nav: var(--font-electrolize);
+  --font-heading: var(--font-tektur);
+  --font-body: var(--font-jakarta);
+  --font-ibm: var(--font-ibm-plex-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+/* Literal design tokens — plain @theme is fine (and generates the utilities). */
+@theme {
+  /* AIS Portal palette (from Figma design system) */
+  --color-cream: #faf7ee;
+  --color-ais-blue: #2f5fe8;
+  --color-ink: #16161c;
+  --color-slate: #55555f;
+  --color-muted: #8a8a93;
+  --color-line: #e7e2d4;
+  --color-frame: #c0bfbc;
+  --color-placeholder: #d0cdc4;
+  --color-placeholder-text: #8d8b84;
+  --color-featured: #e1e8ff;
+  --color-coffee: #e9e5f6;
+  --color-checked: #d2ecd9;
+  --color-checked-text: #2c5d3e;
+  --color-orange: #f2a968;
+  --color-orange-text: #7a4416;
+  --color-pill-amber: #fbe3cb;
 }
 
 body {

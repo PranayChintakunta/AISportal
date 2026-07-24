@@ -1,3 +1,7 @@
+"use client";
+
+import { useRouter } from "next/navigation";
+import { useAuth } from "@clerk/nextjs";
 import { Button } from "@/components/ui/button";
 import { Tag } from "@/components/ui/tag";
 
@@ -31,6 +35,16 @@ export function ProgramCard({
   tags,
   cta,
 }: Program) {
+  const router = useRouter();
+  const { isSignedIn } = useAuth();
+
+  const handleApply = () => {
+    if (!isSignedIn) {
+      router.push("/onboarding?mode=login");
+      return;
+    }
+  };
+
   const iconChip = (
     <span
       className="flex size-[46px] items-center justify-center rounded-[12px] pb-[12px] pt-[9px] text-center text-[20px]"
@@ -76,7 +90,7 @@ export function ProgramCard({
         ))}
       </div>
 
-      <Button href="/applications/detail" variant={cta} size="md" pill block>
+      <Button variant={cta} size="md" pill block onClick={handleApply} type="button">
         Apply Now →
       </Button>
     </div>

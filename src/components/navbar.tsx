@@ -1,4 +1,7 @@
+"use client";
+
 import Link from "next/link";
+import { Show, UserButton, useAuth } from "@clerk/nextjs";
 import { cn } from "@/lib/utils";
 
 const NAV_ITEMS = ["Events", "Apply", "Dashboard"] as const;
@@ -15,6 +18,8 @@ type NavbarProps = {
 };
 
 export function Navbar({ active = "Dashboard" }: NavbarProps) {
+  const { isSignedIn } = useAuth();
+
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border-soft bg-white">
       <nav className="flex h-[72px] items-center gap-[21.8px] px-[38px] pb-px">
@@ -33,7 +38,11 @@ export function Navbar({ active = "Dashboard" }: NavbarProps) {
             return (
               <li key={label} className="relative px-[2px] py-[6px]">
                 <Link
-                  href={NAV_ROUTES[label]}
+                  href={
+                    label === "Dashboard" && !isSignedIn
+                      ? "/onboarding?mode=login"
+                      : NAV_ROUTES[label]
+                  }
                   className={cn(
                     "font-techno text-[16px] tracking-[0.5px]",
                     isActive ? "text-brand" : "text-ink-muted"
@@ -51,10 +60,27 @@ export function Navbar({ active = "Dashboard" }: NavbarProps) {
 
         {/* Account */}
         <div className="flex shrink-0 items-center gap-[11px] self-stretch border-l border-border-soft pl-[25px]">
-          <span className="size-[32px] rounded-full border border-[#8a8a93]" />
-          <span className="whitespace-nowrap font-body text-[15px] font-semibold text-ink-muted">
-            Member
-          </span>
+          <Show when="signed-out">
+            <Link
+              href="/onboarding?mode=login"
+              className="font-body text-[15px] font-semibold text-ink-muted"
+            >
+              Sign In
+            </Link>
+            <Link
+              href="/onboarding?mode=signup"
+              className="rounded-[10px] border border-brand bg-brand px-[15px] py-[9px] font-body text-[15px] font-semibold text-white"
+            >
+              Sign Up
+            </Link>
+          </Show>
+
+          <Show when="signed-in">
+            <UserButton />
+            <span className="whitespace-nowrap font-body text-[15px] font-semibold text-ink-muted">
+              Member
+            </span>
+          </Show>
         </div>
       </nav>
     </header>

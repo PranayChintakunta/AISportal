@@ -1,15 +1,27 @@
+export const dynamic = "force-dynamic";
+
 import type { Metadata } from "next";
 import { Navbar } from "@/components/navbar";
 import { Tag } from "@/components/ui/tag";
 import { EventGridCard } from "@/components/events/event-grid-card";
-import { eventFilterTags, browseEvents } from "@/lib/data";
+import { eventFilterTags } from "@/lib/data";
+import { prisma } from "@/lib/prisma";
 
 export const metadata: Metadata = {
   title: "Events — Browse",
   description: "Browse upcoming AIS events by tag.",
 };
 
-export default function EventsBrowsePage() {
+async function getEvents() {
+  return prisma.event.findMany({
+    orderBy: { startTime: "asc" },
+    take: 20,
+  });
+}
+
+export default async function EventsBrowsePage() {
+  const events = await getEvents();
+
   return (
       <div className="flex min-h-screen w-full flex-col bg-cream">
         <Navbar active="Events" />
@@ -30,8 +42,15 @@ export default function EventsBrowsePage() {
           {/* Event grid */}
           <div className="min-w-px flex-1 p-[46px]">
             <div className="grid grid-cols-1 gap-[24px] lg:grid-cols-2">
-              {browseEvents.map((event) => (
-                <EventGridCard key={event.title} {...event} />
+              {events.map((event) => (
+                <EventGridCard
+                  key={event.id}
+                  title={event.title}
+                  meta={`${event.location} · ${new Date(event.startTime).toLocaleString()}`}
+                  description={event.description}
+                  tags={[]}
+                  eventId={event.id}
+                />
               ))}
             </div>
           </div>
