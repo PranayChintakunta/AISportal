@@ -8,6 +8,7 @@ type RowAction = {
   label: string;
   variant: "primary" | "accent" | "soft" | "ghost";
   pill?: boolean;
+  href?: string;
 };
 
 export type OpenApp = {
@@ -20,6 +21,7 @@ export type OpenApp = {
   metaMedium?: boolean;
   /** Slightly fades the not-yet-open row. */
   dim?: boolean;
+  statusBadge?: ReactNode;
   actions: RowAction[];
 };
 
@@ -34,6 +36,7 @@ export function OpenAppRow({
   borderColor,
   metaMedium = false,
   dim = false,
+  statusBadge,
   actions,
 }: OpenApp) {
   const router = useRouter();
