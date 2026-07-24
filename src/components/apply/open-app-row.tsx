@@ -1,3 +1,7 @@
+"use client";
+
+import { useRouter } from "next/navigation";
+import { useAuth } from "@clerk/nextjs";
 import { Button } from "@/components/ui/button";
 
 type RowAction = {
@@ -32,6 +36,15 @@ export function OpenAppRow({
   dim = false,
   actions,
 }: OpenApp) {
+  const router = useRouter();
+  const { isSignedIn } = useAuth();
+
+  const handleActionClick = (label: string) => {
+    if ((label === "Apply" || label === "Remind me") && !isSignedIn) {
+      router.push("/onboarding?mode=login");
+    }
+  };
+
   return (
     <div
       className="flex w-full flex-col items-start gap-[16px] rounded-[16px] border bg-white p-[25px] sm:flex-row sm:items-center sm:justify-between sm:gap-[24px]"
@@ -60,6 +73,8 @@ export function OpenAppRow({
             variant={action.variant}
             size="md"
             pill={action.pill}
+            type="button"
+            onClick={() => handleActionClick(action.label)}
           >
             {action.label}
           </Button>

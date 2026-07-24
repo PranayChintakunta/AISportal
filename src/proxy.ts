@@ -1,22 +1,29 @@
 import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server';
 import { NextResponse } from "next/server";
 
+const isPublicRoute = createRouteMatcher([
+  '/',
+  '/events(.*)',
+  '/applications(.*)',
+  '/onboarding(.*)',
+  '/api/webhooks(.*)',
+]);
+
 const isAdminRoute = createRouteMatcher(["/admin(.*)", "/api/admin(.*)"]);
+const allowedAdminRoles = ['REVIEWER', 'ORGANIZER', 'SUPER_ADMIN'];
 
 export default clerkMiddleware(async (auth, req) => {
-  if (isAdminRoute(req)) {
-    const session = await auth();
-    
-    // Fallback if not logged in
-    if (!session.userId) {
-      return NextResponse.redirect(new URL('/login', req.url));
-    }
+  const session = await auth();
 
-    // Read custom role metadata from Clerk session
+  // Everything except the public routes above requires sign-in
+  if (!isPublicRoute(req) && !session.userId) {
+    return NextResponse.redirect(new URL('/sign-in', req.url));
+  }
+
+  // Extra role gate on top of that, for admin routes only
+  if (isAdminRoute(req)) {
     const role = session.sessionClaims?.metadata?.role;
-    const allowedRoles = ['REVIEWER', 'ORGANIZER', 'SUPER_ADMIN'];
-    
-    if (!role || !allowedRoles.includes(role as string)) {
+    if (!role || !allowedAdminRoles.includes(role as string)) {
       return NextResponse.redirect(new URL('/dashboard', req.url));
     }
   }
@@ -24,11 +31,8 @@ export default clerkMiddleware(async (auth, req) => {
 
 export const config = {
   matcher: [
-    // Skip Next.js internals and all static files, unless found in search params
     '/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)',
-    // Always run for Clerk's auto-proxy path
-    '/__clerk/:path*',
-    // Always run for API routes
+    '/__clerk/(.*)',
     '/(api|trpc)(.*)',
   ],
 };

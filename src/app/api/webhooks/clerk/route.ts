@@ -5,18 +5,27 @@ import { prisma } from '@/lib/prisma';
 import { UserRole } from '@prisma/client'; 
 
 export async function POST(req: Request) {
+  console.log('--- WEBHOOK REQUEST RECEIVED ---');
+
   const headerPayload = await headers();
   const svix_id = headerPayload.get("svix-id");
   const svix_timestamp = headerPayload.get("svix-timestamp");
   const svix_signature = headerPayload.get("svix-signature");
 
   if (!svix_id || !svix_timestamp || !svix_signature) {
+    console.error("Missing svix headers");
     return new Response('Error occurred -- missing svix headers', { status: 400 });
   }
 
-  const payload = await req.json();
-  const body = JSON.stringify(payload);
-  const wh = new Webhook(process.env.CLERK_WEBHOOK_SECRET!);
+  const body = await req.text();
+  const webhookSecret = process.env.CLERK_WEBHOOK_SECRET; // CHANGE DURING DEV TO WEBHOOK_SECRET
+
+  if (!webhookSecret) {
+    console.error("CRITICAL ERROR: CLERK_WEBHOOK_SECRET is not loaded in process.env!");
+    return new Response('Missing secret in environment variables', { status: 500 });
+  }
+
+  const wh = new Webhook(webhookSecret);
   let evt: WebhookEvent;
 
   try {
@@ -26,26 +35,36 @@ export async function POST(req: Request) {
       "svix-signature": svix_signature,
     }) as WebhookEvent;
   } catch (err) {
-    return new Response('Error occurred', { status: 400 });
+    console.error("Svix verification failed with error:", err);
+    return new Response('Error occurred during verification', { status: 400 });
   }
 
-  // Handle user creation sync
+  console.log(`Webhook verified! Event type: ${evt.type}`);
+
   if (evt.type === 'user.created') {
     const { id, email_addresses } = evt.data;
     const primaryEmail = email_addresses[0]?.email_address;
 
     if (!primaryEmail) {
+      console.error("User has no email address");
       return new Response('Error: User has no email address', { status: 400 });
     }
 
-    await prisma.user.create({
-      data: {
-        id: id,            // Maps Clerk ID to Primary Key
-        clerkId: id,       // Schema's unique clerkId constraint
-        email: primaryEmail,
-        role: UserRole.MEMBER, 
-      },
-    });
+    try {
+      console.log(`Attempting to create user ${id} in Prisma...`);
+      await prisma.user.create({
+        data: {
+          id: id,            
+          clerkId: id,       
+          email: primaryEmail,
+          role: UserRole.MEMBER, 
+        },
+      });
+      console.log("Successfully created user in Prisma!");
+    } catch (dbError) {
+      console.error("Prisma failed to create user. Error details:", dbError);
+      return new Response('Database error', { status: 500 });
+    }
   }
 
   return new Response('', { status: 200 });
