@@ -1,4 +1,7 @@
+"use client";
+
 import Link from "next/link";
+import { Show, UserButton, useAuth } from "@clerk/nextjs";
 import { cn } from "@/lib/utils";
 
 const NAV_ITEMS = ["Events", "Apply", "Dashboard"] as const;
@@ -15,6 +18,8 @@ type NavbarProps = {
 };
 
 export function Navbar({ active = "Dashboard" }: NavbarProps) {
+  const { isSignedIn } = useAuth();
+
   return (
     <header className="sticky top-0 z-50 w-full border-b border-[#f0f0f0] bg-white">
       <nav className="flex h-[72px] items-center justify-between px-[38px]">
@@ -27,46 +32,58 @@ export function Navbar({ active = "Dashboard" }: NavbarProps) {
             />
           </Link>
 
-          {/* Primary links */}
-          <ul className="flex items-center gap-[8px]">
-            {NAV_ITEMS.map((label) => {
-              const isActive = label === active;
-              return (
-                <li key={label}>
-                  <Link
-                    href={NAV_ROUTES[label]}
-                    className={cn(
-                      "font-techno text-[15px] font-black tracking-[0.5px] px-[24px] py-[10px] rounded-full transition-colors flex items-center justify-center",
-                      isActive ? "bg-[#e1e8ff] text-[#2f5fe8]" : "text-[#4b4178] hover:bg-gray-100"
-                    )}
-                  >
-                    {label}
-                  </Link>
-                </li>
-              );
-            })}
-          </ul>
+        {/* Primary links */}
+        <ul className="flex flex-1 items-center justify-center gap-[50px]">
+          {NAV_ITEMS.map((label) => {
+            const isActive = label === active;
+            return (
+              <li key={label} className="relative px-[2px] py-[6px]">
+                <Link
+                  href={
+                    label === "Dashboard" && !isSignedIn
+                      ? "/onboarding?mode=login"
+                      : NAV_ROUTES[label]
+                  }
+                  className={cn(
+                    "font-techno text-[16px] tracking-[0.5px]",
+                    isActive ? "text-brand" : "text-ink-muted"
+                  )}
+                >
+                  {label}
+                </Link>
+                {isActive && (
+                  <span className="absolute inset-x-0 -bottom-[6px] h-[2.5px] rounded-[2px] bg-brand" />
+                )}
+              </li>
+            );
+          })}
+        </ul>
 
-          {/* Account */}
-          <Link 
-            href="/profile" 
-            className={cn(
-              "flex shrink-0 items-center gap-[11px] hover:opacity-80 transition-colors px-[20px] py-[8px] rounded-full",
-              active === "Profile" ? "bg-[#e1e8ff]" : ""
-            )}
-          >
-            <span className={cn(
-              "size-[32px] rounded-full border",
-              active === "Profile" ? "border-[#2f5fe8]" : "border-[#8a8a93]"
-            )} />
-            <span className={cn(
-              "whitespace-nowrap font-body text-[15px] font-black",
-              active === "Profile" ? "text-[#2f5fe8]" : "text-[#4b4178]"
-            )}>
-              Profile
+        {/* Account */}
+        <div className="flex shrink-0 items-center gap-[11px] self-stretch border-l border-border-soft pl-[25px]">
+          <Show when="signed-out">
+            <Link
+              href="/onboarding?mode=login"
+              className="font-body text-[15px] font-semibold text-ink-muted"
+            >
+              Sign In
+            </Link>
+            <Link
+              href="/onboarding?mode=signup"
+              className="rounded-[10px] border border-brand bg-brand px-[15px] py-[9px] font-body text-[15px] font-semibold text-white"
+            >
+              Sign Up
+            </Link>
+          </Show>
+
+          <Show when="signed-in">
+            <UserButton />
+            <span className="whitespace-nowrap font-body text-[15px] font-semibold text-ink-muted">
+              Member
             </span>
-          </Link>
-        </nav>
+          </Show>
+        </div>
+      </nav>
     </header>
   );
 }
