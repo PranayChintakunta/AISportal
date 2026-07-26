@@ -34,17 +34,17 @@ export function getPastSemesterDates() {
   }
 }
 
-export async function getDashboardStats(userId: string) {
+export async function getDashboardStats(id: string) {
   const currentSem = getCurrentSemesterDates();
   const pastSem = getPastSemesterDates();
 
   const [allTime, currentSemCount, pastSemCount] = await Promise.all([
-    prisma.attendance.count({ where: { userId } }),
+    prisma.attendance.count({ where: { id } }),
     prisma.attendance.count({
-      where: { userId, checkedInAt: { gte: currentSem.start, lte: currentSem.end } },
+      where: { id, checkedInAt: { gte: currentSem.start, lte: currentSem.end } },
     }),
     prisma.attendance.count({
-      where: { userId, checkedInAt: { gte: pastSem.start, lte: pastSem.end } },
+      where: { id, checkedInAt: { gte: pastSem.start, lte: pastSem.end } },
     }),
   ]);
 
