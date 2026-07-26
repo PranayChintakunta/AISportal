@@ -7,6 +7,7 @@ import { Navbar } from "@/components/navbar";
 import { RoleCard } from "@/components/apply/role-card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { MobileApplyDetail } from "@/components/mobile/apply/MobileApplyDetail";
 import { applyDetailRoles } from "@/lib/data";
 
 type ApplicationDetailResponse = {
@@ -163,6 +164,12 @@ export default function ApplyDetailPage() {
   }, [applicationId]);
 
   return (
+    <>
+      <div className="md:hidden">
+        <MobileApplyDetail />
+      </div>
+
+      <div className="hidden md:block">
     <div className="flex min-h-screen w-full flex-col bg-cream">
       <Navbar active="Apply" />
 
@@ -242,5 +249,7 @@ export default function ApplyDetailPage() {
         ) : null}
       </div>
     </div>
+      </div>
+    </>
   );
 }

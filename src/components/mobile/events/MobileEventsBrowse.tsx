@@ -1,10 +1,61 @@
+"use client";
+
+import { useEffect, useState } from "react";
 import { Tag } from "@/components/ui/tag";
-import { Button } from "@/components/ui/button";
+import { EventGridCard } from "@/components/events/event-grid-card";
 import { MobileScreen } from "@/components/mobile/ui/MobileScreen";
 import { BottomNav } from "@/components/mobile/ui/BottomNav";
-import { eventFilterTags, browseEvents } from "@/lib/data";
+import { eventFilterTags } from "@/lib/data";
+
+type EventRecord = {
+  id: string;
+  title: string;
+  description: string;
+  location: string;
+  startTime: string;
+};
+
+function EventCardSkeleton() {
+  return (
+    <div className="flex flex-col rounded-[14px] border border-border-soft bg-white p-[16px]">
+      <div className="h-[80px] animate-pulse rounded-[10px] bg-[#efece3]" />
+      <div className="mt-[10px] h-[14px] w-[70%] animate-pulse rounded-full bg-[#f4f1ea]" />
+      <div className="mt-[8px] h-[34px] animate-pulse rounded-[8px] bg-[#f4f1ea]" />
+    </div>
+  );
+}
 
 export function MobileEventsBrowse() {
+  const [events, setEvents] = useState<EventRecord[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const controller = new AbortController();
+
+    async function loadEvents() {
+      setLoading(true);
+      try {
+        const response = await fetch("/api/events", { signal: controller.signal });
+        if (!response.ok) {
+          throw new Error(`Failed to load events: ${response.status}`);
+        }
+        const payload = (await response.json()) as EventRecord[];
+        setEvents(Array.isArray(payload) ? payload : []);
+      } catch (error) {
+        if ((error as Error).name !== "AbortError") {
+          setEvents([]);
+        }
+      } finally {
+        if (!controller.signal.aborted) {
+          setLoading(false);
+        }
+      }
+    }
+
+    loadEvents();
+    return () => controller.abort();
+  }, []);
+
   return (
     <MobileScreen>
       <div className="flex flex-col gap-[8px]">
@@ -29,36 +80,28 @@ export function MobileEventsBrowse() {
       </div>
 
       {/* Event grid */}
-      <div className="grid grid-cols-2 gap-[12px]">
-        {browseEvents.map((event) => (
-          <div
-            key={event.title}
-            className="flex flex-col rounded-[14px] border border-border-soft bg-white p-[14px]"
-          >
-            <div className="flex h-[80px] items-center justify-center rounded-[10px] bg-photo">
-              <span className="font-mono text-[9px] tracking-[1px] text-photo-text">
-                PHOTO
-              </span>
-            </div>
-            <h3 className="mt-[8px] font-mobile-display text-[13px] font-bold leading-[16px] text-ink">
-              {event.title}
-            </h3>
-            <p className="mt-[4px] font-mono text-[9.5px] leading-[13px] text-ink-faint">
-              {event.meta}
-            </p>
-            <p className="mt-[4px] font-mobile-body text-[11px] leading-[15px] text-ink-muted">
-              {event.description}
-            </p>
-            <div className="mt-[8px] flex flex-wrap gap-[4px]">
-              {event.tags.map((t) => (
-                <Tag key={t.label} label={t.label} bg={t.bg} color={t.color} />
-              ))}
-            </div>
-            <Button variant="primary" size="sm" block className="mt-[10px]">
-              RSVP
-            </Button>
+      <div className="grid grid-cols-1 gap-[16px]">
+        {loading ? (
+          <>
+            <EventCardSkeleton />
+            <EventCardSkeleton />
+          </>
+        ) : events.length > 0 ? (
+          events.map((event) => (
+            <EventGridCard
+              key={event.id}
+              title={event.title}
+              meta={`${event.location} · ${new Date(event.startTime).toLocaleString()}`}
+              description={event.description}
+              tags={[]}
+              eventId={event.id}
+            />
+          ))
+        ) : (
+          <div className="rounded-[14px] border border-border-soft bg-white p-[16px] font-mobile-body text-[13px] text-ink-muted">
+            No upcoming events right now.
           </div>
-        ))}
+        )}
       </div>
 
       <BottomNav />
