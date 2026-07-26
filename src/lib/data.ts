@@ -172,7 +172,7 @@ export const openApps: OpenApp[] = [
     metaMedium: true,
     actions: [
       { label: "Learn more", variant: "soft" },
-      { label: "Apply", variant: "primary" },
+      { label: "Apply", variant: "primary", href: "/applications/detail" },
     ],
   },
   {
@@ -183,7 +183,7 @@ export const openApps: OpenApp[] = [
     metaMedium: true,
     actions: [
       { label: "Learn more", variant: "ghost" },
-      { label: "Apply", variant: "primary" },
+      { label: "Apply", variant: "primary", href: "/applications/detail" },
     ],
   },
   {
@@ -432,6 +432,15 @@ export const personalFields = [
   "LinkedIn *",
 ];
 
+export const applicationFormStepFields = [
+  personalFields,
+  [
+    "Why do you want to join AIS? *",
+    "What skills or experience do you bring? *",
+  ],
+  ["Anything else you'd like the reviewers to know?"],
+];
+
 /* ------------------------------------------------------- Apply · Detail (roles) */
 
 const techTag = (label: string): TagData => ({
@@ -540,23 +549,27 @@ export const browseEvents: EventGridItem[] = [
     meta: "ECSW 2.412 · 08/27/26 · 7:00 PM",
     description: "Learn about & join AIS",
     tags: [tag("food"), tag("social")],
+    eventId: "mock-event-upcoming",
   },
   {
     title: "Intro to PyTorch",
     meta: "ECSW 1.355 · 09/03/26 · 6:00 PM",
     description: "Hands-on ML workshop",
     tags: [tag("workshop"), tag("learn")],
+    eventId: "mock-event-past",
   },
   {
     title: "Sponsor Mixer",
     meta: "TBD · 09/10/26 · 7:00 PM",
     description: "Network with industry",
     tags: [tag("networking"), tag("industry")],
+    eventId: "mock-event-past",
   },
   {
     title: "AIM Social",
     meta: "ECSW 1.315 · 09/17/26 · 6:00 PM",
     description: "Meet your AIM cohort",
     tags: [tag("food"), tag("social")],
+    eventId: "mock-event-upcoming",
   },
 ];

@@ -1,9 +1,15 @@
+"use client";
+
+import type { ReactNode } from "react";
+import { useRouter } from "next/navigation";
+import { useAuth } from "@clerk/nextjs";
 import { Button } from "@/components/ui/button";
 
 type RowAction = {
   label: string;
   variant: "primary" | "accent" | "soft" | "ghost";
   pill?: boolean;
+  href?: string;
 };
 
 export type OpenApp = {
@@ -16,6 +22,7 @@ export type OpenApp = {
   metaMedium?: boolean;
   /** Slightly fades the not-yet-open row. */
   dim?: boolean;
+  statusBadge?: ReactNode;
   actions: RowAction[];
 };
 
@@ -30,8 +37,18 @@ export function OpenAppRow({
   borderColor,
   metaMedium = false,
   dim = false,
+  statusBadge,
   actions,
 }: OpenApp) {
+  const router = useRouter();
+  const { isSignedIn } = useAuth();
+
+  const handleActionClick = (label: string) => {
+    if ((label === "Apply" || label === "Remind me") && !isSignedIn) {
+      router.push("/onboarding?mode=login");
+    }
+  };
+
   return (
     <div
       className="flex w-full flex-col items-start gap-[16px] rounded-[16px] border bg-white p-[25px] sm:flex-row sm:items-center sm:justify-between sm:gap-[24px]"
@@ -60,6 +77,8 @@ export function OpenAppRow({
             variant={action.variant}
             size="md"
             pill={action.pill}
+            type="button"
+            onClick={() => handleActionClick(action.label)}
           >
             {action.label}
           </Button>

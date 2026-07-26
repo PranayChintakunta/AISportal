@@ -5,11 +5,16 @@ export interface ApiErrorResponse {
   error: {
     code: string;
     message: string;
-    details?: any;
+    details?: Record<string, unknown>;
   };
 }
 
-export function createErrorResponse(message: string, code: string, status: number, details?: any) {
+export function createErrorResponse(
+  message: string,
+  code: string,
+  status: number,
+  details?: Record<string, unknown>
+) {
   return NextResponse.json<ApiErrorResponse>(
     {
       success: false,

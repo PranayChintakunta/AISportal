@@ -69,7 +69,7 @@ async function main() {
     },
   });
 
-  const reviewer = await prisma.user.upsert({
+  await prisma.user.upsert({
     where: { email: 'reviewer@utdallas.edu' },
     update: {},
     create: {

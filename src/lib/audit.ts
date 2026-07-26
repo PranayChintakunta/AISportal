@@ -6,7 +6,7 @@ interface LogParam {
   actionType: string; // e.g., "STATUS_UPDATE", "MANUAL_CHECKIN"
   entityType: string; // e.g., "ProgramApplication", "Attendance"
   entityId: string;
-  metadata?: Record<string, any>;
+  metadata?: Prisma.InputJsonValue;
 }
 
 export async function logAction({ actorId, actionType, entityType, entityId, metadata }: LogParam) {
@@ -16,7 +16,7 @@ export async function logAction({ actorId, actionType, entityType, entityId, met
       actionType: actionType,
       entityType: entityType,
       entityId: entityId,
-      metadataJson: metadata ?? Prisma.JsonNull,
+      metadataJson: metadata === undefined ? Prisma.JsonNull : metadata,
     },
   });
 }

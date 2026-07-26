@@ -1,3 +1,7 @@
+"use client";
+
+import { useRouter } from "next/navigation";
+import { useAuth } from "@clerk/nextjs";
 import { Card } from "@/components/ui/card";
 import { SectionHeader } from "@/components/ui/section-header";
 import { Button } from "@/components/ui/button";
@@ -10,6 +14,16 @@ export type RecommendedItem = {
 };
 
 function RecommendedRow({ item }: { item: RecommendedItem }) {
+  const router = useRouter();
+  const { isSignedIn } = useAuth();
+
+  function handleRsvp() {
+    if (!isSignedIn) {
+      router.push("/onboarding?mode=login");
+      return;
+    }
+  }
+
   return (
     <div className="flex w-full items-center justify-between rounded-xl bg-row-soft px-[18px] py-[14px]">
       <div className="flex items-center gap-[12px]">
@@ -25,7 +39,7 @@ function RecommendedRow({ item }: { item: RecommendedItem }) {
           </div>
         </div>
       </div>
-      <Button variant="primary" size="sm">
+      <Button variant="primary" size="sm" onClick={handleRsvp} type="button">
         RSVP
       </Button>
     </div>
