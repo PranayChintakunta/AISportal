@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@source "../**/*.{js,ts,jsx,tsx,mdx}";
 
 :root {
   --background: #ffffff;
@@ -74,6 +75,10 @@
   --font-heading: var(--font-tektur);
   --font-body: var(--font-jakarta);
   --font-ibm: var(--font-ibm-plex-mono);
+
+  /* Mobile design system stand-in fonts (Placard Next -> Poppins, Garet -> Nunito Sans) */
+  --font-mobile-display: var(--font-placard);
+  --font-mobile-body: var(--font-garet);
 }
 
 /* Literal design tokens — plain @theme is fine (and generates the utilities). */

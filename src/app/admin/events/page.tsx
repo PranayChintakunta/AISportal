@@ -3,6 +3,7 @@ import { AdminSidebar } from "@/components/admin/admin-sidebar";
 import { StatCard } from "@/components/admin/stat-card";
 import { EventRow } from "@/components/admin/event-row";
 import { Button } from "@/components/ui/button";
+import { MobileAdminEvents } from "@/components/mobile/admin/MobileAdminEvents";
 import { eventStats, adminEvents } from "@/lib/data";
 
 export const metadata: Metadata = {
@@ -12,6 +13,12 @@ export const metadata: Metadata = {
 
 export default function AdminEventsPage() {
   return (
+    <>
+      <div className="md:hidden">
+        <MobileAdminEvents />
+      </div>
+
+      <div className="hidden md:block">
       <div className="flex min-h-screen w-full bg-cream">
         <AdminSidebar active="Events" role="Officer" />
 
@@ -59,5 +66,7 @@ export default function AdminEventsPage() {
           </div>
         </div>
       </div>
+      </div>
+    </>
   );
 }

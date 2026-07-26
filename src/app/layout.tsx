@@ -8,6 +8,8 @@ import {
   Tektur,
   Plus_Jakarta_Sans,
   IBM_Plex_Mono,
+  Poppins,
+  Nunito_Sans,
 } from "next/font/google";
 import "./globals.css";
 import { Analytics } from "@vercel/analytics/next";
@@ -50,6 +52,19 @@ const ibmPlexMono = IBM_Plex_Mono({
   subsets: ["latin"],
 });
 
+// Stand-ins for the AIS mobile design system's licensed fonts
+// (Placard Next -> Poppins, Garet -> Nunito Sans) until real font files are supplied.
+const placardStandIn = Poppins({
+  variable: "--font-placard",
+  subsets: ["latin"],
+  weight: ["700", "800"],
+});
+
+const garetStandIn = Nunito_Sans({
+  variable: "--font-garet",
+  subsets: ["latin"],
+});
+
 export const metadata: Metadata = {
   title: "AIS Portal",
   description: "AI Society at UT Dallas — member portal",
@@ -64,7 +79,7 @@ export default function RootLayout({
     <html lang="en">
       <Analytics/>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} ${audiowide.variable} ${electrolize.variable} ${tektur.variable} ${jakarta.variable} ${ibmPlexMono.variable} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} ${audiowide.variable} ${electrolize.variable} ${tektur.variable} ${jakarta.variable} ${ibmPlexMono.variable} ${placardStandIn.variable} ${garetStandIn.variable} antialiased`}
       >
         <ClerkProvider>
           {children}
