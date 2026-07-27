@@ -34,7 +34,7 @@ export function getPastSemesterDates() {
   }
 }
 
-export async function getDashboardStats(userId: string) {
+export async function getDashboardStats(id: string) {
   const currentSem = getCurrentSemesterDates();
   const pastSem = getPastSemesterDates();
 
