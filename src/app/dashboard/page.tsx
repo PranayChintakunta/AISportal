@@ -49,10 +49,15 @@ export default async function DashboardPage() {
 
   // Helper to format days away
   const formatDaysAway = (date: Date) => {
-    const diff = Math.ceil((date.getTime() - new Date().getTime()) / (1000 * 3600 * 24));
-    if (diff === 0) return "today";
-    if (diff === 1) return "tomorrow";
-    return `in ${diff} days`;
+    const now = new Date();
+    const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const startOfTarget = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+    const diffDays = Math.round((startOfTarget.getTime() - startOfToday.getTime()) / (1000 * 3600 * 24));
+
+    if (diffDays < 0) return "recently";
+    if (diffDays === 0) return "today";
+    if (diffDays === 1) return "tomorrow";
+    return `in ${diffDays} days`;
   };
 
   // Helper to format date line

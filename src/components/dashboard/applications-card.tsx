@@ -69,7 +69,7 @@ export function ApplicationsCard({ items }: { items: ApplicationItem[] }) {
           <p className="font-[Inter] text-[13px] text-ink-muted text-center max-w-[280px] leading-tight">
             When you apply to a team or program, it'll show up here.
           </p>
-          <Link href="/apply" className="mt-[2px]">
+          <Link href="/applications" className="mt-[2px]">
             <Button variant="soft" size="sm" pill className="font-black px-[20px]">
               Explore programs
             </Button>

@@ -33,11 +33,11 @@ export function Navbar({ active = "Dashboard" }: NavbarProps) {
           </Link>
 
         {/* Primary links */}
-        <ul className="flex flex-1 items-center justify-center gap-[50px]">
+        <ul className="flex items-center gap-[8px]">
           {NAV_ITEMS.map((label) => {
             const isActive = label === active;
             return (
-              <li key={label} className="relative px-[2px] py-[6px]">
+              <li key={label}>
                 <Link
                   href={
                     label === "Dashboard" && !isSignedIn
@@ -45,15 +45,12 @@ export function Navbar({ active = "Dashboard" }: NavbarProps) {
                       : NAV_ROUTES[label]
                   }
                   className={cn(
-                    "font-techno text-[16px] tracking-[0.5px]",
-                    isActive ? "text-brand" : "text-ink-muted"
+                    "font-techno text-[15px] font-black tracking-[0.5px] px-[24px] py-[10px] rounded-full transition-colors flex items-center justify-center",
+                    isActive ? "bg-[#e1e8ff] text-[#2f5fe8]" : "text-[#4b4178] hover:bg-gray-100"
                   )}
                 >
                   {label}
                 </Link>
-                {isActive && (
-                  <span className="absolute inset-x-0 -bottom-[6px] h-[2.5px] rounded-[2px] bg-brand" />
-                )}
               </li>
             );
           })}
@@ -77,11 +74,35 @@ export function Navbar({ active = "Dashboard" }: NavbarProps) {
           </Show>
 
           <Show when="signed-in">
-            <UserButton />
-            <span className="whitespace-nowrap font-body text-[15px] font-semibold text-ink-muted">
-              Member
-            </span>
-          </Show>
+  <Link
+    href="/profile"
+    className={cn(
+      "flex shrink-0 items-center gap-[11px] hover:opacity-80 transition-colors px-[20px] py-[8px] rounded-full",
+      active === "Profile" ? "bg-[#e1e8ff]" : ""
+    )}
+  >
+    <div className="pointer-events-none flex items-center">
+      <UserButton
+        appearance={{
+          elements: {
+            avatarBox: cn(
+              "size-[32px] rounded-full border",
+              active === "Profile" ? "border-[#2f5fe8]" : "border-[#8a8a93]"
+            ),
+          },
+        }}
+      />
+    </div>
+    <span
+      className={cn(
+        "whitespace-nowrap font-body text-[15px] font-black",
+        active === "Profile" ? "text-[#2f5fe8]" : "text-[#4b4178]"
+      )}
+    >
+      Profile
+    </span>
+  </Link>
+</Show>
         </div>
       </nav>
     </header>

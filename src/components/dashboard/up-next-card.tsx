@@ -33,9 +33,9 @@ export function UpNextCard({ eyebrow, title, dateLines, tags = [], isEmpty = fal
               <polyline points="12 6 12 12 16 14"></polyline>
             </svg>
           </div>
-          <h2 className="font-[Inter] text-[16px] font-bold text-ink">No RSVPs yet</h2>
+          <h2 className="font-[Inter] text-[16px] font-bold text-ink">{title || "No RSVPs yet"}</h2>
           <p className="font-[Inter] text-[13px] text-ink-muted text-center max-w-[280px] leading-tight">
-            You haven't saved any events. Browse what's coming up this semester.
+            {dateLines[0] || "You haven't saved any events. Browse what's coming up this semester."}
           </p>
           <Link href="/events/browse" className="mt-[2px]">
             <Button variant="primary" size="sm" pill className="font-black px-[20px]">

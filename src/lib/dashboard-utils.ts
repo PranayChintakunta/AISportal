@@ -39,12 +39,12 @@ export async function getDashboardStats(userId: string) {
   const pastSem = getPastSemesterDates();
 
   const [allTime, currentSemCount, pastSemCount] = await Promise.all([
-    prisma.attendance.count({ where: { userId } }),
+    prisma.attendance.count({ where: { rsvp: { userId } } }),
     prisma.attendance.count({
-      where: { userId, checkedInAt: { gte: currentSem.start, lte: currentSem.end } },
+      where: { rsvp: { userId }, checkedInAt: { gte: currentSem.start, lte: currentSem.end } },
     }),
     prisma.attendance.count({
-      where: { userId, checkedInAt: { gte: pastSem.start, lte: pastSem.end } },
+      where: { rsvp: { userId }, checkedInAt: { gte: pastSem.start, lte: pastSem.end } },
     }),
   ]);
 
@@ -122,15 +122,43 @@ export async function getUpcomingEvents(take: number = 2, userId?: string) {
 }
 
 export async function getNextUpcomingRsvp(userId: string) {
-  return prisma.rSVP.findFirst({
+  // 1. First attempt: Find an RSVP for an event ending in the future
+  const upcomingRsvp = await prisma.rSVP.findFirst({
     where: { 
       userId, 
       status: "GOING",
       event: { 
-        startTime: { gte: new Date() } 
+        endTime: { gte: new Date() } 
       } 
     },
     include: { event: true },
     orderBy: { event: { startTime: "asc" } },
+  });
+
+  if (upcomingRsvp) return upcomingRsvp;
+
+  // 2. Fallback: Find an RSVP for an event with UPCOMING status
+  const upcomingStatusRsvp = await prisma.rSVP.findFirst({
+    where: {
+      userId,
+      status: "GOING",
+      event: {
+        status: "UPCOMING"
+      }
+    },
+    include: { event: true },
+    orderBy: { event: { startTime: "asc" } },
+  });
+
+  if (upcomingStatusRsvp) return upcomingStatusRsvp;
+
+  // 3. Last fallback: Return the user's most recent GOING RSVP
+  return prisma.rSVP.findFirst({
+    where: { 
+      userId, 
+      status: "GOING" 
+    },
+    include: { event: true },
+    orderBy: { createdAt: "desc" },
   });
 }
