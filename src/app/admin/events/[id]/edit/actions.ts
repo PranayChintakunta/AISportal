@@ -3,6 +3,12 @@
 import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
+import { ItemType } from "@prisma/client";
+
+type EventItemInput = {
+  name: string;
+  type: ItemType;
+};
 
 export async function updateEvent(formData: FormData) {
   const id = formData.get("id") as string;
@@ -20,12 +26,15 @@ export async function updateEvent(formData: FormData) {
   const status = formData.get("status") as string;
   const visibility = formData.get("visibility") as string;
   
-  // Tags come through as a comma-separated string from the hidden input in your EventForm
+  // Tags come through as a comma-separated string from the hidden input
   const tagsString = formData.get("tags") as string;
-  
-  // 4. Added .filter(Boolean) so it doesn't accidentally save an empty string `[""]`
   const tags = tagsString ? tagsString.split(",").filter(Boolean) : [];
 
+  // Extract and parse event items from the JSON hidden input
+  const eventItemsJson = formData.get("eventItems") as string;
+  const eventItems: EventItemInput[] = eventItemsJson ? JSON.parse(eventItemsJson) : [];
+
+  // Update the event and sync items in a single transaction or clean update flow
   await prisma.event.update({
     where: { id },
     data: {
@@ -35,17 +44,26 @@ export async function updateEvent(formData: FormData) {
       startTime,
       endTime,
       capacity,
-      // Bypass strict Enum checks by casting to any
       status: status as any,
       visibility: visibility as any,
-      
-      // If tags is a simple String[] in your schema, this works.
       tags: tags as any,
+      
+      // Sync items: Delete existing ones and recreate the updated set, 
+      // or use nested writes. Deleting and recreating is the cleanest way to handle form arrays.
+      items: {
+        deleteMany: {}, // Clear out old items for this event
+        create: eventItems.map((item) => ({
+          name: item.name,
+          type: item.type,
+        })),
+      },
     },
   });
 
   // Clear the cache for the admin events page so the updated data shows immediately
   revalidatePath("/admin/events");
+  revalidatePath(`/admin/events/${id}/edit`);
+  revalidatePath(`/admin/events/${id}/scan`);
   
   // Redirect back to the events list
   redirect("/admin/events");

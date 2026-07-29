@@ -24,6 +24,7 @@ export default async function EditEventPage({
 
   const event = await prisma.event.findUnique({
     where: { id },
+    include: {items: true },
   });
 
   if (!event) return notFound();
@@ -45,6 +46,10 @@ export default async function EditEventPage({
     status: event.status as string,
     visibility: event.visibility as string,
     tags: event.tags as string[],
+    items: event.items.map((i) => ({
+      name: i.name,
+      type: i.type as "MEAL" | "DRINK" | "MERCH" | "OTHER",
+    })),
   };
 
   return (
