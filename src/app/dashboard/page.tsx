@@ -83,6 +83,7 @@ export default async function DashboardPage() {
               title={nextRsvp.event.title}
               dateLines={[formatDate(nextRsvp.event.startTime), nextRsvp.event.location]}
               tags={[{ label: "RSVP'd", bg: "#e1e8ff", color: "#1f3aa3" }]}
+              qrToken={nextRsvp.qrToken}
             />
           ) : (
             <UpNextCard

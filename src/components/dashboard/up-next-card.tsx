@@ -1,7 +1,10 @@
+"use client";
+
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tag } from "@/components/ui/tag";
 import Link from "next/link";
+import QRCode from "react-qr-code";
 
 export type TagData = {
   label: string;
@@ -16,9 +19,10 @@ type UpNextProps = {
   dateLines: string[];
   tags?: TagData[];
   isEmpty?: boolean;
+  qrToken?: string;
 };
 
-export function UpNextCard({ eyebrow, title, dateLines, tags = [], isEmpty = false }: UpNextProps) {
+export function UpNextCard({ eyebrow, title, dateLines, tags = [], isEmpty = false, qrToken }: UpNextProps) {
   return (
     <Card className="flex flex-1 flex-col gap-[18px] self-stretch p-[29px]">
       <p className="font-[Inter] text-[12px] uppercase leading-[normal] tracking-[3px] text-ink-faint">
@@ -81,15 +85,15 @@ export function UpNextCard({ eyebrow, title, dateLines, tags = [], isEmpty = fal
             </div>
           </div>
 
-          {/* Decorative framed square (QR Code Placeholder) */}
-          <div
-            className="relative size-[130px] shrink-0 rounded-[10px] border border-ink"
-            style={{
-              backgroundImage:
-                "linear-gradient(0deg, rgb(58, 58, 64) 0%, rgb(58, 58, 64) 3.9063%, rgba(58, 58, 64, 0) 3.9063%, rgba(58, 58, 64, 0) 7.8125%), linear-gradient(90deg, rgb(58, 58, 64) 0%, rgb(58, 58, 64) 3.9063%, rgba(58, 58, 64, 0) 3.9063%, rgba(58, 58, 64, 0) 7.8125%), linear-gradient(90deg, rgb(255, 255, 255) 0%, rgb(255, 255, 255) 100%)",
-            }}
-          >
-            <div className="absolute inset-[calc(36.22%-0.28px)] border border-ink bg-white" />
+          {/* RSVP QR code */}
+          <div className="flex size-50 shrink-0 items-center justify-center rounded-[10px] border border-ink bg-white p-[8px]">
+            {qrToken ? (
+              <QRCode value={qrToken} size={200} level="H" />
+            ) : (
+              <span className="font-mono text-[11px] uppercase tracking-[1.5px] text-ink-faint">
+                QR
+              </span>
+            )}
           </div>
         </div>
       )}
