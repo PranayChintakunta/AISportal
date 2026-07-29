@@ -6,7 +6,7 @@ import { Tag } from "@/components/ui/tag";
 import type { TagData } from "@/components/dashboard/up-next-card";
 
 type EventFormProps = {
-  /** Selectable category tags (the colourful pills). */
+  /** Selectable category tags (the colorful pills). */
   tags: TagData[];
   defaultValues?: {
     title?: string;

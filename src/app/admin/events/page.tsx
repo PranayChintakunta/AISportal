@@ -52,6 +52,7 @@ async function getEventViewModel() {
     const status = toDisplayStatus(event.startTime, event.endTime);
 
     return {
+      id: event.id,
       title: event.title,
       status,
       meta: `${new Date(event.startTime).toLocaleString([], { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" })} · ${event.location}`,
@@ -60,8 +61,8 @@ async function getEventViewModel() {
       progress,
       progressFill: now > event.endTime ? "#8a8a93" : "#2f5fe8",
       actions: [
-        { label: "Edit", variant: "ghost" },
-        { label: "Scan", variant: "primary" },
+        { label: "Edit", variant: "ghost", href: `/admin/events/${event.id}/edit` }, 
+        { label: "Scan", variant: "primary", href: `/admin/events/${event.id}/scan` }, 
       ],
     };
   });
