@@ -33,7 +33,7 @@ export function OnboardingHero() {
       {/* CTA */}
       <div>
         <Button variant="accent" size="lg">
-          <Link href="https://discord.gg" target="_blank" rel="noopener noreferrer">
+          <Link href="https://discord.gg/JFEkPHjzEK" target="_blank" rel="noopener noreferrer">
             Join Discord ↗
           </Link>
         </Button>
