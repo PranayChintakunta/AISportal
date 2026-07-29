@@ -10,6 +10,7 @@ import {
   IBM_Plex_Mono,
   Poppins,
   Nunito_Sans,
+  Inter,
 } from "next/font/google";
 import "./globals.css";
 import { Analytics } from "@vercel/analytics/next";

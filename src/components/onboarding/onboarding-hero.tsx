@@ -1,4 +1,5 @@
 import { Button } from "@/components/ui/button";
+import Link from "next/link"
 
 /**
  * Left half of the ONBOARDING frame: brand badge, display heading,
@@ -32,7 +33,9 @@ export function OnboardingHero() {
       {/* CTA */}
       <div>
         <Button variant="accent" size="lg">
-          Join Discord ↗
+          <Link href="https://discord.gg/JFEkPHjzEK" target="_blank" rel="noopener noreferrer">
+            Join Discord ↗
+          </Link>
         </Button>
       </div>
     </div>

@@ -55,7 +55,7 @@ export default async function EventsBrowsePage() {
                     title={event.title}
                     meta={`${event.location} · ${new Date(event.startTime).toLocaleString()}`}
                     description={event.description}
-                    tags={[]}
+                    tags={event.tags}
                     eventId={event.id}
                   />
                 ))}
