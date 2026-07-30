@@ -1,7 +1,7 @@
 "use client";
 
 import { type ChangeEvent, useEffect, useRef, useState } from "react";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Navbar } from "@/components/navbar";
 import { FormStepper } from "@/components/apply/form-stepper";
 import { FormField, FormTextarea } from "@/components/ui/form-field";
@@ -45,6 +45,8 @@ type FieldErrors = Record<string, string>;
 
 const stepFieldGroups: string[][] = applicationFormStepFields;
 const allFieldLabels = stepFieldGroups.flat();
+const RESUME_ACCEPT =
+  ".doc,.docx,.pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/pdf";
 
 const DEFAULT_FIELD_VALUES: FieldValues = allFieldLabels.reduce(
   (acc, field) => {
@@ -114,6 +116,22 @@ function validateStep(values: FieldValues, fields: string[]) {
   return nextErrors;
 }
 
+function validateAllRequiredFields(values: FieldValues) {
+  const nextErrors: FieldErrors = {};
+
+  for (const fields of stepFieldGroups) {
+    for (const field of fields) {
+      if (!isRequiredField(field) || values[field]?.trim()) {
+        continue;
+      }
+
+      nextErrors[field] = "This field is required.";
+    }
+  }
+
+  return nextErrors;
+}
+
 function LoadingState() {
   return (
     <div className="flex flex-col gap-[24px]">
@@ -146,13 +164,17 @@ function NotFoundState({ message }: { message: string }) {
 
 export default function ApplyFormPage() {
   const searchParams = useSearchParams();
+  const router = useRouter();
   const applicationId = searchParams.get("id");
   const [fieldValues, setFieldValues] = useState<FieldValues>(DEFAULT_FIELD_VALUES);
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
   const [activeStep, setActiveStep] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [submitError, setSubmitError] = useState<string | null>(null);
+  const [submitting, setSubmitting] = useState(false);
   const saveTimerRef = useRef<number | null>(null);
+  const resumeInputRef = useRef<HTMLInputElement | null>(null);
   const fieldValuesRef = useRef<FieldValues>(DEFAULT_FIELD_VALUES);
 
   useEffect(() => {
@@ -230,6 +252,27 @@ export default function ApplyFormPage() {
     fieldValuesRef.current = fieldValues;
   }, [fieldValues]);
 
+  async function persistDraft(nextValues: FieldValues, nextStepIndex: number) {
+    if (!applicationId) {
+      return;
+    }
+
+    const response = await fetch(`/api/applications/${applicationId}/draft`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        formPayloadJson: nextValues,
+        stepIndex: nextStepIndex,
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to save draft: ${response.status}`);
+    }
+  }
+
   function scheduleDraftSave(nextValues: FieldValues, nextStepIndex: number) {
     if (!applicationId) {
       return;
@@ -240,15 +283,8 @@ export default function ApplyFormPage() {
     }
 
     saveTimerRef.current = window.setTimeout(() => {
-      void fetch(`/api/applications/${applicationId}/draft`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          formPayloadJson: nextValues,
-          stepIndex: nextStepIndex,
-        }),
+      void persistDraft(nextValues, nextStepIndex).catch(() => {
+        // Autosave failures are surfaced on submit; keep typing uninterrupted.
       });
     }, 500);
   }
@@ -262,6 +298,7 @@ export default function ApplyFormPage() {
       return;
     }
 
+    setSubmitError(null);
     const nextStepIndex = Math.min(activeStep + 1, applicationSteps.length - 1);
     setFieldErrors({});
 
@@ -274,6 +311,7 @@ export default function ApplyFormPage() {
   function handleBackStep() {
     const nextStepIndex = Math.max(activeStep - 1, 0);
     setFieldErrors({});
+    setSubmitError(null);
 
     if (nextStepIndex !== activeStep) {
       setActiveStep(nextStepIndex);
@@ -281,9 +319,140 @@ export default function ApplyFormPage() {
     }
   }
 
+  async function handleSubmitApplication() {
+    const nextErrors = validateAllRequiredFields(fieldValuesRef.current);
+
+    if (Object.keys(nextErrors).length > 0) {
+      setFieldErrors(nextErrors);
+      return;
+    }
+
+    if (!applicationId) {
+      setSubmitError("No application selected.");
+      return;
+    }
+
+    setSubmitting(true);
+    setSubmitError(null);
+
+    if (saveTimerRef.current !== null) {
+      window.clearTimeout(saveTimerRef.current);
+      saveTimerRef.current = null;
+    }
+
+    try {
+      await persistDraft(fieldValuesRef.current, activeStep);
+
+      const response = await fetch(`/api/applications/${applicationId}/submit`, {
+        method: "POST",
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to submit application: ${response.status}`);
+      }
+
+      const payload = (await response.json()) as {
+        submission: {
+          id: string;
+        };
+      };
+
+      router.push(`/applications/submitted?submissionId=${payload.submission.id}`);
+    } catch {
+      setSubmitError("Unable to submit your application right now.");
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
   function renderField(label: string) {
     const value = fieldValues[label] ?? "";
     const errorMessage = fieldErrors[label];
+    const inputId = `f-${label.toLowerCase().replace(/\s+/g, "-")}`;
+
+    if (label === "Resume *") {
+      return (
+        <div key={label} className="flex flex-col gap-[6px]">
+          <label
+            htmlFor={inputId}
+            className="font-body text-[14px] font-bold leading-[20.3px] text-ink-muted"
+          >
+            {label}
+          </label>
+          <input
+            ref={resumeInputRef}
+            id={inputId}
+            type="file"
+            accept={RESUME_ACCEPT}
+            className="sr-only"
+            onChange={(event) => {
+              const file = event.target.files?.[0];
+
+              if (!file) {
+                const nextValues = {
+                  ...fieldValuesRef.current,
+                  [label]: "",
+                };
+
+                fieldValuesRef.current = nextValues;
+                setFieldValues(nextValues);
+                scheduleDraftSave(nextValues, activeStep);
+                return;
+              }
+
+              const extension = file.name.split(".").pop()?.toLowerCase();
+              if (!extension || !["pdf", "doc", "docx"].includes(extension)) {
+                setFieldErrors((current) => ({
+                  ...current,
+                  [label]: "Please upload a .doc, .docx, or .pdf file.",
+                }));
+                event.currentTarget.value = "";
+                return;
+              }
+
+              const nextValues = {
+                ...fieldValuesRef.current,
+                [label]: file.name,
+              };
+              fieldValuesRef.current = nextValues;
+              setFieldValues(nextValues);
+              setSubmitError(null);
+
+              if (fieldErrors[label]) {
+                setFieldErrors((current) => {
+                  const nextErrors = { ...current };
+                  delete nextErrors[label];
+                  return nextErrors;
+                });
+              }
+
+              scheduleDraftSave(nextValues, activeStep);
+            }}
+          />
+          <div className="flex flex-col gap-[8px] sm:flex-row sm:items-center">
+            <button
+              type="button"
+              className="flex h-[42px] items-center justify-center rounded-[8px] border border-border-soft bg-white px-[14px] font-body text-[13px] font-semibold leading-none text-ink shadow-sm transition-colors hover:bg-[#fbfaf7]"
+              onClick={() => resumeInputRef.current?.click()}
+            >
+              Upload file
+            </button>
+            <span className="font-mono text-[12px] leading-[16.8px] tracking-[0.2px] text-ink-muted">
+              {value || "No file selected"}
+            </span>
+          </div>
+          <p className="font-body text-[12px] leading-[17px] text-ink-muted">
+            Accepted formats: .doc, .docx, .pdf
+          </p>
+          {errorMessage ? (
+            <p className="font-body text-[12px] leading-[17px] text-[#9a3b36]">
+              {errorMessage}
+            </p>
+          ) : null}
+        </div>
+      );
+    }
+
     const commonProps = {
       label,
       value,
@@ -326,8 +495,8 @@ export default function ApplyFormPage() {
     );
   }
 
-  return (
-    <div className="flex min-h-screen w-full flex-col bg-cream">
+    return (
+      <div className="flex min-h-screen w-full flex-col bg-cream">
       <Navbar active="Apply" />
 
       <div className="flex w-full flex-col items-center px-[47px] pt-[34px] pb-[120px]">
@@ -355,6 +524,12 @@ export default function ApplyFormPage() {
                   {(stepFieldGroups[activeStep] ?? []).map((label) => renderField(label))}
                 </div>
 
+                {submitError ? (
+                  <p className="font-body text-[13px] leading-[18px] text-[#9a3b36]">
+                    {submitError}
+                  </p>
+                ) : null}
+
                 {/* Navigation */}
                 <div className="flex w-full justify-between">
                   <button
@@ -367,15 +542,19 @@ export default function ApplyFormPage() {
                   </button>
                   <button
                     type="button"
-                    aria-label="Next step"
+                    aria-label={activeStep >= applicationSteps.length - 1 ? "Submit application" : "Next step"}
                     className="flex h-[44px] min-w-[96px] items-center justify-center rounded-[11px] bg-brand px-[18px] text-[14px] font-bold leading-none text-white disabled:cursor-not-allowed disabled:opacity-50"
-                    onClick={handleNextStep}
-                    disabled={activeStep >= applicationSteps.length - 1}
+                    onClick={activeStep >= applicationSteps.length - 1 ? handleSubmitApplication : handleNextStep}
+                    disabled={submitting}
                     onBlur={() => {
                       scheduleDraftSave(fieldValuesRef.current, activeStep);
                     }}
                   >
-                    {activeStep >= applicationSteps.length - 1 ? "Done" : "Next"}
+                    {submitting
+                      ? "Submitting..."
+                      : activeStep >= applicationSteps.length - 1
+                        ? "Done"
+                        : "Next"}
                   </button>
                 </div>
               </>

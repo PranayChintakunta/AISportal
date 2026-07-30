@@ -45,7 +45,6 @@ export async function GET(
   const application = await prisma.programApplication.findFirst({
     where: {
       id,
-      visibleToUsers: true,
     },
     select: {
       id: true,
@@ -88,7 +87,6 @@ export async function PUT(
   const application = await prisma.programApplication.findFirst({
     where: {
       id,
-      visibleToUsers: true,
     },
     select: {
       id: true,

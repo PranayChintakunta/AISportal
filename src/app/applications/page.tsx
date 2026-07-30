@@ -47,7 +47,7 @@ function formatDateTime(value: string) {
 
 function getStatusBadge(
   draft: ApplicationResponse["applications"][number]["draft"],
-  submissionStatus: string | null
+  submissionStatus: string | null,
 ) {
   if (submissionStatus) {
     const label = submissionStatus
@@ -84,13 +84,20 @@ function getStatusBadge(
   }
 
   if (draft) {
-    return <Badge label={draft.isSubmitted ? "Submitted" : "Draft"} variant="outline" />;
+    return (
+      <Badge
+        label={draft.isSubmitted ? "Submitted" : "Draft"}
+        variant="outline"
+      />
+    );
   }
 
   return null;
 }
 
-function buildRow(application: ApplicationResponse["applications"][number]): OpenApp {
+function buildRow(
+  application: ApplicationResponse["applications"][number],
+): OpenApp {
   const borderColor = application.phase === "open" ? "#2f5fe8" : "#e7e2d4";
   const meta =
     application.phase === "upcoming"
@@ -102,17 +109,32 @@ function buildRow(application: ApplicationResponse["applications"][number]): Ope
   const actions =
     application.phase === "open"
       ? [
-          { label: "Learn more", variant: "soft" as const },
-          { label: "Apply", variant: "primary" as const, href: "/applications/detail" },
+          {
+            label: "Learn more",
+            variant: "soft" as const,
+            href: `/applications/detail?id=${application.id}`,
+          },
+          {
+            label: "Apply",
+            variant: "primary" as const,
+            href: `/applications/form?id=${application.id}`,
+          },
         ]
       : application.phase === "upcoming"
         ? [
-            { label: "Learn more", variant: "ghost" as const },
+            {
+              label: "Learn more",
+              variant: "ghost" as const,
+              href: `/applications/detail?id=${application.id}`,
+            },
             { label: "Remind me", variant: "accent" as const, pill: false },
           ]
         : [
-            { label: "Learn more", variant: "ghost" as const },
-            { label: "View details", variant: "soft" as const, href: "/applications/detail" },
+            {
+              label: "Learn more",
+              variant: "ghost" as const,
+              href: `/applications/detail?id=${application.id}`,
+            },
           ];
 
   return {
@@ -122,7 +144,10 @@ function buildRow(application: ApplicationResponse["applications"][number]): Ope
     borderColor,
     metaMedium: application.phase !== "upcoming",
     dim: application.phase !== "open",
-    statusBadge: getStatusBadge(application.draft, application.submissionStatus),
+    statusBadge: getStatusBadge(
+      application.draft,
+      application.submissionStatus,
+    ),
     actions,
   };
 }
@@ -185,23 +210,29 @@ function ApplicationSection({
 
 function sortApplications(
   items: ApplicationResponse["applications"],
-  phase: "open" | "upcoming" | "closed"
+  phase: "open" | "upcoming" | "closed",
 ) {
   return items
     .filter((item) => item.phase === phase)
     .slice()
     .sort((left, right) => {
       const leftDate =
-        phase === "upcoming" ? new Date(left.openAt).getTime() : new Date(left.closeAt).getTime();
+        phase === "upcoming"
+          ? new Date(left.openAt).getTime()
+          : new Date(left.closeAt).getTime();
       const rightDate =
-        phase === "upcoming" ? new Date(right.openAt).getTime() : new Date(right.closeAt).getTime();
+        phase === "upcoming"
+          ? new Date(right.openAt).getTime()
+          : new Date(right.closeAt).getTime();
 
       return leftDate - rightDate;
     });
 }
 
 export default function ApplyPage() {
-  const [applications, setApplications] = useState<ApplicationResponse["applications"]>([]);
+  const [applications, setApplications] = useState<
+    ApplicationResponse["applications"]
+  >([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -220,7 +251,9 @@ export default function ApplyPage() {
         }
 
         const payload = (await response.json()) as ApplicationResponse;
-        setApplications(Array.isArray(payload.applications) ? payload.applications : []);
+        setApplications(
+          Array.isArray(payload.applications) ? payload.applications : [],
+        );
       } catch (error) {
         if ((error as Error).name !== "AbortError") {
           setApplications([]);

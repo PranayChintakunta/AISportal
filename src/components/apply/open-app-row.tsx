@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useAuth } from "@clerk/nextjs";
+import type { ReactNode } from "react";
 import { Button } from "@/components/ui/button";
 
 type RowAction = {
@@ -76,7 +77,8 @@ export function OpenAppRow({
             variant={action.variant}
             size="md"
             pill={action.pill}
-            type="button"
+            type={action.href ? undefined : "button"}
+            href={action.href}
             onClick={() => handleActionClick(action.label)}
           >
             {action.label}

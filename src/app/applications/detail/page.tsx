@@ -7,7 +7,6 @@ import { Navbar } from "@/components/navbar";
 import { RoleCard } from "@/components/apply/role-card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { applyDetailRoles } from "@/lib/data";
 
 type ApplicationDetailResponse = {
   application: {
@@ -16,6 +15,7 @@ type ApplicationDetailResponse = {
     description: string;
     decisionDate: string | null;
     phase: "open" | "upcoming" | "closed";
+    programType: string;
     eligibility: string[];
   };
   draft: {
@@ -83,6 +83,112 @@ function getStatusBadge(
   return null;
 }
 
+function getProgramRoles(programType: string) {
+  switch (programType) {
+    case "AI_ACADEMY":
+      return [
+        {
+          title: "Foundations Track",
+          description:
+            "Learn the core concepts that power AI and machine learning projects, with an emphasis on guided practice.",
+          tagRows: [
+            [
+              { label: "Beginner friendly", bg: "#e1e8ff", color: "#1f3aa3" },
+              { label: "10 weeks", bg: "#efece3", color: "#6a685f", border: "#e2ded2" },
+            ],
+          ],
+        },
+        {
+          title: "Project Track",
+          description:
+            "Apply what you learn in a hands-on project environment and build something you can show off.",
+          tagRows: [
+            [
+              { label: "Project based", bg: "#e9e5f6", color: "#4b4178" },
+              { label: "Team support", bg: "#d3eccf", color: "#356b2e" },
+            ],
+          ],
+        },
+      ];
+    case "AI_INNOVATION":
+      return [
+        {
+          title: "Build Track",
+          description:
+            "Work on practical AI ideas and ship useful products with a collaborative team.",
+          tagRows: [
+            [
+              { label: "Collaborative", bg: "#d6e2ff", color: "#284b9c" },
+              { label: "Hands on", bg: "#cde9e5", color: "#1d6a61" },
+            ],
+          ],
+        },
+        {
+          title: "Launch Track",
+          description:
+            "Focus on turning project ideas into polished demos, prototypes, and presentations.",
+          tagRows: [
+            [
+              { label: "Prototype", bg: "#fbe3cb", color: "#7a4416" },
+              { label: "Demo ready", bg: "#efece3", color: "#6a685f", border: "#e2ded2" },
+            ],
+          ],
+        },
+      ];
+    case "AI_MENTORSHIP_MENTOR":
+      return [
+        {
+          title: "Mentor Track",
+          description:
+            "Guide newer members, share your experience, and help projects move forward with confidence.",
+          tagRows: [
+            [
+              { label: "Leadership", bg: "#e1e8ff", color: "#1f3aa3" },
+              { label: "Community", bg: "#d3eccf", color: "#356b2e" },
+            ],
+          ],
+        },
+        {
+          title: "Support Track",
+          description:
+            "Focus on availability, communication, and consistent support throughout the program.",
+          tagRows: [
+            [
+              { label: "Mentoring", bg: "#e9e5f6", color: "#4b4178" },
+              { label: "Weekly check-ins", bg: "#efece3", color: "#6a685f", border: "#e2ded2" },
+            ],
+          ],
+        },
+      ];
+    case "AI_MENTORSHIP_MENTEE":
+    default:
+      return [
+        {
+          title: "Growth Track",
+          description:
+            "Receive guidance while building your skills, confidence, and project experience.",
+          tagRows: [
+            [
+              { label: "Guided", bg: "#d3eccf", color: "#356b2e" },
+              { label: "Skill building", bg: "#e1e8ff", color: "#1f3aa3" },
+            ],
+          ],
+        },
+        {
+          title: "Consistency Track",
+          description:
+            "Stay engaged with the program and make steady progress week by week.",
+          tagRows: [
+            [
+              { label: "Commitment", bg: "#fbe3cb", color: "#7a4416" },
+              { label: "Project based", bg: "#e9e5f6", color: "#4b4178" },
+            ],
+          ],
+        },
+      ];
+  }
+}
+
 function DetailSkeleton() {
   return (
     <div className="flex flex-col gap-[16px]">
@@ -111,6 +217,9 @@ export default function ApplyDetailPage() {
   const [application, setApplication] = useState<ApplicationDetailResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const programRoles = application
+    ? getProgramRoles(application.application.programType)
+    : [];
 
   useEffect(() => {
     const controller = new AbortController();
@@ -195,7 +304,7 @@ export default function ApplyDetailPage() {
               <div className="flex flex-col items-start gap-[10px] sm:items-end">
                 {getStatusBadge(application.draft, application.submissionStatus)}
                 <Button
-                  href="/applications/form"
+                  href={`/applications/form?id=${application.application.id}`}
                   size="lg"
                   className="shrink-0 self-start sm:self-auto"
                 >
@@ -235,7 +344,7 @@ export default function ApplyDetailPage() {
               <span className="h-[1.5px] min-w-px flex-1 bg-border-soft" />
             </div>
 
-            {applyDetailRoles.map((role) => (
+            {programRoles.map((role) => (
               <RoleCard key={role.title} {...role} />
             ))}
           </>
