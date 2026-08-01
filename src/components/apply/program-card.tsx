@@ -15,7 +15,7 @@ export type Program = {
   /** Optional pill shown top-right (e.g. "High demand"). */
   badge?: string;
   title: string;
-  description: string;
+  description?: string;
   tags: string[];
   /** CTA colour — orange for the featured program, blue otherwise. */
   cta: "primary" | "accent";
@@ -31,7 +31,6 @@ export function ProgramCard({
   borderColor,
   badge,
   title,
-  description,
   tags,
   cta,
 }: Program) {
@@ -56,7 +55,7 @@ export function ProgramCard({
 
   return (
     <div
-      className="flex flex-1 flex-col gap-[14px] self-stretch rounded-[18px] border bg-white p-[27px]"
+      className="flex flex-1 flex-col gap-[8px] self-stretch rounded-[18px] border bg-white px-[23px] pb-[25px] pt-[24px]"
       style={{ borderColor }}
     >
       {/* Icon (+ optional badge) */}
@@ -74,11 +73,8 @@ export function ProgramCard({
       <h3 className="font-display text-[22px] font-semibold leading-[25.96px] text-ink [font-variation-settings:'wdth'_100]">
         {title}
       </h3>
-      <p className="font-body text-[14px] font-normal leading-[20.3px] text-ink-muted">
-        {description}
-      </p>
 
-      <div className="flex gap-[6px]">
+      <div className="flex flex-wrap gap-[6px]">
         {tags.map((label) => (
           <Tag
             key={label}
@@ -90,7 +86,7 @@ export function ProgramCard({
         ))}
       </div>
 
-      <Button variant={cta} size="md" pill block onClick={handleApply} type="button">
+      <Button variant={cta} size="md" pill block onClick={handleApply} type="button" className="mt-[2px]">
         Apply Now →
       </Button>
     </div>
