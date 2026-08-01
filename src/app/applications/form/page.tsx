@@ -40,6 +40,13 @@ type DraftResponse = {
   } | null;
 };
 
+type ApplicationResponse = {
+  application: {
+    title: string;
+  };
+  submissionStatus: string | null;
+};
+
 type FieldValues = Record<string, string>;
 type FieldErrors = Record<string, string>;
 
@@ -172,6 +179,8 @@ export default function ApplyFormPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const [alreadySubmitted, setAlreadySubmitted] = useState(false);
+  const [applicationTitle, setApplicationTitle] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const saveTimerRef = useRef<number | null>(null);
   const resumeInputRef = useRef<HTMLInputElement | null>(null);
@@ -191,9 +200,12 @@ export default function ApplyFormPage() {
       setError(null);
 
       try {
-        const [profileResponse, draftResponse] = await Promise.all([
+        const [profileResponse, draftResponse, applicationResponse] = await Promise.all([
           fetch("/api/profile", { signal: controller.signal }),
           fetch(`/api/applications/${applicationId}/draft`, {
+            signal: controller.signal,
+          }),
+          fetch(`/api/applications/${applicationId}`, {
             signal: controller.signal,
           }),
         ]);
@@ -204,6 +216,9 @@ export default function ApplyFormPage() {
         const draftPayload = draftResponse.ok
           ? ((await draftResponse.json()) as DraftResponse)
           : { draft: null };
+        const applicationPayload = applicationResponse.ok
+          ? ((await applicationResponse.json()) as ApplicationResponse)
+          : null;
 
         const mergedValues = {
           ...profileToFieldValues(profilePayload.profile),
@@ -218,6 +233,12 @@ export default function ApplyFormPage() {
             ? Math.min(Math.max(draftPayload.draft.stepIndex, 0), applicationSteps.length - 1)
             : 0
         );
+        setAlreadySubmitted(Boolean(applicationPayload?.submissionStatus));
+        setApplicationTitle(applicationPayload?.application.title ?? null);
+
+        if (!applicationResponse.ok && applicationResponse.status === 404) {
+          setError("Application not found.");
+        }
 
         if (!draftResponse.ok && draftResponse.status === 404) {
           setError("Application draft not found.");
@@ -251,6 +272,37 @@ export default function ApplyFormPage() {
   useEffect(() => {
     fieldValuesRef.current = fieldValues;
   }, [fieldValues]);
+
+  if (!loading && !error && alreadySubmitted) {
+    return (
+      <div className="flex min-h-screen w-full flex-col bg-cream">
+        <Navbar active="Apply" />
+
+        <div className="flex w-full flex-1 items-center justify-center px-[24px] py-[40px]">
+          <div className="w-full max-w-[720px] rounded-[18px] border border-border-soft bg-white p-[32px] shadow-sm">
+            <div className="flex flex-col gap-[14px]">
+              <div className="inline-flex w-fit rounded-full bg-[#efece3] px-[14px] py-[6px] text-[12px] font-semibold leading-none text-ink-muted">
+                Already submitted
+              </div>
+              <h1 className="font-display text-[32px] font-bold leading-[34.56px] tracking-[-0.4px] text-ink [font-variation-settings:'wdth'_100]">
+                {applicationTitle ?? "Application"}
+              </h1>
+              <p className="max-w-[560px] font-body text-[15px] leading-[21.75px] text-ink-muted">
+                You have already submitted an application for this program.
+              </p>
+              <button
+                type="button"
+                className="inline-flex h-[44px] w-fit items-center justify-center rounded-[11px] bg-brand px-[18px] text-[14px] font-bold leading-none text-white"
+                onClick={() => router.push("/applications")}
+              >
+                Back to applications
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   async function persistDraft(nextValues: FieldValues, nextStepIndex: number) {
     if (!applicationId) {
@@ -348,6 +400,11 @@ export default function ApplyFormPage() {
       });
 
       if (!response.ok) {
+        if (response.status === 409) {
+          setSubmitError("You have already submitted an application for this program.");
+          return;
+        }
+
         throw new Error(`Failed to submit application: ${response.status}`);
       }
 

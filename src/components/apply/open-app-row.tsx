@@ -10,6 +10,7 @@ type RowAction = {
   variant: "primary" | "accent" | "soft" | "ghost";
   pill?: boolean;
   href?: string;
+  disabled?: boolean;
 };
 
 export type OpenApp = {
@@ -78,6 +79,7 @@ export function OpenAppRow({
             size="md"
             pill={action.pill}
             type={action.href ? undefined : "button"}
+            disabled={action.disabled}
             href={action.href}
             onClick={() => handleActionClick(action.label)}
           >
