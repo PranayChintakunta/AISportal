@@ -103,12 +103,21 @@ function buildRow(
     application.phase === "upcoming"
       ? `opens ${formatDateTime(application.openAt)}`
       : application.phase === "closed"
-        ? `closed ${formatDateTime(application.closeAt)}`
+      ? `closed ${formatDateTime(application.closeAt)}`
         : `closes ${formatDateTime(application.closeAt)}`;
+  const alreadySubmitted = Boolean(application.submissionStatus);
 
   const actions =
     application.phase === "open"
-      ? [
+      ? alreadySubmitted
+        ? [
+            {
+              label: "Already submitted",
+              variant: "ghost" as const,
+              disabled: true,
+            },
+          ]
+        : [
           {
             label: "Learn more",
             variant: "soft" as const,

@@ -220,6 +220,7 @@ export default function ApplyDetailPage() {
   const programRoles = application
     ? getProgramRoles(application.application.programType)
     : [];
+  const alreadySubmitted = Boolean(application?.submissionStatus);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -303,15 +304,27 @@ export default function ApplyDetailPage() {
               </div>
               <div className="flex flex-col items-start gap-[10px] sm:items-end">
                 {getStatusBadge(application.draft, application.submissionStatus)}
-                <Button
-                  href={`/applications/form?id=${application.application.id}`}
-                  size="lg"
-                  className="shrink-0 self-start sm:self-auto"
-                >
-                  Apply
-                </Button>
+                {alreadySubmitted ? (
+                  <div className="rounded-full border border-border-soft bg-[#efece3] px-[18px] py-[11px] text-[14px] font-semibold leading-none text-ink-muted">
+                    Already submitted
+                  </div>
+                ) : (
+                  <Button
+                    href={`/applications/form?id=${application.application.id}`}
+                    size="lg"
+                    className="shrink-0 self-start sm:self-auto"
+                  >
+                    Apply
+                  </Button>
+                )}
               </div>
             </div>
+
+            {alreadySubmitted ? (
+              <div className="rounded-[16px] border border-border-soft bg-[#fbfaf7] px-[20px] py-[16px] font-body text-[14px] leading-[20.3px] text-ink-muted">
+                You have already submitted an application for this program.
+              </div>
+            ) : null}
 
             <div className="rounded-[16px] border border-border-soft bg-white p-[29px]">
               <div className="flex flex-col gap-[20px]">
