@@ -6,6 +6,7 @@ import { EventGridCard } from "@/components/events/event-grid-card";
 import { MobileScreen } from "@/components/mobile/ui/MobileScreen";
 import { BottomNav } from "@/components/mobile/ui/BottomNav";
 import { eventFilterTags } from "@/lib/data";
+import { normalizeEventTags } from "@/lib/event-tags";
 
 type EventRecord = {
   id: string;
@@ -13,6 +14,7 @@ type EventRecord = {
   description: string;
   location: string;
   startTime: string;
+  tags: string[];
 };
 
 function EventCardSkeleton() {
@@ -28,6 +30,7 @@ function EventCardSkeleton() {
 export function MobileEventsBrowse() {
   const [events, setEvents] = useState<EventRecord[]>([]);
   const [loading, setLoading] = useState(true);
+  const [activeFilter, setActiveFilter] = useState<string | null>(null);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -56,6 +59,12 @@ export function MobileEventsBrowse() {
     return () => controller.abort();
   }, []);
 
+  const filteredEvents = activeFilter
+    ? events.filter((event) =>
+        event.tags.some((tag) => tag.toLowerCase() === activeFilter)
+      )
+    : events;
+
   return (
     <MobileScreen>
       <div className="flex flex-col gap-[8px]">
@@ -69,13 +78,30 @@ export function MobileEventsBrowse() {
 
       {/* Filter pills */}
       <div className="-mx-[20px] flex gap-[8px] overflow-x-auto px-[20px] pb-[2px]">
-        <span className="shrink-0 rounded-full bg-brand px-[14px] py-[6px] font-mobile-body text-[12px] font-bold text-white">
+        <button
+          type="button"
+          onClick={() => setActiveFilter(null)}
+          className={
+            activeFilter === null
+              ? "shrink-0 rounded-full bg-brand px-[14px] py-[6px] font-mobile-body text-[12px] font-bold text-white"
+              : "shrink-0 rounded-full border border-border-soft bg-white px-[14px] py-[6px] font-mobile-body text-[12px] font-bold text-ink-muted"
+          }
+        >
           All Events
-        </span>
+        </button>
         {eventFilterTags.map((t) => (
-          <span key={t.label} className="shrink-0">
-            <Tag label={t.label} bg={t.bg} color={t.color} />
-          </span>
+          <button
+            key={t.label}
+            type="button"
+            onClick={() => setActiveFilter(t.label)}
+            className="shrink-0"
+          >
+            {activeFilter === t.label ? (
+              <Tag label={t.label} bg={t.bg} color={t.color} className="ring-2 ring-offset-1" />
+            ) : (
+              <Tag label={t.label} bg={t.bg} color={t.color} />
+            )}
+          </button>
         ))}
       </div>
 
@@ -86,20 +112,22 @@ export function MobileEventsBrowse() {
             <EventCardSkeleton />
             <EventCardSkeleton />
           </>
-        ) : events.length > 0 ? (
-          events.map((event) => (
+        ) : filteredEvents.length > 0 ? (
+          filteredEvents.map((event) => (
             <EventGridCard
               key={event.id}
               title={event.title}
               meta={`${event.location} · ${new Date(event.startTime).toLocaleString()}`}
               description={event.description}
-              tags={[]}
+              tags={normalizeEventTags(event.tags)}
               eventId={event.id}
             />
           ))
         ) : (
           <div className="rounded-[14px] border border-border-soft bg-white p-[16px] font-mobile-body text-[13px] text-ink-muted">
-            No upcoming events right now.
+            {activeFilter
+              ? `No events tagged "${activeFilter}" right now.`
+              : "No upcoming events right now."}
           </div>
         )}
       </div>

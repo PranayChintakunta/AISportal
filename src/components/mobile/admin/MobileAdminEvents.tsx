@@ -3,9 +3,15 @@ import { Button } from "@/components/ui/button";
 import { ProgressBar } from "@/components/ui/progress-bar";
 import { MobileScreen } from "@/components/mobile/ui/MobileScreen";
 import { MobileAdminNav } from "@/components/mobile/admin/MobileAdminNav";
-import { eventStats, adminEvents } from "@/lib/data";
+import type { StatCardData } from "@/components/admin/stat-card";
+import type { EventRowData } from "@/components/admin/event-row";
 
-export function MobileAdminEvents() {
+type MobileAdminEventsProps = {
+  stats: StatCardData[];
+  rows: EventRowData[];
+};
+
+export function MobileAdminEvents({ stats, rows }: MobileAdminEventsProps) {
   return (
     <MobileScreen withBottomNavPadding={false}>
       <MobileAdminNav active="Events" />
@@ -18,7 +24,7 @@ export function MobileAdminEvents() {
       </div>
 
       <div className="grid grid-cols-2 gap-[12px]">
-        {eventStats.map((s) => (
+        {stats.map((s) => (
           <div
             key={s.label}
             className={`flex flex-col gap-[4px] rounded-[14px] border bg-white px-[16px] py-[14px] ${
@@ -38,48 +44,65 @@ export function MobileAdminEvents() {
       </div>
 
       <div className="flex flex-col gap-[12px]">
-        {adminEvents.map((e) => (
-          <div
-            key={e.title}
-            className={`flex flex-col gap-[10px] rounded-[16px] border border-border-soft bg-white p-[16px] ${
-              e.dim ? "opacity-[0.72]" : ""
-            }`}
-          >
-            <div className="flex items-center gap-[12px]">
-              <span className="h-[44px] w-[56px] shrink-0 rounded-[10px] bg-photo" />
-              <div className="min-w-0 flex-1">
-                <div className="flex flex-wrap items-center gap-[8px]">
-                  <span className="font-mobile-body text-[13px] font-bold text-ink">
-                    {e.title}
-                  </span>
-                  <span
-                    className="rounded-[6px] px-[7px] py-[2px] font-mono text-[9.5px] font-medium uppercase tracking-[0.5px]"
-                    style={{ backgroundColor: e.status.bg, color: e.status.color }}
-                  >
-                    {e.status.label}
-                  </span>
+        {rows.length > 0 ? (
+          rows.map((e) => (
+            <div
+              key={e.id}
+              className={`flex flex-col gap-[10px] rounded-[16px] border border-border-soft bg-white p-[16px] ${
+                e.dim ? "opacity-[0.72]" : ""
+              }`}
+            >
+              <div className="flex items-center gap-[12px]">
+                <span className="h-[44px] w-[56px] shrink-0 rounded-[10px] bg-photo" />
+                <div className="min-w-0 flex-1">
+                  <div className="flex flex-wrap items-center gap-[8px]">
+                    <span className="font-mobile-body text-[13px] font-bold text-ink">
+                      {e.title}
+                    </span>
+                    <span
+                      className="rounded-[6px] px-[7px] py-[2px] font-mono text-[9.5px] font-medium uppercase tracking-[0.5px]"
+                      style={{ backgroundColor: e.status.bg, color: e.status.color }}
+                    >
+                      {e.status.label}
+                    </span>
+                  </div>
+                  <span className="font-mono text-[10.5px] text-ink-faint">{e.meta}</span>
                 </div>
-                <span className="font-mono text-[10.5px] text-ink-faint">{e.meta}</span>
+              </div>
+
+              <div className="flex flex-col gap-[6px]">
+                <div className="flex items-center justify-between">
+                  <span className="font-mono text-[10.5px] text-ink-faint">{e.leftInfo}</span>
+                  <span className="font-mono text-[10.5px] text-ink-faint">{e.rightInfo}</span>
+                </div>
+                <ProgressBar value={e.progress} trackColor="#eceae2" fillColor={e.progressFill} height={8} />
+              </div>
+
+              <div className="flex gap-[8px]">
+                {e.actions.map((a) => {
+                  const button = (
+                    <Button variant={a.variant} size="sm" pill={a.pill} className="flex-1 rounded-[8px]">
+                      {a.label}
+                    </Button>
+                  );
+                  return a.href ? (
+                    <Link key={a.label} href={a.href} className="flex-1">
+                      {button}
+                    </Link>
+                  ) : (
+                    <div key={a.label} className="flex-1">
+                      {button}
+                    </div>
+                  );
+                })}
               </div>
             </div>
-
-            <div className="flex flex-col gap-[6px]">
-              <div className="flex items-center justify-between">
-                <span className="font-mono text-[10.5px] text-ink-faint">{e.leftInfo}</span>
-                <span className="font-mono text-[10.5px] text-ink-faint">{e.rightInfo}</span>
-              </div>
-              <ProgressBar value={e.progress} trackColor="#eceae2" fillColor={e.progressFill} height={8} />
-            </div>
-
-            <div className="flex gap-[8px]">
-              {e.actions.map((a) => (
-                <Button key={a.label} variant={a.variant} size="sm" pill={a.pill} className="flex-1 rounded-[8px]">
-                  {a.label}
-                </Button>
-              ))}
-            </div>
+          ))
+        ) : (
+          <div className="rounded-[16px] border border-border-soft bg-white p-[16px] font-mobile-body text-[13px] text-ink-muted">
+            No events yet.
           </div>
-        ))}
+        )}
       </div>
 
       <Link
