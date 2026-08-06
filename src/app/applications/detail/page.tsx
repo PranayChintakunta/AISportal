@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Navbar } from "@/components/navbar";
@@ -40,7 +40,7 @@ function formatDecisionDate(value: string | null) {
 
 function getStatusBadge(
   draft: ApplicationDetailResponse["draft"],
-  submissionStatus: string | null
+  submissionStatus: string | null,
 ) {
   if (submissionStatus) {
     const label = submissionStatus
@@ -77,7 +77,12 @@ function getStatusBadge(
   }
 
   if (draft) {
-    return <Badge label={draft.isSubmitted ? "Submitted" : "Draft"} variant="outline" />;
+    return (
+      <Badge
+        label={draft.isSubmitted ? "Submitted" : "Draft"}
+        variant="outline"
+      />
+    );
   }
 
   return null;
@@ -94,7 +99,12 @@ function getProgramRoles(programType: string) {
           tagRows: [
             [
               { label: "Beginner friendly", bg: "#e1e8ff", color: "#1f3aa3" },
-              { label: "10 weeks", bg: "#efece3", color: "#6a685f", border: "#e2ded2" },
+              {
+                label: "10 weeks",
+                bg: "#efece3",
+                color: "#6a685f",
+                border: "#e2ded2",
+              },
             ],
           ],
         },
@@ -130,7 +140,12 @@ function getProgramRoles(programType: string) {
           tagRows: [
             [
               { label: "Prototype", bg: "#fbe3cb", color: "#7a4416" },
-              { label: "Demo ready", bg: "#efece3", color: "#6a685f", border: "#e2ded2" },
+              {
+                label: "Demo ready",
+                bg: "#efece3",
+                color: "#6a685f",
+                border: "#e2ded2",
+              },
             ],
           ],
         },
@@ -155,7 +170,12 @@ function getProgramRoles(programType: string) {
           tagRows: [
             [
               { label: "Mentoring", bg: "#e9e5f6", color: "#4b4178" },
-              { label: "Weekly check-ins", bg: "#efece3", color: "#6a685f", border: "#e2ded2" },
+              {
+                label: "Weekly check-ins",
+                bg: "#efece3",
+                color: "#6a685f",
+                border: "#e2ded2",
+              },
             ],
           ],
         },
@@ -211,10 +231,11 @@ function DetailSkeleton() {
   );
 }
 
-export default function ApplyDetailPage() {
+function ApplyDetailContent() {
   const searchParams = useSearchParams();
   const applicationId = searchParams.get("id");
-  const [application, setApplication] = useState<ApplicationDetailResponse | null>(null);
+  const [application, setApplication] =
+    useState<ApplicationDetailResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const programRoles = application
@@ -303,7 +324,10 @@ export default function ApplyDetailPage() {
                 </p>
               </div>
               <div className="flex flex-col items-start gap-[10px] sm:items-end">
-                {getStatusBadge(application.draft, application.submissionStatus)}
+                {getStatusBadge(
+                  application.draft,
+                  application.submissionStatus,
+                )}
                 {alreadySubmitted ? (
                   <div className="rounded-full border border-border-soft bg-[#efece3] px-[18px] py-[11px] text-[14px] font-semibold leading-none text-ink-muted">
                     Already submitted
@@ -364,5 +388,24 @@ export default function ApplyDetailPage() {
         ) : null}
       </div>
     </div>
+  );
+}
+
+function DetailPageFallback() {
+  return (
+    <div className="flex min-h-screen w-full flex-col bg-cream">
+      <Navbar active="Apply" />
+      <div className="mx-auto flex w-full max-w-[1440px] flex-col gap-[20px] px-[46px] pb-[46px] pt-[45px]">
+        <DetailSkeleton />
+      </div>
+    </div>
+  );
+}
+
+export default function ApplyDetailPage() {
+  return (
+    <Suspense fallback={<DetailPageFallback />}>
+      <ApplyDetailContent />
+    </Suspense>
   );
 }
