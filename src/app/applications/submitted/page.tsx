@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { Navbar } from "@/components/navbar";
 import { Badge } from "@/components/ui/badge";
@@ -95,11 +95,14 @@ function toFieldValues(payload: unknown) {
 
   const record = payload as Record<string, unknown>;
 
-  return allFieldLabels.reduce((acc, field) => {
-    const value = record[field];
-    acc[field] = typeof value === "string" ? value : "";
-    return acc;
-  }, { ...DEFAULT_FIELD_VALUES });
+  return allFieldLabels.reduce(
+    (acc, field) => {
+      const value = record[field];
+      acc[field] = typeof value === "string" ? value : "";
+      return acc;
+    },
+    { ...DEFAULT_FIELD_VALUES },
+  );
 }
 
 function LoadingState() {
@@ -141,18 +144,31 @@ function renderReadOnlyField(label: string, value: string) {
     className: "cursor-default",
   };
 
-  if (label === "Why do you want to join AIS? *" || label === "What skills or experience do you bring? *" || label === "Anything else you'd like the reviewers to know?") {
-    return <FormTextarea key={label} {...commonProps} className="cursor-default h-[140px]" />;
+  if (
+    label === "Why do you want to join AIS? *" ||
+    label === "What skills or experience do you bring? *" ||
+    label === "Anything else you'd like the reviewers to know?"
+  ) {
+    return (
+      <FormTextarea
+        key={label}
+        {...commonProps}
+        className="cursor-default h-[140px]"
+      />
+    );
   }
 
   return <FormField key={label} {...commonProps} />;
 }
 
-export default function SubmittedPage() {
+function SubmittedContent() {
   const searchParams = useSearchParams();
   const submissionId = searchParams.get("submissionId");
-  const [submission, setSubmission] = useState<SubmissionResponse["submission"] | null>(null);
-  const [fieldValues, setFieldValues] = useState<FieldValues>(DEFAULT_FIELD_VALUES);
+  const [submission, setSubmission] = useState<
+    SubmissionResponse["submission"] | null
+  >(null);
+  const [fieldValues, setFieldValues] =
+    useState<FieldValues>(DEFAULT_FIELD_VALUES);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -171,9 +187,12 @@ export default function SubmittedPage() {
       setError(null);
 
       try {
-        const response = await fetch(`/api/applications/submissions/${submissionId}`, {
-          signal: controller.signal,
-        });
+        const response = await fetch(
+          `/api/applications/submissions/${submissionId}`,
+          {
+            signal: controller.signal,
+          },
+        );
 
         if (response.status === 404) {
           setSubmission(null);
@@ -246,13 +265,17 @@ export default function SubmittedPage() {
                   Submitted {formatDateTime(submission.submittedAt)}
                 </p>
               </div>
-              <div className="shrink-0">{getStatusBadge(submission.status)}</div>
+              <div className="shrink-0">
+                {getStatusBadge(submission.status)}
+              </div>
             </div>
 
             {submission.application.retentionUntil ? (
               <p className="font-body text-[14px] leading-[20.3px] text-ink-muted">
                 Retention until{" "}
-                {dateFormatter.format(new Date(submission.application.retentionUntil))}
+                {dateFormatter.format(
+                  new Date(submission.application.retentionUntil),
+                )}
               </p>
             ) : null}
 
@@ -263,7 +286,9 @@ export default function SubmittedPage() {
                 <div key={step} className="flex flex-col gap-[14px]">
                   <SectionHeader title={step} />
                   <div className="grid grid-cols-1 gap-x-[28px] gap-y-[20px] sm:grid-cols-2">
-                    {fields.map((label) => renderReadOnlyField(label, fieldValues[label] ?? ""))}
+                    {fields.map((label) =>
+                      renderReadOnlyField(label, fieldValues[label] ?? ""),
+                    )}
                   </div>
                 </div>
               );
@@ -272,5 +297,24 @@ export default function SubmittedPage() {
         ) : null}
       </div>
     </div>
+  );
+}
+
+function SubmittedFallback() {
+  return (
+    <div className="flex min-h-screen w-full flex-col bg-cream">
+      <Navbar active="Apply" />
+      <div className="mx-auto flex w-full max-w-[1440px] flex-col gap-[24px] px-[46px] pb-[46px] pt-[45px]">
+        <LoadingState />
+      </div>
+    </div>
+  );
+}
+
+export default function SubmittedPage() {
+  return (
+    <Suspense fallback={<SubmittedFallback />}>
+      <SubmittedContent />
+    </Suspense>
   );
 }

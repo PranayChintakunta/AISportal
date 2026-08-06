@@ -1,6 +1,6 @@
 "use client";
 
-import { type ChangeEvent, useEffect, useRef, useState } from "react";
+import { type ChangeEvent, useEffect, useRef, useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Navbar } from "@/components/navbar";
 import { FormStepper } from "@/components/apply/form-stepper";
@@ -60,14 +60,17 @@ const DEFAULT_FIELD_VALUES: FieldValues = allFieldLabels.reduce(
     acc[field] = "";
     return acc;
   },
-  {} as FieldValues
+  {} as FieldValues,
 );
 
 function toFieldValues(values: Partial<FieldValues>) {
-  return allFieldLabels.reduce((acc, field) => {
-    acc[field] = values[field] ?? "";
-    return acc;
-  }, { ...DEFAULT_FIELD_VALUES });
+  return allFieldLabels.reduce(
+    (acc, field) => {
+      acc[field] = values[field] ?? "";
+      return acc;
+    },
+    { ...DEFAULT_FIELD_VALUES },
+  );
 }
 
 function extractStringValues(payload: unknown): Partial<FieldValues> {
@@ -88,7 +91,9 @@ function extractStringValues(payload: unknown): Partial<FieldValues> {
   return values;
 }
 
-function profileToFieldValues(profile: ProfileResponse["profile"]): Partial<FieldValues> {
+function profileToFieldValues(
+  profile: ProfileResponse["profile"],
+): Partial<FieldValues> {
   if (!profile) {
     return {};
   }
@@ -96,7 +101,7 @@ function profileToFieldValues(profile: ProfileResponse["profile"]): Partial<Fiel
   return {
     "First Name": profile.firstName || "",
     "Last Name": profile.lastName || "",
-    "NetID": profile.utdNetId ?? "",
+    NetID: profile.utdNetId ?? "",
     "UTD Email *": profile.utdEmail ?? "",
     "LinkedIn *": profile.linkedinUrl ?? "",
     "Resume *": profile.resumeFile?.fileName ?? "",
@@ -169,11 +174,12 @@ function NotFoundState({ message }: { message: string }) {
   );
 }
 
-export default function ApplyFormPage() {
+function ApplyFormContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const applicationId = searchParams.get("id");
-  const [fieldValues, setFieldValues] = useState<FieldValues>(DEFAULT_FIELD_VALUES);
+  const [fieldValues, setFieldValues] =
+    useState<FieldValues>(DEFAULT_FIELD_VALUES);
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
   const [activeStep, setActiveStep] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -200,15 +206,16 @@ export default function ApplyFormPage() {
       setError(null);
 
       try {
-        const [profileResponse, draftResponse, applicationResponse] = await Promise.all([
-          fetch("/api/profile", { signal: controller.signal }),
-          fetch(`/api/applications/${applicationId}/draft`, {
-            signal: controller.signal,
-          }),
-          fetch(`/api/applications/${applicationId}`, {
-            signal: controller.signal,
-          }),
-        ]);
+        const [profileResponse, draftResponse, applicationResponse] =
+          await Promise.all([
+            fetch("/api/profile", { signal: controller.signal }),
+            fetch(`/api/applications/${applicationId}/draft`, {
+              signal: controller.signal,
+            }),
+            fetch(`/api/applications/${applicationId}`, {
+              signal: controller.signal,
+            }),
+          ]);
 
         const profilePayload = profileResponse.ok
           ? ((await profileResponse.json()) as ProfileResponse)
@@ -230,8 +237,11 @@ export default function ApplyFormPage() {
         fieldValuesRef.current = nextValues;
         setActiveStep(
           draftPayload.draft
-            ? Math.min(Math.max(draftPayload.draft.stepIndex, 0), applicationSteps.length - 1)
-            : 0
+            ? Math.min(
+                Math.max(draftPayload.draft.stepIndex, 0),
+                applicationSteps.length - 1,
+              )
+            : 0,
         );
         setAlreadySubmitted(Boolean(applicationPayload?.submissionStatus));
         setApplicationTitle(applicationPayload?.application.title ?? null);
@@ -395,13 +405,18 @@ export default function ApplyFormPage() {
     try {
       await persistDraft(fieldValuesRef.current, activeStep);
 
-      const response = await fetch(`/api/applications/${applicationId}/submit`, {
-        method: "POST",
-      });
+      const response = await fetch(
+        `/api/applications/${applicationId}/submit`,
+        {
+          method: "POST",
+        },
+      );
 
       if (!response.ok) {
         if (response.status === 409) {
-          setSubmitError("You have already submitted an application for this program.");
+          setSubmitError(
+            "You have already submitted an application for this program.",
+          );
           return;
         }
 
@@ -414,7 +429,9 @@ export default function ApplyFormPage() {
         };
       };
 
-      router.push(`/applications/submitted?submissionId=${payload.submission.id}`);
+      router.push(
+        `/applications/submitted?submissionId=${payload.submission.id}`,
+      );
     } catch {
       setSubmitError("Unable to submit your application right now.");
     } finally {
@@ -515,7 +532,9 @@ export default function ApplyFormPage() {
       value,
       "aria-invalid": Boolean(errorMessage),
       className: errorMessage ? "ring-1 ring-[#9a3b36]/35" : undefined,
-      onChange: (event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+      onChange: (
+        event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
+      ) => {
         const nextValues = {
           ...fieldValuesRef.current,
           [label]: event.target.value,
@@ -552,8 +571,8 @@ export default function ApplyFormPage() {
     );
   }
 
-    return (
-      <div className="flex min-h-screen w-full flex-col bg-cream">
+  return (
+    <div className="flex min-h-screen w-full flex-col bg-cream">
       <Navbar active="Apply" />
 
       <div className="flex w-full flex-col items-center px-[47px] pt-[34px] pb-[120px]">
@@ -578,7 +597,9 @@ export default function ApplyFormPage() {
               <>
                 {/* Field grid */}
                 <div className="grid grid-cols-1 gap-x-[28px] gap-y-[20px] sm:grid-cols-2">
-                  {(stepFieldGroups[activeStep] ?? []).map((label) => renderField(label))}
+                  {(stepFieldGroups[activeStep] ?? []).map((label) =>
+                    renderField(label),
+                  )}
                 </div>
 
                 {submitError ? (
@@ -599,9 +620,17 @@ export default function ApplyFormPage() {
                   </button>
                   <button
                     type="button"
-                    aria-label={activeStep >= applicationSteps.length - 1 ? "Submit application" : "Next step"}
+                    aria-label={
+                      activeStep >= applicationSteps.length - 1
+                        ? "Submit application"
+                        : "Next step"
+                    }
                     className="flex h-[44px] min-w-[96px] items-center justify-center rounded-[11px] bg-brand px-[18px] text-[14px] font-bold leading-none text-white disabled:cursor-not-allowed disabled:opacity-50"
-                    onClick={activeStep >= applicationSteps.length - 1 ? handleSubmitApplication : handleNextStep}
+                    onClick={
+                      activeStep >= applicationSteps.length - 1
+                        ? handleSubmitApplication
+                        : handleNextStep
+                    }
                     disabled={submitting}
                     onBlur={() => {
                       scheduleDraftSave(fieldValuesRef.current, activeStep);
@@ -620,5 +649,26 @@ export default function ApplyFormPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+function ApplyFormFallback() {
+  return (
+    <div className="flex min-h-screen w-full flex-col bg-cream">
+      <Navbar active="Apply" />
+      <div className="flex w-full flex-col items-center px-[47px] pt-[34px] pb-[120px]">
+        <div className="w-full max-w-[1346px] rounded-[18px] border border-border-soft bg-white p-[35px] [filter:drop-shadow(0px_8px_11px_rgba(0,0,0,0.04))]">
+          <LoadingState />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default function ApplyFormPage() {
+  return (
+    <Suspense fallback={<ApplyFormFallback />}>
+      <ApplyFormContent />
+    </Suspense>
   );
 }
