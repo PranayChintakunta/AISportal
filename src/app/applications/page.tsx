@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Fragment, useEffect, useState, type ReactNode } from "react";
 import { Navbar } from "@/components/navbar";
 import { SectionHeader } from "@/components/ui/section-header";
 import { StepCard } from "@/components/apply/step-card";
@@ -8,6 +8,7 @@ import { ProgramCard } from "@/components/apply/program-card";
 import { Marquee } from "@/components/apply/marquee";
 import { OpenAppRow, type OpenApp } from "@/components/apply/open-app-row";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { applySteps, programs } from "@/lib/data";
 
 type ApplicationResponse = {
@@ -23,6 +24,8 @@ type ApplicationResponse = {
       isSubmitted: boolean;
     } | null;
     submissionStatus: string | null;
+    submissionId: string | null;
+    submittedAt: string | null;
   }>;
 };
 
@@ -95,7 +98,7 @@ function getStatusBadge(
   return null;
 }
 
-function buildRow(
+function buildOpenRow(
   application: ApplicationResponse["applications"][number],
 ): OpenApp {
   const borderColor = application.phase === "open" ? "#2f5fe8" : "#e7e2d4";
@@ -103,21 +106,12 @@ function buildRow(
     application.phase === "upcoming"
       ? `opens ${formatDateTime(application.openAt)}`
       : application.phase === "closed"
-      ? `closed ${formatDateTime(application.closeAt)}`
+        ? `closed ${formatDateTime(application.closeAt)}`
         : `closes ${formatDateTime(application.closeAt)}`;
-  const alreadySubmitted = Boolean(application.submissionStatus);
 
   const actions =
     application.phase === "open"
-      ? alreadySubmitted
-        ? [
-            {
-              label: "Already submitted",
-              variant: "ghost" as const,
-              disabled: true,
-            },
-          ]
-        : [
+      ? [
           {
             label: "Learn more",
             variant: "soft" as const,
@@ -153,11 +147,37 @@ function buildRow(
     borderColor,
     metaMedium: application.phase !== "upcoming",
     dim: application.phase !== "open",
-    statusBadge: getStatusBadge(
-      application.draft,
-      application.submissionStatus,
-    ),
+    statusBadge: getStatusBadge(application.draft, application.submissionStatus),
     actions,
+  };
+}
+
+function buildSubmittedRow(
+  application: ApplicationResponse["applications"][number],
+): OpenApp {
+  return {
+    title: application.title,
+    description: application.description,
+    meta: application.submittedAt
+      ? `submitted ${formatDateTime(application.submittedAt)}`
+      : "submitted",
+    borderColor: "#d9d3c7",
+    metaMedium: true,
+    statusBadge: <Badge label="Submitted" variant="outline" />,
+    actions: [
+      {
+        label: "Submitted",
+        variant: "outline" as const,
+        disabled: true,
+      },
+      {
+        label: "View application",
+        variant: "primary" as const,
+        href: application.submissionId
+          ? `/applications/submitted?submissionId=${application.submissionId}`
+          : "/applications/history",
+      },
+    ],
   };
 }
 
@@ -190,15 +210,19 @@ function ApplicationSection({
   items,
   loading,
   emptyMessage,
+  action,
+  buildRow,
 }: {
   title: string;
   items: ApplicationResponse["applications"];
   loading: boolean;
   emptyMessage: string;
+  action?: ReactNode;
+  buildRow: (application: ApplicationResponse["applications"][number]) => OpenApp;
 }) {
   return (
     <section className="mt-[22.05px] flex flex-col gap-[16px] px-[46px]">
-      <SectionHeader title={title} />
+      <SectionHeader title={title} action={action} />
       {loading ? (
         <div className="flex flex-col gap-[14px]">
           <ApplicationSkeleton />
@@ -222,7 +246,7 @@ function sortApplications(
   phase: "open" | "upcoming" | "closed",
 ) {
   return items
-    .filter((item) => item.phase === phase)
+    .filter((item) => item.phase === phase && !item.submissionId)
     .slice()
     .sort((left, right) => {
       const leftDate =
@@ -236,6 +260,36 @@ function sortApplications(
 
       return leftDate - rightDate;
     });
+}
+
+function sortSubmittedApplications(
+  items: ApplicationResponse["applications"],
+) {
+  return items
+    .filter((item) => item.submissionId)
+    .slice()
+    .sort((left, right) => {
+      const leftDate = left.submittedAt ? new Date(left.submittedAt).getTime() : 0;
+      const rightDate = right.submittedAt ? new Date(right.submittedAt).getTime() : 0;
+
+      return rightDate - leftDate;
+    });
+}
+
+function ProgramFlowArrow() {
+  return (
+    <div
+      className="flex shrink-0 items-center justify-center text-brand"
+      aria-hidden="true"
+    >
+      <span className="flex h-[44px] w-[44px] items-center justify-center rounded-full border border-border-soft bg-[#fbfaf7] text-[20px] leading-none shadow-[0px_1px_0px_rgba(0,0,0,0.03)] lg:hidden">
+        ↓
+      </span>
+      <span className="hidden h-full w-[48px] items-center justify-center rounded-full border border-border-soft bg-[#fbfaf7] text-[22px] leading-none shadow-[0px_1px_0px_rgba(0,0,0,0.03)] lg:flex">
+        →
+      </span>
+    </div>
+  );
 }
 
 export default function ApplyPage() {
@@ -284,13 +338,13 @@ export default function ApplyPage() {
   const openApplications = sortApplications(applications, "open");
   const upcomingApplications = sortApplications(applications, "upcoming");
   const closedApplications = sortApplications(applications, "closed");
+  const submittedApplications = sortSubmittedApplications(applications);
 
   return (
     <div className="flex min-h-screen w-full flex-col bg-cream">
       <Navbar active="Apply" />
 
       <div className="relative w-full pb-[46px] pt-[46px]">
-        {/* Header */}
         <section className="px-[46px] pt-[8px]">
           <h1 className="font-display text-[65px] font-bold leading-[47.52px] tracking-[-0.4px] text-ink [font-variation-settings:'wdth'_100]">
             Choose Your <span className="text-brand">AIS Path</span>
@@ -301,7 +355,6 @@ export default function ApplyPage() {
           </p>
         </section>
 
-        {/* How to Begin */}
         <section className="mt-[55.76px] flex flex-col gap-[16px] px-[46px]">
           <SectionHeader
             title="How to Begin"
@@ -314,16 +367,19 @@ export default function ApplyPage() {
           </div>
         </section>
 
-        {/* Programs */}
-        <section className="mt-[31.49px] flex flex-col gap-[20px] px-[46px] lg:flex-row lg:items-stretch">
-          {programs.map((program) => (
-            <ProgramCard key={program.title} {...program} />
-          ))}
+        <section className="mt-[31.49px] px-[46px]">
+          <div className="flex flex-col gap-[20px] lg:flex-row lg:items-stretch">
+            {programs.map((program, index) => (
+              <Fragment key={program.title}>
+                <ProgramCard {...program} showActionButton={false} />
+                {index < programs.length - 1 ? <ProgramFlowArrow /> : null}
+              </Fragment>
+            ))}
+          </div>
         </section>
 
-        {/* Slogan banner (full-bleed) */}
         <div className="mt-[29.59px]">
-          <Marquee text="JOIN THE MOVEMENT Â· AIS UTD Â· BUILD THE FUTURE Â· AIS UTD" />
+          <Marquee text="JOIN THE MOVEMENT · AIS UTD · BUILD THE FUTURE · AIS UTD" />
         </div>
 
         <ApplicationSection
@@ -331,18 +387,33 @@ export default function ApplyPage() {
           items={openApplications}
           loading={loading}
           emptyMessage="There are no open applications right now."
+          buildRow={buildOpenRow}
         />
         <ApplicationSection
           title="Upcoming Applications"
           items={upcomingApplications}
           loading={loading}
           emptyMessage="There are no upcoming applications."
+          buildRow={buildOpenRow}
         />
         <ApplicationSection
           title="Closed Applications"
           items={closedApplications}
           loading={loading}
           emptyMessage="There are no closed applications to show."
+          buildRow={buildOpenRow}
+        />
+        <ApplicationSection
+          title="Submitted Applications"
+          items={submittedApplications}
+          loading={loading}
+          emptyMessage="You have not submitted any applications yet."
+          action={
+            <Button href="/applications/history" variant="ghost" size="sm">
+              View history
+            </Button>
+          }
+          buildRow={buildSubmittedRow}
         />
       </div>
     </div>
