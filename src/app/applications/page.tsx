@@ -147,7 +147,10 @@ function buildOpenRow(
     borderColor,
     metaMedium: application.phase !== "upcoming",
     dim: application.phase !== "open",
-    statusBadge: getStatusBadge(application.draft, application.submissionStatus),
+    statusBadge: getStatusBadge(
+      application.draft,
+      application.submissionStatus,
+    ),
     actions,
   };
 }
@@ -155,6 +158,12 @@ function buildOpenRow(
 function buildSubmittedRow(
   application: ApplicationResponse["applications"][number],
 ): OpenApp {
+  const statusBadge = application.submissionStatus ? (
+    getStatusBadge(application.draft, application.submissionStatus)
+  ) : (
+    <Badge label="Submitted" variant="outline" />
+  );
+
   return {
     title: application.title,
     description: application.description,
@@ -163,7 +172,7 @@ function buildSubmittedRow(
       : "submitted",
     borderColor: "#d9d3c7",
     metaMedium: true,
-    statusBadge: <Badge label="Submitted" variant="outline" />,
+    statusBadge,
     actions: [
       {
         label: "Submitted",
@@ -218,7 +227,9 @@ function ApplicationSection({
   loading: boolean;
   emptyMessage: string;
   action?: ReactNode;
-  buildRow: (application: ApplicationResponse["applications"][number]) => OpenApp;
+  buildRow: (
+    application: ApplicationResponse["applications"][number],
+  ) => OpenApp;
 }) {
   return (
     <section className="mt-[22.05px] flex flex-col gap-[16px] px-[46px]">
@@ -262,15 +273,17 @@ function sortApplications(
     });
 }
 
-function sortSubmittedApplications(
-  items: ApplicationResponse["applications"],
-) {
+function sortSubmittedApplications(items: ApplicationResponse["applications"]) {
   return items
     .filter((item) => item.submissionId)
     .slice()
     .sort((left, right) => {
-      const leftDate = left.submittedAt ? new Date(left.submittedAt).getTime() : 0;
-      const rightDate = right.submittedAt ? new Date(right.submittedAt).getTime() : 0;
+      const leftDate = left.submittedAt
+        ? new Date(left.submittedAt).getTime()
+        : 0;
+      const rightDate = right.submittedAt
+        ? new Date(right.submittedAt).getTime()
+        : 0;
 
       return rightDate - leftDate;
     });
