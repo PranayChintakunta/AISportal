@@ -1,3 +1,5 @@
+import { redirect } from "next/navigation";
+import { getAuthenticatedUser } from "@/lib/auth";
 import { Navbar } from "@/components/navbar";
 import { StatusStrip } from "@/components/dashboard/status-strip";
 import { UpNextCard } from "@/components/dashboard/up-next-card";
@@ -17,7 +19,12 @@ import {
   announcements,
 } from "@/lib/data";
 
-export default function DashboardPage() {
+export default async function DashboardPage() {
+  const user = await getAuthenticatedUser();
+  if (!user || !user.profile) {
+    redirect("/onboarding/setup");
+  }
+
   return (
       <div className="flex min-h-screen w-full flex-col bg-cream">
         <Navbar />

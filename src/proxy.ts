@@ -5,7 +5,7 @@ const isPublicRoute = createRouteMatcher([
   '/',
   '/events(.*)',
   '/applications(.*)',
-  '/onboarding(.*)',
+  '/onboarding',
   '/api/webhooks(.*)',
 ]);
 
@@ -17,7 +17,7 @@ export default clerkMiddleware(async (auth, req) => {
 
   // Everything except the public routes above requires sign-in
   if (!isPublicRoute(req) && !session.userId) {
-    return NextResponse.redirect(new URL('/sign-in', req.url));
+    return NextResponse.redirect(new URL('/onboarding?mode=login', req.url));
   }
 
   // Extra role gate on top of that, for admin routes only
