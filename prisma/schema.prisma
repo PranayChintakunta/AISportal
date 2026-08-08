@@ -6,6 +6,88 @@ datasource db {
   provider = "postgresql"
 }
 
+// -----------------------------------------------------------------------------
+// ENUMS
+// -----------------------------------------------------------------------------
+
+enum UserRole {
+  MEMBER
+  REVIEWER
+  ORGANIZER
+  SUPER_ADMIN
+}
+
+enum ProfileCompletionStatus {
+  INCOMPLETE
+  COMPLETE
+}
+
+enum EventStatus {
+  UPCOMING
+  LIVE
+  CLOSED
+  ARCHIVED
+}
+
+enum EventTag {
+  FOOD
+  DRINK
+  SOCIAL
+  LEARN
+  WORKSHOP
+  NETWORKING
+  INDUSTRY
+}
+
+enum RSVPStatus {
+  GOING
+  CANCELED
+}
+
+enum AttendanceMethod {
+  QR_SCAN
+  MANUAL
+}
+
+enum ItemType {
+  MEAL
+  DRINK
+  MERCH
+  OTHER
+}
+
+enum ApplicationStatus {
+  DRAFT
+  SUBMITTED
+  IN_REVIEW
+  IN_CONSIDERATION
+  ACCEPTED
+  REJECTED
+  WAITLISTED
+  COMPLETED
+  ARCHIVED
+}
+
+enum ProgramType {
+  AI_ACADEMY
+  AI_INNOVATION
+  AI_MENTORSHIP_MENTOR
+  AI_MENTORSHIP_MENTEE
+}
+
+enum MembershipType {
+  NON_MEMBER
+  AI_STUDENT
+  AIM_MENTOR
+  AIM_MENTEE
+  AI_INNOVATOR
+  ALUMNUS
+}
+
+// -----------------------------------------------------------------------------
+// MODELS
+// -----------------------------------------------------------------------------
+
 model User {
   id            String                  @id @default(cuid())
   clerkId       String                  @unique
@@ -75,6 +157,9 @@ model Event {
   capacity         Int?
   visibility       String?
   eligibilityRules Json?
+
+  tags             EventTag[]
+
   createdById      String
   createdAt        DateTime    @default(now())
   updatedAt        DateTime    @updatedAt
@@ -215,78 +300,4 @@ model AuditLog {
   metadataJson Json?
   createdAt    DateTime @default(now())
   actor        User?    @relation("AuditActor", fields: [actorUserId], references: [id])
-}
-
-enum UserRole {
-  MEMBER
-  REVIEWER
-  ORGANIZER
-  SUPER_ADMIN
-}
-
-enum ProfileCompletionStatus {
-  INCOMPLETE
-  COMPLETE
-}
-
-enum EventStatus {
-  UPCOMING
-  LIVE
-  CLOSED
-  ARCHIVED
-}
-
-enum RSVPStatus {
-  GOING
-  CANCELED
-}
-
-enum AttendanceMethod {
-  QR_SCAN
-  MANUAL
-}
-
-enum ItemType {
-  MEAL
-  DRINK
-  MERCH
-  OTHER
-}
-
-enum ApplicationStatus {
-  DRAFT
-  SUBMITTED
-  IN_REVIEW
-  IN_CONSIDERATION
-  ACCEPTED
-  REJECTED
-  WAITLISTED
-  COMPLETED
-  ARCHIVED
-}
-
-enum ProgramType {
-  AI_ACADEMY
-  AI_INNOVATION
-  AI_MENTORSHIP_MENTOR
-  AI_MENTORSHIP_MENTEE
-}
-
-enum MembershipType {
-  NON_MEMBER
-  AI_STUDENT
-  AIM_MENTOR
-  AIM_MENTEE
-  AI_INNOVATOR
-  ALUMNUS
-}
-
-enum EventTag {
-  FOOD
-  DRINK
-  SOCIAL
-  LEARN
-  WORKSHOP
-  NETWORKING
-  INDUSTRY
 }
