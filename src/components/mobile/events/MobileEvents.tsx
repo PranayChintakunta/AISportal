@@ -4,6 +4,7 @@ import { Tag } from "@/components/ui/tag";
 import { Button } from "@/components/ui/button";
 import { MobileScreen } from "@/components/mobile/ui/MobileScreen";
 import { BottomNav } from "@/components/mobile/ui/BottomNav";
+import { normalizeEventTags } from "@/lib/event-tags";
 import {
   eventsHero,
   featuredEvent,
@@ -13,6 +14,8 @@ import {
 } from "@/lib/data";
 
 export function MobileEvents() {
+  const featuredTags = normalizeEventTags(featuredEvent.tags);
+
   return (
     <MobileScreen>
       <div className="flex flex-col gap-[10px]">
@@ -46,7 +49,7 @@ export function MobileEvents() {
         </div>
         <div className="flex flex-wrap items-center justify-between gap-[12px]">
           <div className="flex gap-[8px]">
-            {featuredEvent.tags.map((t) => (
+            {featuredTags.map((t) => (
               <Tag key={t.label} label={t.label} bg={t.bg} color={t.color} />
             ))}
           </div>

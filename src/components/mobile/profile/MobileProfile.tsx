@@ -1,126 +1,203 @@
-"use client";
-
-import { useState } from "react";
+import type { Profile } from "@prisma/client";
+import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Toggle } from "@/components/ui/toggle";
 import { MobileScreen } from "@/components/mobile/ui/MobileScreen";
 import { MobileField } from "@/components/mobile/ui/MobileField";
 import { BottomNav } from "@/components/mobile/ui/BottomNav";
 import { MobileEyebrow as Eyebrow } from "@/components/mobile/ui/MobileEyebrow";
 
-export function MobileProfile() {
-  const [emailNotifications, setEmailNotifications] = useState(true);
+type MobileProfileProps = {
+  profile: Profile;
+  completion: { percent: number; missingFields: string[] };
+  updateProfile: (formData: FormData) => Promise<void>;
+};
 
+function MobileSelect({
+  label,
+  name,
+  defaultValue,
+  options,
+}: {
+  label: string;
+  name: string;
+  defaultValue: string;
+  options: string[];
+}) {
+  return (
+    <div className="flex flex-col gap-[6px]">
+      <label className="font-mobile-body text-[13px] font-bold text-ink">{label}</label>
+      <select
+        name={name}
+        defaultValue={defaultValue}
+        className="w-full rounded-[10px] border border-transparent bg-field px-[13px] py-[11px] font-mobile-body text-[14px] text-ink focus:outline-none focus:ring-2 focus:ring-brand/40"
+      >
+        {options.map((o) => (
+          <option key={o} value={o}>
+            {o}
+          </option>
+        ))}
+      </select>
+    </div>
+  );
+}
+
+const MAJOR_OPTIONS = [
+  "Computer Science",
+  "Software Engineering",
+  "Data Science",
+  "Information Technology",
+  "Cognitive Science",
+  "Other",
+];
+
+const YEAR_OPTIONS = ["Freshman", "Sophomore", "Junior", "Senior", "Graduate"];
+
+export function MobileProfile({ profile, completion, updateProfile }: MobileProfileProps) {
   return (
     <MobileScreen>
-      {/* Avatar + Links */}
-      <div className="flex gap-[12px]">
-        <Card className="flex flex-[3] flex-col items-center gap-[10px] p-[18px]">
-          <div className="size-[64px] rounded-full bg-photo" />
-          <p className="font-mobile-display text-[15px] font-bold uppercase tracking-[0.5px] text-ink">
-            Member Name
-          </p>
-          <Badge label="Computer Science · Senior" bg="#fbe3cb" color="#7a4416" />
-        </Card>
-
-        <Card className="flex flex-[2] flex-col gap-[12px] p-[16px]">
-          <Eyebrow>Links</Eyebrow>
-          <MobileField label="LinkedIn" placeholder="linkedin.com/in/…" />
-          <MobileField label="Github" placeholder="github.com/…" />
-        </Card>
-      </div>
-
-      {/* Personal Info */}
-      <Card className="flex flex-col gap-[14px] p-[18px]">
-        <Eyebrow>Personal Info</Eyebrow>
-        <MobileField label="Full Name" placeholder="Full Name" />
-        <MobileField label="Email" type="email" placeholder="netid@utdallas.edu" />
-        <MobileField label="UTD ID" placeholder="UTD ID" />
-        <MobileField label="Major" placeholder="Major" />
-        <MobileField label="Academic Year" placeholder="Academic Year" />
-      </Card>
-
-      {/* Resume Upload */}
-      <Card className="flex flex-col gap-[12px] p-[18px]">
-        <Eyebrow>Resume Upload</Eyebrow>
-        <div className="flex items-center gap-[14px] rounded-[12px] border border-dashed border-card-border p-[14px]">
-          <div className="flex size-[36px] shrink-0 items-center justify-center rounded-full bg-purple-soft">
-            <svg
-              viewBox="0 0 24 24"
-              fill="none"
-              className="size-[18px] text-purple-ink"
-            >
-              <path
-                d="M12 4v11m0-11 4 4m-4-4-4 4M5 17v2a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-2"
-                stroke="currentColor"
-                strokeWidth="1.6"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
-          </div>
-          <div className="flex-1">
-            <p className="font-mobile-body text-[13px] font-bold text-ink">
-              Upload New Resume
-            </p>
-            <p className="font-mono text-[11px] text-ink-faint">
-              PDF, DOCX, UP TO 5MB.
-            </p>
-          </div>
-          <Button variant="primary" size="sm">
-            Select File
-          </Button>
+      {completion.percent < 100 && (
+        <div className="rounded-[8px] bg-[#f9d5d3] px-[16px] py-[12px]">
+          <span className="font-mobile-body text-[13px] font-bold text-[#9a3b36]">
+            Your profile is {completion.percent}% complete. Fill in the highlighted fields to
+            reach 100%.
+          </span>
         </div>
-      </Card>
+      )}
 
-      {/* Security */}
-      <Card className="flex flex-col gap-[16px] p-[18px]">
-        <Eyebrow>Security</Eyebrow>
+      <form key={profile.updatedAt.toString()} action={updateProfile} className="flex flex-col gap-[16px]">
+        {/* Avatar + Links */}
+        <div className="flex gap-[12px]">
+          <Card className="flex flex-[3] flex-col items-center gap-[10px] p-[18px]">
+            <div className="size-[64px] rounded-full bg-photo" />
+            <p className="font-mobile-display text-[15px] font-bold uppercase tracking-[0.5px] text-ink">
+              {profile.firstName} {profile.lastName}
+            </p>
+            <Badge label={`${profile.major} · ${profile.year}`} bg="#fbe3cb" color="#7a4416" />
+          </Card>
 
-        <div className="flex items-center justify-between gap-[12px] rounded-[12px] bg-row-soft p-[14px]">
-          <div>
-            <p className="font-mobile-body text-[13px] font-bold text-ink">
-              Change Password
-            </p>
-            <p className="font-mobile-body text-[12px] text-ink-muted">
-              Update your account password
-            </p>
-          </div>
-          <Button variant="accent" size="sm">
-            Reset Password
-          </Button>
+          <Card className="flex flex-[2] flex-col gap-[12px] p-[16px]">
+            <Eyebrow>Links</Eyebrow>
+            <MobileField
+              label="LinkedIn"
+              name="linkedinUrl"
+              defaultValue={profile.linkedinUrl || ""}
+              placeholder="linkedin.com/in/…"
+            />
+            <MobileField
+              label="Github"
+              name="githubUrl"
+              defaultValue={profile.githubUrl || ""}
+              placeholder="github.com/…"
+            />
+          </Card>
         </div>
 
-        <div className="flex items-center justify-between gap-[12px] rounded-[12px] bg-row-soft p-[14px]">
-          <div>
-            <p className="font-mobile-body text-[13px] font-bold text-ink">
-              Email Notifications
-            </p>
-            <p className="font-mobile-body text-[12px] text-ink-muted">
-              Receive updates from AIS about events and new roles
-            </p>
-          </div>
-          <button
-            type="button"
-            onClick={() => setEmailNotifications((v) => !v)}
-            aria-label="Toggle email notifications"
+        {/* Personal Info */}
+        <Card className="flex flex-col gap-[14px] p-[18px]">
+          <Eyebrow>Personal Info</Eyebrow>
+          <MobileField label="First Name" name="firstName" defaultValue={profile.firstName} />
+          <MobileField label="Last Name" name="lastName" defaultValue={profile.lastName} />
+          <MobileField
+            label="Email"
+            name="utdEmail"
+            type="email"
+            defaultValue={profile.utdEmail || ""}
+          />
+          <MobileField label="UTD ID" name="utdNetId" defaultValue={profile.utdNetId || ""} />
+          <MobileSelect label="Major" name="major" defaultValue={profile.major} options={MAJOR_OPTIONS} />
+          <MobileSelect
+            label="Academic Year"
+            name="year"
+            defaultValue={profile.year}
+            options={YEAR_OPTIONS}
+          />
+        </Card>
+
+        {/* Resume Upload */}
+        <Card className="flex flex-col gap-[12px] p-[18px]">
+          <Eyebrow>Resume Upload</Eyebrow>
+          <div
+            className={cn(
+              "flex items-center gap-[14px] rounded-[12px] border p-[14px]",
+              !profile.resumeFileId
+                ? "border-2 border-red-500 bg-red-50"
+                : "border-dashed border-card-border"
+            )}
           >
-            <Toggle on={emailNotifications} label="Email notifications" />
-          </button>
-        </div>
-      </Card>
+            <div className="flex size-[36px] shrink-0 items-center justify-center rounded-full bg-purple-soft">
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                className="size-[18px] text-purple-ink"
+              >
+                <path
+                  d="M12 4v11m0-11 4 4m-4-4-4 4M5 17v2a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-2"
+                  stroke="currentColor"
+                  strokeWidth="1.6"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            </div>
+            <div className="flex-1">
+              <p className="font-mobile-body text-[13px] font-bold text-ink">
+                Upload New Resume
+              </p>
+              <p className="font-mono text-[11px] text-ink-faint">
+                PDF, DOCX, UP TO 5MB.
+              </p>
+            </div>
+            <Button type="button" variant="primary" size="sm">
+              Select File
+            </Button>
+          </div>
+        </Card>
 
-      {/* Footer actions */}
-      <div className="flex gap-[12px]">
-        <Button variant="soft" className="flex-1" block>
-          Cancel
-        </Button>
-        <Button variant="primary" className="flex-1" block>
-          Apply Changes
-        </Button>
-      </div>
+        {/* Security */}
+        <Card className="flex flex-col gap-[16px] p-[18px]">
+          <Eyebrow>Security</Eyebrow>
+
+          <div className="flex items-center justify-between gap-[12px] rounded-[12px] bg-row-soft p-[14px]">
+            <div>
+              <p className="font-mobile-body text-[13px] font-bold text-ink">
+                Change Password
+              </p>
+              <p className="font-mobile-body text-[12px] text-ink-muted">
+                Update your account password
+              </p>
+            </div>
+            <Button type="button" variant="accent" size="sm">
+              Reset Password
+            </Button>
+          </div>
+
+          <div className="flex items-center justify-between gap-[12px] rounded-[12px] bg-row-soft p-[14px]">
+            <div>
+              <p className="font-mobile-body text-[13px] font-bold text-ink">
+                Email Notifications
+              </p>
+              <p className="font-mobile-body text-[12px] text-ink-muted">
+                Receive updates from AIS about events and announcements
+              </p>
+            </div>
+            <div className="relative h-[26px] w-[46px] shrink-0 rounded-full bg-brand p-[2px]">
+              <div className="absolute right-[2px] top-[2px] size-[22px] rounded-full bg-white shadow-sm" />
+            </div>
+          </div>
+        </Card>
+
+        {/* Footer actions */}
+        <div className="flex gap-[12px]">
+          <Button type="reset" variant="soft" className="flex-1" block>
+            Cancel
+          </Button>
+          <Button type="submit" variant="primary" className="flex-1" block>
+            Apply Changes
+          </Button>
+        </div>
+      </form>
 
       <BottomNav />
     </MobileScreen>

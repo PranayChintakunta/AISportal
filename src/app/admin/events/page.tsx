@@ -86,7 +86,7 @@ export default async function AdminEventsPage() {
   return (
     <>
       <div className="md:hidden">
-        <MobileAdminEvents />
+        <MobileAdminEvents stats={data.stats} rows={data.rows} />
       </div>
 
       <div className="hidden md:block">

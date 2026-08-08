@@ -1,239 +1,104 @@
-import type { ReactNode } from "react";
-import Link from "next/link";
+import { Suspense } from "react";
+import QRCode from "react-qr-code";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Tag } from "@/components/ui/tag";
 import { Button } from "@/components/ui/button";
-import { ProgressBar } from "@/components/ui/progress-bar";
-import { MobileScreen } from "@/components/mobile/ui/MobileScreen";
-import { MobileEyebrow } from "@/components/mobile/ui/MobileEyebrow";
-import { BottomNav } from "@/components/mobile/ui/BottomNav";
+import { AnnouncementsCard, type Announcement } from "@/components/dashboard/announcements-card";
+import { QuickCtaCard } from "@/components/dashboard/quick-cta-card";
 import {
-  upNextTags,
-  applications,
-  rsvps,
-  achievements,
-  recommended,
-  announcements,
-} from "@/lib/data";
+  DashboardApplicationsCard,
+  ApplicationsCardSkeleton,
+  DashboardRsvpsCard,
+  RsvpsCardSkeleton,
+  DashboardRecommendedCard,
+} from "@/components/dashboard/server-cards";
+import { formatDaysAway, formatEventDate, type getNextUpcomingRsvp } from "@/lib/dashboard-utils";
+import { MobileScreen } from "@/components/mobile/ui/MobileScreen";
+import { BottomNav } from "@/components/mobile/ui/BottomNav";
 
-function SectionTitle({
-  children,
-  action,
-}: {
-  children: ReactNode;
-  action?: ReactNode;
-}) {
-  return (
-    <div className="flex items-center justify-between">
-      <h2 className="font-mobile-display text-[17px] font-bold text-ink">
-        {children}
-      </h2>
-      {action}
-    </div>
-  );
-}
+type MobileDashboardProps = {
+  userId: string;
+  nextRsvp: Awaited<ReturnType<typeof getNextUpcomingRsvp>>;
+  announcements: [Announcement, Announcement];
+};
 
-export function MobileDashboard() {
+export function MobileDashboard({ userId, nextRsvp, announcements }: MobileDashboardProps) {
   return (
     <MobileScreen>
-      <div className="flex flex-col gap-[8px]">
-        <h1 className="font-mobile-display text-[24px] font-bold text-brand">
-          Welcome back, Member! :)
-        </h1>
-        <Badge
-          label="2 new announcements!"
-          bg="#fbe3cb"
-          color="#7a4416"
-          className="self-start"
-        />
-      </div>
+      <h1 className="font-mobile-display text-[24px] font-bold text-brand">
+        Welcome back, Member! :)
+      </h1>
 
       {/* Up Next */}
       <Card className="flex flex-col gap-[14px] p-[18px]">
-        <MobileEyebrow>Up Next · in 3 days</MobileEyebrow>
-        <div className="flex items-start gap-[14px]">
-          <div className="size-[72px] shrink-0 rounded-[12px] bg-photo" />
-          <div className="flex min-w-px flex-1 flex-col gap-[2px]">
-            <h3 className="font-mobile-display text-[17px] font-bold text-ink">
-              Fall Kickoff
+        {nextRsvp ? (
+          <>
+            <p className="font-mono text-[11px] uppercase tracking-[2px] text-ink-faint">
+              Up next · {formatDaysAway(nextRsvp.event.startTime)}
+            </p>
+            <div className="flex items-start gap-[14px]">
+              <div className="flex min-w-px flex-1 flex-col gap-[2px]">
+                <h3 className="font-mobile-display text-[17px] font-bold text-ink">
+                  {nextRsvp.event.title}
+                </h3>
+                <p className="font-mobile-body text-[13px] text-ink-muted">
+                  {formatEventDate(nextRsvp.event.startTime)}
+                </p>
+                <p className="font-mobile-body text-[13px] text-ink-muted">
+                  {nextRsvp.event.location}
+                </p>
+              </div>
+              {nextRsvp.qrToken && (
+                <div className="flex size-[76px] shrink-0 items-center justify-center rounded-[8px] border border-ink bg-white p-[6px]">
+                  <QRCode value={nextRsvp.qrToken} size={64} level="H" />
+                </div>
+              )}
+            </div>
+            <div>
+              <Badge label="RSVP'd" bg="#e1e8ff" color="#1f3aa3" />
+            </div>
+          </>
+        ) : (
+          <div className="flex flex-col items-center gap-[8px] rounded-[8px] border border-dashed border-[#e2ded2] bg-[#f9f8f6] p-[16px] text-center">
+            <h3 className="font-mobile-display text-[15px] font-bold text-ink">
+              No RSVPs yet
             </h3>
             <p className="font-mobile-body text-[13px] text-ink-muted">
-              Aug 27, 2026 · 7:00 PM
+              Check out upcoming events and RSVP to see them here.
             </p>
-            <p className="font-mobile-body text-[13px] text-ink-muted">
-              ECSW 1.315
-            </p>
+            <Button href="/events/browse" variant="primary" size="sm" pill>
+              Browse Events →
+            </Button>
           </div>
-          <div className="size-[44px] shrink-0 rounded-[8px] border border-ink bg-white" />
-        </div>
-        <div className="flex gap-[8px]">
-          {upNextTags.map((t) => (
-            <Tag key={t.label} {...t} />
-          ))}
-        </div>
-        <Button variant="primary" size="sm" block>
-          Add to Calendar
-        </Button>
-      </Card>
-
-      {/* RSVPs + CTA */}
-      <Card className="flex flex-col gap-[12px] p-[18px]">
-        <SectionTitle>Your RSVPs</SectionTitle>
-        {rsvps.map((r) => (
-          <div key={r.title} className="flex items-center gap-[10px]">
-            <div className="flex size-[38px] shrink-0 items-center justify-center rounded-[10px] bg-brand-soft">
-              <span className="font-mobile-body text-[11px] font-bold text-brand-dark">
-                {r.day}
-              </span>
-            </div>
-            <div className="flex flex-col">
-              <span className="font-mobile-body text-[13px] font-bold text-ink">
-                {r.title}
-              </span>
-              <span className="font-mono text-[11px] text-ink-faint">
-                {r.detail}
-              </span>
-            </div>
-          </div>
-        ))}
-      </Card>
-
-      <Card className="flex flex-col items-start gap-[14px] !bg-brand p-[18px]">
-        <h2 className="font-mobile-display text-[17px] font-bold leading-[22px] text-white">
-          Nothing on your calendar this week?
-        </h2>
-        <Link href="/events/browse" className="w-full">
-          <Button variant="accent" size="sm" block>
-            Browse Events →
-          </Button>
-        </Link>
+        )}
       </Card>
 
       {/* Applications */}
-      <Card className="flex flex-col gap-[16px] p-[18px]">
-        <SectionTitle
-          action={
-            <a href="#" className="font-mono text-[11px] text-brand">
-              View all
-            </a>
-          }
-        >
-          Your Applications
-        </SectionTitle>
-        {applications.map((a) => (
-          <div key={a.title} className="flex flex-col gap-[8px]">
-            <div className="flex items-center justify-between gap-[8px]">
-              <span className="font-mobile-body text-[13px] font-bold text-ink">
-                {a.title}
-              </span>
-              {a.status.variant === "outline" ? (
-                <Badge variant="outline" label={a.status.label} />
-              ) : (
-                <Badge
-                  variant="solid"
-                  label={a.status.label}
-                  bg={a.status.bg}
-                  color={a.status.color}
-                />
-              )}
-            </div>
-            <ProgressBar
-              value={a.percent}
-              trackColor="#e1e8ff"
-              fillColor={a.fillColor}
-              height={7}
-            />
-          </div>
-        ))}
-      </Card>
+      <Suspense fallback={<ApplicationsCardSkeleton />}>
+        <DashboardApplicationsCard userId={userId} />
+      </Suspense>
+
+      {/* RSVPs */}
+      <Suspense fallback={<RsvpsCardSkeleton />}>
+        <DashboardRsvpsCard userId={userId} />
+      </Suspense>
+
+      <QuickCtaCard />
 
       {/* Recommended */}
-      <Card className="flex flex-col gap-[12px] p-[18px]">
-        <SectionTitle
-          action={
-            <a href="#" className="font-mono text-[11px] text-brand">
-              Refresh
-            </a>
-          }
-        >
-          Recommended for you
-        </SectionTitle>
-        {recommended.map((r) => (
-          <div
-            key={r.title}
-            className="flex items-center justify-between gap-[10px] rounded-[12px] bg-row-soft p-[12px]"
-          >
-            <div className="flex min-w-px items-center gap-[10px]">
-              <div className="size-[44px] shrink-0 rounded-[10px] bg-photo" />
-              <div className="flex flex-col">
-                <span className="font-mobile-body text-[13px] font-bold text-ink">
-                  {r.title}
-                </span>
-                <div className="flex flex-wrap gap-[6px] pt-[2px]">
-                  {r.tags.map((t) => (
-                    <Tag key={t.label} {...t} />
-                  ))}
-                </div>
-              </div>
-            </div>
-            <Button variant="primary" size="sm">
-              RSVP
-            </Button>
+      <Suspense
+        fallback={
+          <div className="flex min-h-[150px] items-center justify-center rounded-2xl bg-white">
+            <span className="font-mobile-body text-[13px] text-ink-muted">
+              Loading recommendations...
+            </span>
           </div>
-        ))}
-      </Card>
+        }
+      >
+        <DashboardRecommendedCard userId={userId} />
+      </Suspense>
 
-      {/* Achievements */}
-      <Card className="flex flex-col gap-[14px] p-[18px]">
-        <SectionTitle>Your Achievements</SectionTitle>
-        <div className="flex gap-[10px]">
-          {achievements.map((a) => (
-            <div
-              key={a.label}
-              className="flex flex-1 flex-col items-center gap-[6px] rounded-[12px] p-[14px]"
-              style={{ backgroundColor: a.bg }}
-            >
-              <span
-                className="font-mobile-display text-[22px] font-bold"
-                style={{ color: a.color }}
-              >
-                {a.value}
-              </span>
-              <span
-                className="text-center font-mobile-body text-[10px] font-bold uppercase tracking-[0.5px]"
-                style={{ color: a.color }}
-              >
-                {a.label}
-              </span>
-            </div>
-          ))}
-        </div>
-      </Card>
-
-      {/* Announcements */}
-      <Card className="flex flex-col gap-[10px] !bg-orange-soft p-[18px]">
-        <SectionTitle action={<Badge label="2 new" bg="#fbe3cb" color="#7a4416" />}>
-          <span className="text-orange-ink">Announcements</span>
-        </SectionTitle>
-        {announcements.map((a, i) => (
-          <div
-            key={a.title}
-            className={
-              i > 0
-                ? "flex flex-col gap-[2px] border-t border-[#eecaa6] pt-[10px]"
-                : "flex flex-col gap-[2px]"
-            }
-          >
-            <p className="font-mobile-body text-[13px] font-bold text-orange-ink">
-              {a.title}
-            </p>
-            <p className="font-mobile-body text-[12px] text-orange-ink">
-              {a.body}
-            </p>
-          </div>
-        ))}
-      </Card>
+      <AnnouncementsCard items={announcements} />
 
       <BottomNav />
     </MobileScreen>
