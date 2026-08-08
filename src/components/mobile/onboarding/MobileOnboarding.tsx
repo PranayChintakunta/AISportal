@@ -6,6 +6,7 @@ import { useSignIn, useSignUp } from "@clerk/nextjs";
 import { Button } from "@/components/ui/button";
 import { Field } from "@/components/ui/field";
 import { SegmentedTabs } from "@/components/ui/segmented-tabs";
+import Link from 'next/link'
 
 function MobileOnboardingInner() {
   const searchParams = useSearchParams();
@@ -212,13 +213,19 @@ function MobileOnboardingInner() {
 
         {/* Discord Footer Action */}
         <footer className="mt-auto flex w-full justify-center pt-10">
-          <Button
-            variant="accent"
-            size="md"
-            className="w-full opacity-90 transition-opacity hover:opacity-100 sm:w-auto"
-          >
-            Join Discord ↗
-          </Button>
+          <Link href="https://discord.gg/JFEkPHjzEK" target="_blank" rel="noopener noreferrer">
+            <Button
+              variant="accent"
+              size="md"
+              className="w-hug opacity-90 transition-opacity hover:opacity-100 sm:w-auto"
+            >
+            
+              Join Discord ↗
+            </Button>
+          </Link>
+            
+          
+          
         </footer>
         
       </div>

@@ -10,9 +10,11 @@ export function OnboardingHero() {
     <div className="flex h-full flex-col justify-center gap-6 bg-cream p-8 md:p-12 lg:p-20">
       {/* Badge */}
       <div>
-        <span className="inline-flex rounded-lg border border-brand px-3.5 py-2 font-logo text-sm tracking-wider text-brand">
-          AIS
-        </span>
+         <img
+          className="h-10 shrink-0 object-contain sm:h-12"
+          src="/ais_logo_black.png"
+          alt="AIS Logo"
+        />
       </div>
 
       {/* Display heading */}
@@ -29,11 +31,11 @@ export function OnboardingHero() {
 
       {/* CTA */}
       <div>
-        <Button variant="accent" size="lg">
-          <Link href="https://discord.gg/JFEkPHjzEK" target="_blank" rel="noopener noreferrer">
+        <Link href="https://discord.gg/JFEkPHjzEK" target="_blank" rel="noopener noreferrer">
+          <Button variant="accent" size="lg">
             Join Discord ↗
-          </Link>
-        </Button>
+          </Button>
+        </Link>
       </div>
     </div>
   );
