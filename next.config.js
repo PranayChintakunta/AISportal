@@ -1,10 +1,14 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  
+  async redirects() {
+    return [
+      {
+        source: '/',
+        destination: '/dashboard', // The page you want as your new starting route
+        permanent: true,          // Use true for a 308 permanent redirect
+      },
+    ]
+  },
 };
 
-module.exports = {
-    // Replace this string with the exact address you are typing into your phone
-    allowedDevOrigins: ['192.168.4.137'],
-    allowedDevOrigins: ['shut-snowbound-liability.ngrok-free.dev'],
-}
+export default nextConfig;
