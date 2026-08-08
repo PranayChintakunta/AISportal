@@ -17,12 +17,34 @@ type EventRecord = {
   tags: string[];
 };
 
+// Formats date cleanly (e.g., "Oct 24 · 5:30 PM")
+function formatEventDate(dateString: string) {
+  const date = new Date(dateString);
+  return new Intl.DateTimeFormat("en-US", {
+    month: "short",
+    day: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+  }).format(date).replace(", ", " · ");
+}
+
 function EventCardSkeleton() {
   return (
-    <div className="flex flex-col rounded-[14px] border border-border-soft bg-white p-[16px]">
-      <div className="h-[80px] animate-pulse rounded-[10px] bg-[#efece3]" />
-      <div className="mt-[10px] h-[14px] w-[70%] animate-pulse rounded-full bg-[#f4f1ea]" />
-      <div className="mt-[8px] h-[34px] animate-pulse rounded-[8px] bg-[#f4f1ea]" />
+    <div className="flex flex-col gap-[12px] rounded-[14px] border border-border-soft bg-white p-[16px] shadow-sm">
+      {/* Fake Title */}
+      <div className="h-[20px] w-[60%] animate-pulse rounded-[6px] bg-[#efece3]" />
+      {/* Fake Meta (Date/Location) */}
+      <div className="h-[14px] w-[40%] animate-pulse rounded-[4px] bg-[#f4f1ea]" />
+      {/* Fake Description Lines */}
+      <div className="mt-[4px] flex flex-col gap-[8px]">
+        <div className="h-[12px] w-full animate-pulse rounded-[4px] bg-[#f4f1ea]" />
+        <div className="h-[12px] w-[85%] animate-pulse rounded-[4px] bg-[#f4f1ea]" />
+      </div>
+      {/* Fake Tags */}
+      <div className="mt-[4px] flex gap-[6px]">
+        <div className="h-[24px] w-[60px] animate-pulse rounded-full bg-[#efece3]" />
+        <div className="h-[24px] w-[80px] animate-pulse rounded-full bg-[#efece3]" />
+      </div>
     </div>
   );
 }
@@ -30,6 +52,7 @@ function EventCardSkeleton() {
 export function MobileEventsBrowse() {
   const [events, setEvents] = useState<EventRecord[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [activeFilter, setActiveFilter] = useState<string | null>(null);
 
   useEffect(() => {
@@ -37,6 +60,7 @@ export function MobileEventsBrowse() {
 
     async function loadEvents() {
       setLoading(true);
+      setError(null);
       try {
         const response = await fetch("/api/events", { signal: controller.signal });
         if (!response.ok) {
@@ -44,8 +68,9 @@ export function MobileEventsBrowse() {
         }
         const payload = (await response.json()) as EventRecord[];
         setEvents(Array.isArray(payload) ? payload : []);
-      } catch (error) {
-        if ((error as Error).name !== "AbortError") {
+      } catch (err) {
+        if ((err as Error).name !== "AbortError") {
+          setError("Unable to load events at this time.");
           setEvents([]);
         }
       } finally {
@@ -61,31 +86,32 @@ export function MobileEventsBrowse() {
 
   const filteredEvents = activeFilter
     ? events.filter((event) =>
-        event.tags.some((tag) => tag.toLowerCase() === activeFilter)
+        event.tags.some((tag) => tag.toLowerCase() === activeFilter.toLowerCase())
       )
     : events;
 
   return (
     <MobileScreen>
-      <div className="flex flex-col gap-[8px]">
-        <h1 className="font-mobile-display text-[22px] font-bold text-ink">
+      <div className="flex flex-col gap-[6px]">
+        <h1 className="font-mobile-display text-[24px] font-bold tracking-tight text-ink">
           Pick Your Next Sidequest
         </h1>
-        <p className="font-mobile-body text-[13px] text-ink-muted">
-          Join us to learn, build, and connect with the AIS community
+        <p className="font-mobile-body text-[14px] text-ink-muted">
+          Join us to learn, build, and connect with the AIS community.
         </p>
       </div>
 
-      {/* Filter pills */}
-      <div className="-mx-[20px] flex gap-[8px] overflow-x-auto px-[20px] pb-[2px]">
+      {/* Filter pills - scrollbar hidden for cleaner mobile UX */}
+      <div className="-mx-[20px] flex snap-x snap-mandatory gap-[8px] overflow-x-auto px-[20px] py-[4px] [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
         <button
           type="button"
+          aria-pressed={activeFilter === null}
           onClick={() => setActiveFilter(null)}
-          className={
+          className={`shrink-0 snap-start rounded-full px-[16px] py-[8px] font-mobile-body text-[13px] font-bold transition-all duration-200 ${
             activeFilter === null
-              ? "shrink-0 rounded-full bg-brand px-[14px] py-[6px] font-mobile-body text-[12px] font-bold text-white"
-              : "shrink-0 rounded-full border border-border-soft bg-white px-[14px] py-[6px] font-mobile-body text-[12px] font-bold text-ink-muted"
-          }
+              ? "bg-brand text-white shadow-sm"
+              : "border border-border-soft bg-white text-ink-muted hover:bg-stone-soft"
+          }`}
         >
           All Events
         </button>
@@ -93,13 +119,14 @@ export function MobileEventsBrowse() {
           <button
             key={t.label}
             type="button"
+            aria-pressed={activeFilter === t.label}
             onClick={() => setActiveFilter(t.label)}
-            className="shrink-0"
+            className="shrink-0 snap-start transition-transform active:scale-95"
           >
             {activeFilter === t.label ? (
-              <Tag label={t.label} bg={t.bg} color={t.color} className="ring-2 ring-offset-1" />
+              <Tag label={t.label} bg={t.bg} color={t.color} className="ring-2 ring-brand/30 ring-offset-2 ring-offset-cream" />
             ) : (
-              <Tag label={t.label} bg={t.bg} color={t.color} />
+              <Tag label={t.label} bg={t.bg} color={t.color} className="opacity-75 transition-opacity hover:opacity-100" />
             )}
           </button>
         ))}
@@ -111,23 +138,42 @@ export function MobileEventsBrowse() {
           <>
             <EventCardSkeleton />
             <EventCardSkeleton />
+            <EventCardSkeleton />
           </>
+        ) : error ? (
+          <div className="flex flex-col items-center justify-center rounded-[14px] border border-dashed border-danger-border bg-white p-[32px] text-center">
+            <p className="font-mobile-display text-[16px] font-bold text-danger-ink">Oops!</p>
+            <p className="mt-[4px] font-mobile-body text-[14px] text-ink-muted">{error}</p>
+          </div>
         ) : filteredEvents.length > 0 ? (
           filteredEvents.map((event) => (
             <EventGridCard
               key={event.id}
               title={event.title}
-              meta={`${event.location} · ${new Date(event.startTime).toLocaleString()}`}
+              meta={`${formatEventDate(event.startTime)} · ${event.location}`}
               description={event.description}
               tags={normalizeEventTags(event.tags)}
               eventId={event.id}
             />
           ))
         ) : (
-          <div className="rounded-[14px] border border-border-soft bg-white p-[16px] font-mobile-body text-[13px] text-ink-muted">
-            {activeFilter
-              ? `No events tagged "${activeFilter}" right now.`
-              : "No upcoming events right now."}
+          <div className="flex flex-col items-center justify-center rounded-[14px] border border-dashed border-border-soft bg-white p-[40px] text-center shadow-sm">
+            <p className="font-mobile-display text-[16px] font-bold text-ink">
+              No events found
+            </p>
+            <p className="mt-[6px] font-mobile-body text-[14px] text-ink-muted">
+              {activeFilter
+                ? `We couldn't find any upcoming events tagged "${activeFilter}".`
+                : "There are no upcoming events right now. Check back later!"}
+            </p>
+            {activeFilter && (
+              <button
+                onClick={() => setActiveFilter(null)}
+                className="mt-[16px] rounded-full bg-brand-soft px-[16px] py-[8px] font-mobile-body text-[13px] font-bold text-brand transition-colors hover:bg-brand hover:text-white"
+              >
+                Clear Filters
+              </button>
+            )}
           </div>
         )}
       </div>

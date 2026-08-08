@@ -1,6 +1,7 @@
 export const dynamic = "force-dynamic";
 
 import type { Metadata } from "next";
+import { getAuthenticatedUser } from "@/lib/auth";
 import { Navbar } from "@/components/navbar";
 import { Tag } from "@/components/ui/tag";
 import { EventGridCard } from "@/components/events/event-grid-card";
@@ -13,15 +14,28 @@ export const metadata: Metadata = {
   description: "Browse upcoming AIS events by tag.",
 };
 
-async function getEvents() {
+async function getEvents(userId: string | null) {
   return prisma.event.findMany({
     orderBy: { startTime: "asc" },
     take: 20,
+    include: {
+      rsvps: userId
+        ? {
+            where: {
+              userId: userId,
+              status: "GOING",
+            },
+          }
+        : false,
+    },
   });
 }
 
 export default async function EventsBrowsePage() {
-  const events = await getEvents();
+  const user = await getAuthenticatedUser();
+  const userId = user?.id ?? null;
+
+  const events = await getEvents(userId);
 
   return (
     <>
@@ -49,16 +63,21 @@ export default async function EventsBrowsePage() {
             {/* Event grid */}
             <div className="min-w-px flex-1 p-[46px]">
               <div className="grid grid-cols-1 gap-[24px] lg:grid-cols-2">
-                {events.map((event) => (
-                  <EventGridCard
-                    key={event.id}
-                    title={event.title}
-                    meta={`${event.location} · ${new Date(event.startTime).toLocaleString()}`}
-                    description={event.description}
-                    tags={event.tags}
-                    eventId={event.id}
-                  />
-                ))}
+                {events.map((event) => {
+                  const userIsGoing = event.rsvps && event.rsvps.length > 0;
+
+                  return (
+                    <EventGridCard
+                      key={event.id}
+                      title={event.title}
+                      meta={`${event.location} · ${new Date(event.startTime).toLocaleString()}`}
+                      description={event.description}
+                      tags={event.tags}
+                      eventId={event.id}
+                      isRsvpd={userIsGoing}
+                    />
+                  );
+                })}
               </div>
             </div>
           </div>
