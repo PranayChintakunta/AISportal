@@ -10,6 +10,7 @@ import { redirect } from "next/navigation";
 import { getProfileCompletion } from "@/lib/dashboard-utils";
 import { revalidatePath } from "next/cache";
 import { MobileProfile } from "@/components/mobile/profile/MobileProfile";
+import { PasswordResetButton } from "@/components/profile/PasswordResetButton";
 
 export default async function ProfilePage() {
   const clerkUser = await currentUser();
@@ -208,9 +209,9 @@ export default async function ProfilePage() {
                       <span className="font-[Inter] font-bold text-[15px] text-orange-text">Change Password</span>
                       <span className="font-[Inter] text-[14px] text-orange-text leading-tight">Update your account password safely.</span>
                     </div>
-                    <Button variant="accent" size="md" pill={true} className="font-black px-[24px]">
-                      Reset Password
-                    </Button>
+                    
+                    {/* Render the Client Component Button here */}
+                    <PasswordResetButton />
                   </div>
 
                   <div className="flex items-center justify-between rounded-[12px] bg-coffee p-[20px]">
