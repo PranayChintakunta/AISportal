@@ -32,6 +32,13 @@ export default async function DashboardPage() {
   // Define it once, use it in both places
   const userName = user.profile.firstName || "Member";
 
+  // Calculate if the current event is happening now or recently started
+  const isPastEvent = nextRsvp ? new Date(nextRsvp.event.startTime) < new Date() : false;
+  
+  // Set dynamic eyebrow prefix text based on the event time status
+  const eyebrowPrefix = isPastEvent ? "Happening Now / Recent" : "Up next";
+
+
   return (
     <>
       {/* --- MOBILE VIEW --- */}
