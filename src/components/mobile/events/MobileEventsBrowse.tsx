@@ -15,9 +15,13 @@ type EventRecord = {
   location: string;
   startTime: string;
   tags: string[];
+  isRsvpd?: boolean;
 };
 
-// Formats date cleanly (e.g., "Oct 24 · 5:30 PM")
+interface MobileEventsBrowseProps {
+  initialEvents: EventRecord[];
+}
+
 function formatEventDate(dateString: string) {
   const date = new Date(dateString);
   return new Intl.DateTimeFormat("en-US", {
@@ -31,16 +35,12 @@ function formatEventDate(dateString: string) {
 function EventCardSkeleton() {
   return (
     <div className="flex flex-col gap-[12px] rounded-[14px] border border-border-soft bg-white p-[16px] shadow-sm">
-      {/* Fake Title */}
       <div className="h-[20px] w-[60%] animate-pulse rounded-[6px] bg-[#efece3]" />
-      {/* Fake Meta (Date/Location) */}
       <div className="h-[14px] w-[40%] animate-pulse rounded-[4px] bg-[#f4f1ea]" />
-      {/* Fake Description Lines */}
       <div className="mt-[4px] flex flex-col gap-[8px]">
         <div className="h-[12px] w-full animate-pulse rounded-[4px] bg-[#f4f1ea]" />
         <div className="h-[12px] w-[85%] animate-pulse rounded-[4px] bg-[#f4f1ea]" />
       </div>
-      {/* Fake Tags */}
       <div className="mt-[4px] flex gap-[6px]">
         <div className="h-[24px] w-[60px] animate-pulse rounded-full bg-[#efece3]" />
         <div className="h-[24px] w-[80px] animate-pulse rounded-full bg-[#efece3]" />
@@ -49,17 +49,16 @@ function EventCardSkeleton() {
   );
 }
 
-export function MobileEventsBrowse() {
-  const [events, setEvents] = useState<EventRecord[]>([]);
-  const [loading, setLoading] = useState(true);
+export function MobileEventsBrowse({ initialEvents }: MobileEventsBrowseProps) {
+  // Use server rendered payload directly to instantly populate the layout
+  const [events, setEvents] = useState<EventRecord[]>(initialEvents);
+  const [loading, setLoading] = useState(false); // Set to false since server hydrates data initially
   const [error, setError] = useState<string | null>(null);
   const [activeFilter, setActiveFilter] = useState<string | null>(null);
 
   useEffect(() => {
     const controller = new AbortController();
-
     async function loadEvents() {
-      setLoading(true);
       setError(null);
       try {
         const response = await fetch("/api/events", { signal: controller.signal });
@@ -67,19 +66,27 @@ export function MobileEventsBrowse() {
           throw new Error(`Failed to load events: ${response.status}`);
         }
         const payload = (await response.json()) as EventRecord[];
-        setEvents(Array.isArray(payload) ? payload : []);
+        
+        if (Array.isArray(payload)) {
+          // Merge API data with current state maps so active RSVP changes aren't lost
+          setEvents((prevEvents) =>
+            payload.map((fetchedEvent) => {
+              const matchingPrev = prevEvents.find((e) => e.id === fetchedEvent.id);
+              return {
+                ...fetchedEvent,
+                isRsvpd: matchingPrev ? matchingPrev.isRsvpd : fetchedEvent.isRsvpd,
+              };
+            })
+          );
+        }
       } catch (err) {
         if ((err as Error).name !== "AbortError") {
           setError("Unable to load events at this time.");
-          setEvents([]);
-        }
-      } finally {
-        if (!controller.signal.aborted) {
-          setLoading(false);
         }
       }
     }
-
+    
+    // Background polling/re-fetching if needed, keeping initial page load instant
     loadEvents();
     return () => controller.abort();
   }, []);
@@ -101,7 +108,6 @@ export function MobileEventsBrowse() {
         </p>
       </div>
 
-      {/* Filter pills - scrollbar hidden for cleaner mobile UX */}
       <div className="-mx-[20px] flex snap-x snap-mandatory gap-[8px] overflow-x-auto px-[20px] py-[4px] [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
         <button
           type="button"
@@ -124,15 +130,24 @@ export function MobileEventsBrowse() {
             className="shrink-0 snap-start transition-transform active:scale-95"
           >
             {activeFilter === t.label ? (
-              <Tag label={t.label} bg={t.bg} color={t.color} className="ring-2 ring-brand/30 ring-offset-2 ring-offset-cream" />
+              <Tag
+                label={t.label}
+                bg={t.bg}
+                color={t.color}
+                className="ring-2 ring-brand/30 ring-offset-2 ring-offset-cream"
+              />
             ) : (
-              <Tag label={t.label} bg={t.bg} color={t.color} className="opacity-75 transition-opacity hover:opacity-100" />
+              <Tag
+                label={t.label}
+                bg={t.bg}
+                color={t.color}
+                className="opacity-75 transition-opacity hover:opacity-100"
+              />
             )}
           </button>
         ))}
       </div>
 
-      {/* Event grid */}
       <div className="grid grid-cols-1 gap-[16px]">
         {loading ? (
           <>
@@ -140,7 +155,7 @@ export function MobileEventsBrowse() {
             <EventCardSkeleton />
             <EventCardSkeleton />
           </>
-        ) : error ? (
+        ) : error && events.length === 0 ? (
           <div className="flex flex-col items-center justify-center rounded-[14px] border border-dashed border-danger-border bg-white p-[32px] text-center">
             <p className="font-mobile-display text-[16px] font-bold text-danger-ink">Oops!</p>
             <p className="mt-[4px] font-mobile-body text-[14px] text-ink-muted">{error}</p>
@@ -154,6 +169,7 @@ export function MobileEventsBrowse() {
               description={event.description}
               tags={normalizeEventTags(event.tags)}
               eventId={event.id}
+              isRsvpd={event.isRsvpd} // Successfully injected persistence
             />
           ))
         ) : (
@@ -177,7 +193,6 @@ export function MobileEventsBrowse() {
           </div>
         )}
       </div>
-
       <BottomNav />
     </MobileScreen>
   );
