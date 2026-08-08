@@ -50,11 +50,12 @@ function EventCardSkeleton() {
 }
 
 export function MobileEventsBrowse({ initialEvents }: MobileEventsBrowseProps) {
-  // Use server rendered payload directly to instantly populate the layout
   const [events, setEvents] = useState<EventRecord[]>(initialEvents);
-  const [loading, setLoading] = useState(false); // Set to false since server hydrates data initially
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [activeFilter, setActiveFilter] = useState<string | null>(null);
+  
+  // Track selected tags in an array for multi-select
+  const [selectedTags, setSelectedTags] = useState<string[]>([]);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -66,9 +67,7 @@ export function MobileEventsBrowse({ initialEvents }: MobileEventsBrowseProps) {
           throw new Error(`Failed to load events: ${response.status}`);
         }
         const payload = (await response.json()) as EventRecord[];
-        
         if (Array.isArray(payload)) {
-          // Merge API data with current state maps so active RSVP changes aren't lost
           setEvents((prevEvents) =>
             payload.map((fetchedEvent) => {
               const matchingPrev = prevEvents.find((e) => e.id === fetchedEvent.id);
@@ -85,15 +84,25 @@ export function MobileEventsBrowse({ initialEvents }: MobileEventsBrowseProps) {
         }
       }
     }
-    
-    // Background polling/re-fetching if needed, keeping initial page load instant
     loadEvents();
     return () => controller.abort();
   }, []);
 
-  const filteredEvents = activeFilter
+  // Toggle selection on click, deselect if already chosen
+  const handleTagClick = (tagLabel: string) => {
+    setSelectedTags((prev) =>
+      prev.includes(tagLabel)
+        ? prev.filter((t) => t !== tagLabel)
+        : [...prev, tagLabel]
+    );
+  };
+
+  // Filter events: Event matches if it contains ALL selected tags
+  const filteredEvents = selectedTags.length > 0
     ? events.filter((event) =>
-        event.tags.some((tag) => tag.toLowerCase() === activeFilter.toLowerCase())
+        selectedTags.every((selectedTag) =>
+          event.tags.some((tag) => tag.toLowerCase() === selectedTag.toLowerCase())
+        )
       )
     : events;
 
@@ -109,43 +118,48 @@ export function MobileEventsBrowse({ initialEvents }: MobileEventsBrowseProps) {
       </div>
 
       <div className="-mx-[20px] flex snap-x snap-mandatory gap-[8px] overflow-x-auto px-[20px] py-[4px] [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+        {/* All Events resets selection state completely */}
         <button
           type="button"
-          aria-pressed={activeFilter === null}
-          onClick={() => setActiveFilter(null)}
+          aria-pressed={selectedTags.length === 0}
+          onClick={() => setSelectedTags([])}
           className={`shrink-0 snap-start rounded-full px-[16px] py-[8px] font-mobile-body text-[13px] font-bold transition-all duration-200 ${
-            activeFilter === null
+            selectedTags.length === 0
               ? "bg-brand text-white shadow-sm"
               : "border border-border-soft bg-white text-ink-muted hover:bg-stone-soft"
           }`}
         >
           All Events
         </button>
-        {eventFilterTags.map((t) => (
-          <button
-            key={t.label}
-            type="button"
-            aria-pressed={activeFilter === t.label}
-            onClick={() => setActiveFilter(t.label)}
-            className="shrink-0 snap-start transition-transform active:scale-95"
-          >
-            {activeFilter === t.label ? (
-              <Tag
-                label={t.label}
-                bg={t.bg}
-                color={t.color}
-                className="ring-2 ring-brand/30 ring-offset-2 ring-offset-cream"
-              />
-            ) : (
-              <Tag
-                label={t.label}
-                bg={t.bg}
-                color={t.color}
-                className="opacity-75 transition-opacity hover:opacity-100"
-              />
-            )}
-          </button>
-        ))}
+
+        {eventFilterTags.map((t) => {
+          const isSelected = selectedTags.includes(t.label);
+          return (
+            <button
+              key={t.label}
+              type="button"
+              aria-pressed={isSelected}
+              onClick={() => handleTagClick(t.label)}
+              className="shrink-0 snap-start transition-transform active:scale-95"
+            >
+              {isSelected ? (
+                <Tag
+                  label={t.label}
+                  bg={t.bg}
+                  color={t.color}
+                  className="ring-2 ring-brand/30 ring-offset-2 ring-offset-cream"
+                />
+              ) : (
+                <Tag
+                  label={t.label}
+                  bg={t.bg}
+                  color={t.color}
+                  className="opacity-75 transition-opacity hover:opacity-100"
+                />
+              )}
+            </button>
+          );
+        })}
       </div>
 
       <div className="grid grid-cols-1 gap-[16px]">
@@ -169,7 +183,7 @@ export function MobileEventsBrowse({ initialEvents }: MobileEventsBrowseProps) {
               description={event.description}
               tags={normalizeEventTags(event.tags)}
               eventId={event.id}
-              isRsvpd={event.isRsvpd} // Successfully injected persistence
+              isRsvpd={event.isRsvpd}
             />
           ))
         ) : (
@@ -178,13 +192,11 @@ export function MobileEventsBrowse({ initialEvents }: MobileEventsBrowseProps) {
               No events found
             </p>
             <p className="mt-[6px] font-mobile-body text-[14px] text-ink-muted">
-              {activeFilter
-                ? `We couldn't find any upcoming events tagged "${activeFilter}".`
-                : "There are no upcoming events right now. Check back later!"}
+              We couldn't find any upcoming events matching the selected filters.
             </p>
-            {activeFilter && (
+            {selectedTags.length > 0 && (
               <button
-                onClick={() => setActiveFilter(null)}
+                onClick={() => setSelectedTags([])}
                 className="mt-[16px] rounded-full bg-brand-soft px-[16px] py-[8px] font-mobile-body text-[13px] font-bold text-brand transition-colors hover:bg-brand hover:text-white"
               >
                 Clear Filters
