@@ -120,15 +120,12 @@ export async function POST(
       },
     });
 
-    await tx.applicationDraft.update({
+    await tx.applicationDraft.delete({
       where: {
         applicationId_userId: {
           applicationId: id,
           userId: currentUser.userId,
         },
-      },
-      data: {
-        isSubmitted: true,
       },
     });
 
