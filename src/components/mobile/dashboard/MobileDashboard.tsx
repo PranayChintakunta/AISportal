@@ -53,11 +53,18 @@ export function MobileDashboard({ userId, userName, nextRsvp, calendarLinks }: M
       {/* Up Next */}
       <Card
         className={cn(
-          "flex flex-col gap-4 p-5 transition-all duration-300 relative overflow-visible border-t-4 border-t-brand",
+          "flex flex-col gap-4 p-5 transition-all duration-300 relative overflow-hidden",
           isGlowing &&
             "border-green bg-checked/60 shadow-[0_0_20px_rgba(53,107,46,0.35)] ring-1 ring-green/50"
         )}
       >
+        <div
+          aria-hidden
+          className={cn(
+            "absolute inset-x-0 top-0 h-[4px] rounded-t-2xl transition-colors duration-300",
+            isGlowing ? "bg-green" : "bg-brand/60"
+          )}
+        />
         {nextRsvp ? (
           <>
             <div className="flex flex-col gap-1">

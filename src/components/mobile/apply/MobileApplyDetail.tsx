@@ -241,7 +241,7 @@ export function MobileApplyDetail() {
               <div className="flex items-center gap-1.5 style-mobile-body text-ink-muted text-xs">
                 <Calendar className="h-3.5 w-3.5 text-ink-faint shrink-0" />
                 <span>
-                  Decision Date: {formatDate(appData.decisionDate, "TBD")}
+                  Deadline: {formatDate(appData.closeAt, "TBD")}
                 </span>
               </div>
             </div>

@@ -78,27 +78,16 @@ function mapEventToRow(event: EventWithRsvps): EventRowData {
 async function getEventViewModel() {
   const now = new Date();
 
-  const [events, totalRsvps] = await Promise.all([
-    prisma.event.findMany({
-      orderBy: { startTime: "asc" },
-      include: {
-        rsvps: {
-          include: {
-            attendance: true,
-          },
+  const events = await prisma.event.findMany({
+    orderBy: { startTime: "asc" },
+    include: {
+      rsvps: {
+        include: {
+          attendance: true,
         },
       },
-    }),
-    // 2. Filter total count query to active RSVPs only
-    prisma.rSVP.count({
-      where: {
-        // Adjust filter based on your RSVP model status field:
-        // status: "GOING" 
-        // OR isCancelled: false
-        NOT: { status: "CANCELED" },
-      },
-    }),
-  ]);
+    },
+  });
 
   const publishedEvents = events.filter((event) => event.isPublished);
   const draftEvents = events.filter((event) => !event.isPublished);
@@ -108,6 +97,14 @@ async function getEventViewModel() {
   const pastEvents = publishedEvents.filter((e) => new Date(e.endTime) < now);
 
   const activePublishedEvents = [...liveEvents, ...upcomingEvents];
+
+  // Calculate active RSVPs for current/upcoming events (excluding past events)
+  const currentUpcomingEvents = events.filter((e) => new Date(e.endTime) >= now);
+  const upcomingRsvps = currentUpcomingEvents.reduce(
+    (sum, event) =>
+      sum + event.rsvps.filter((rsvp) => rsvp.status !== "CANCELED").length,
+    0
+  );
 
   const totalCapacity = events.reduce((sum, event) => sum + (event.capacity ?? 0), 0);
   const totalCheckedIn = events.reduce(
@@ -124,7 +121,7 @@ async function getEventViewModel() {
     stats: [
       { value: String(publishedEvents.length), label: "published" },
       { value: String(draftEvents.length), label: "drafts" },
-      { value: String(totalRsvps), label: "total RSVPs" },
+      { value: String(upcomingRsvps), label: "upcoming RSVPs" },
       { value: `${attendanceRatio}%`, label: "avg capacity", highlight: true },
     ],
     publishedRows: activePublishedEvents.map(mapEventToRow),

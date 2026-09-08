@@ -264,8 +264,8 @@ function ApplyDetailContent() {
                     <div className="flex items-center gap-4 style-body-text text-ink-muted text-sm">
                       <span className="flex items-center gap-1.5">
                         <Calendar className="h-4 w-4 text-ink-faint" />
-                        Decision Date:{" "}
-                        {formatDate(appData.decisionDate, "TBD")}
+                        Deadline:{" "}
+                        {formatDate(appData.closeAt ?? null, "TBD")}
                       </span>
                     </div>
                   </div>
