@@ -3,9 +3,9 @@ import Link from "next/link";
 import { AdminSidebar } from "@/components/admin/admin-sidebar";
 import { EventForm } from "@/components/admin/event-form";
 import { CoverPhotoCard } from "@/components/admin/cover-photo-card";
-import { SettingsCard } from "@/components/admin/settings-card";
+import { SettingsCard, SettingRow } from "@/components/admin/settings-card";
 import { MobileAdminCreateEvent } from "@/components/mobile/admin/MobileAdminCreateEvent";
-import { eventTags, eventSettings } from "@/lib/data";
+import { eventTags } from "@/lib/data";
 import { createEvent } from "@/app/admin/events/actions";
 import { EventActionButtons } from "@/components/admin/admin-event-actions";
 import { getAuthenticatedUser } from "@/lib/auth";
@@ -18,6 +18,21 @@ export const metadata: Metadata = {
 export default async function CreateEventPage() {
   const user = await getAuthenticatedUser();
   const userRole = user?.role;
+
+  // Build settings rows dynamically with initial values from the DB
+  const dynamicSettings: SettingRow[] = [
+    {
+      label: "Allow RSVPs",
+      type: "toggle",
+      name: "isRsvpOpen", // Sent in formData as "true" or "false"
+      defaultOn: true,
+    },
+    {
+      label: "Event Visibility",
+      type: "badge",
+      badge: "draft",
+    },
+  ];
 
   return (
     <>
@@ -51,7 +66,7 @@ export default async function CreateEventPage() {
               <EventForm tags={eventTags} />
               <div className="flex w-full flex-col gap-5 lg:w-[382px] lg:shrink-0">
                 <CoverPhotoCard defaultImageUrl={null} />
-                <SettingsCard items={eventSettings} />
+                <SettingsCard items={dynamicSettings} />
                 
                 <div className="flex flex-col gap-2.5">
                   <EventActionButtons isPublished={false} userRole={userRole}/>

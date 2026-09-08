@@ -284,9 +284,9 @@ export const eventTags: TagData[] = [
 ];
 
 export const eventSettings: SettingRow[] = [
-  { label: "Require check-in QR", type: "toggle", on: true },
-  { label: "Members only", type: "toggle", on: false },
-  { label: "Visibility", type: "badge", badge: "Draft" },
+  // { label: "Require check-in QR", type: "toggle", on: true },
+  // { label: "Members only", type: "toggle", on: false },
+  // { label: "Visibility", type: "badge", badge: "Draft" },
 ];
 
 /* --------------------------------------------------------- Admin · Overview */

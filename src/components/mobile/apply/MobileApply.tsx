@@ -78,8 +78,8 @@ function MobileApplicationSection({
       transition={{ duration: 0.4, ease: "easeOut" }}
       className="flex flex-col gap-[12px]"
     >
-      <div className="flex items-center justify-between gap-[8px]">
-        <h2 className="font-mobile-display text-[17px] font-bold text-ink">
+      <div className="flex items-center justify-between gap-2">
+        <h2 className="font-mobile-display style-section-header font-bold text-ink">
           {title}
         </h2>
         {action}

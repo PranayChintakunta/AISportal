@@ -7,9 +7,7 @@ async function getCurrentUser() {
   const session = await auth();
 
   if (!session.userId) {
-    return {
-      error: createErrorResponse("Unauthorized", "UNAUTHENTICATED", 401),
-    } as const;
+    return null;
   }
 
   const user = await prisma.user.findUnique({
@@ -21,13 +19,7 @@ async function getCurrentUser() {
     },
   });
 
-  if (!user) {
-    return {
-      error: createErrorResponse("User not found", "USER_NOT_FOUND", 404),
-    } as const;
-  }
-
-  return { userId: user.id } as const;
+  return user?.id ?? null;
 }
 
 function getPhase(openAt: Date, closeAt: Date, now: Date) {
@@ -43,10 +35,7 @@ function getPhase(openAt: Date, closeAt: Date, now: Date) {
 }
 
 export async function GET() {
-  const currentUser = await getCurrentUser();
-  if ("error" in currentUser) {
-    return currentUser.error;
-  }
+  const userId = await getCurrentUser();
 
   const now = new Date();
   const retentionWindowMs = 14 * 24 * 60 * 60 * 1000;
@@ -93,43 +82,50 @@ export async function GET() {
 
   const applicationIds = visibleApplications.map((application) => application.id);
 
-  const [drafts, submissions] = await Promise.all([
-    prisma.applicationDraft.findMany({
-      where: {
-        userId: currentUser.userId,
-        applicationId: {
-          in: applicationIds,
+  // Fetch user-specific data only if authenticated
+  let drafts: Array<{ applicationId: string; stepIndex: number; isSubmitted: boolean }> = [];
+  let submissions: Array<{ id: string; applicationId: string; status: any; submittedAt: Date }> = [];
+
+  if (userId) {
+    [drafts, submissions] = await Promise.all([
+      prisma.applicationDraft.findMany({
+        where: {
+          userId,
+          applicationId: {
+            in: applicationIds,
+          },
         },
-      },
-      select: {
-        applicationId: true,
-        stepIndex: true,
-        isSubmitted: true,
-      },
-    }),
-    prisma.applicationSubmission.findMany({
-      where: {
-        userId: currentUser.userId,
-        applicationId: {
-          in: applicationIds,
+        select: {
+          applicationId: true,
+          stepIndex: true,
+          isSubmitted: true,
         },
-      },
-      orderBy: [
-        {
-          submittedAt: "desc",
+      }),
+      prisma.applicationSubmission.findMany({
+        where: {
+          userId,
+          applicationId: {
+            in: applicationIds,
+          },
         },
-        {
-          updatedAt: "desc",
+        orderBy: [
+          {
+            submittedAt: "desc",
+          },
+          {
+            updatedAt: "desc",
+          },
+        ],
+        select: {
+          id: true,
+          applicationId: true,
+          status: true,
+          submittedAt: true,
         },
-      ],
-      select: {
-        id: true,
-        applicationId: true,
-        status: true,
-        submittedAt: true,
-      },
-    }),
-  ]);
+      }),
+    ]);
+  }
+  
 
   const draftByApplicationId = new Map(
     drafts.map((draft) => [

@@ -20,6 +20,15 @@ export function EventActionButtons({ isPublished, userRole }: EventActionButtons
     }
   };
 
+  const handleUnpublishClick = (e: React.MouseEvent<HTMLButtonElement>) => {
+    const confirmed = window.confirm(
+      "Are you sure you want to unpublish? This will stop being visible to all users if so."
+    );
+    if (!confirmed) {
+      e.preventDefault();
+    }
+  };
+
   return (
     <div className="flex flex-col gap-[10px]">
       <div className="flex gap-[10px]">
@@ -43,6 +52,7 @@ export function EventActionButtons({ isPublished, userRole }: EventActionButtons
               variant="accent" 
               size="md"
               className="flex-1"
+              onClick={handleUnpublishClick}
             >
               Unpublish
             </Button>

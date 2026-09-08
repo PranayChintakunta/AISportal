@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, Suspense } from "react";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { Navbar } from "@/components/navbar";
 import { RoleCard } from "@/components/apply/role-card";
@@ -10,6 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { MobileApplyDetail } from "@/components/mobile/apply/MobileApplyDetail";
 import { ArrowLeft, Calendar, Info, Clock, CheckCircle, AlertCircle } from "lucide-react";
 import { FormattedLinks } from "@/components/ui/formatted-link";
+import { useUser } from "@clerk/nextjs";
 
 type RoleItem =
   | string
@@ -147,6 +148,8 @@ function ApplyDetailContent() {
     useState<ApplicationDetailResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const { isSignedIn, isLoaded } = useUser();
+  const router = useRouter();
 
   useEffect(() => {
     const controller = new AbortController();
@@ -217,6 +220,18 @@ function ApplyDetailContent() {
   const normalizedRoles = rawRoles.map((role) =>
     typeof role === "string" ? { title: role } : role
   );
+
+  const handleApplyClick = (e: React.MouseEvent) => {
+    if (!isSignedIn && appData) {
+      e.preventDefault();
+      const destination = `/applications/form?id=${appData.id}`;
+      const loginUrl = new URL("/onboarding", window.location.origin);
+      loginUrl.searchParams.set("mode", "login");
+      loginUrl.searchParams.set("redirect_url", destination);
+
+      router.push(loginUrl.toString());
+    }
+  };
   
 
   return (
@@ -300,6 +315,7 @@ function ApplyDetailContent() {
                     ) : (
                       <Button
                         href={`/applications/form?id=${appData.id}`}
+                        onClick={handleApplyClick}
                         size="lg"
                         className="shrink-0 shadow-sm"
                       >

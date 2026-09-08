@@ -1,8 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
+import { useUser } from "@clerk/nextjs";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { MobileScreen } from "@/components/mobile/ui/MobileScreen";
@@ -136,6 +137,8 @@ export function MobileApplyDetail() {
     useState<ApplicationDetailResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const { isSignedIn, isLoaded } = useUser();
+  const router = useRouter();
 
   useEffect(() => {
     const controller = new AbortController();
@@ -204,6 +207,18 @@ export function MobileApplyDetail() {
   const normalizedRoles: Role[] = rawRoles.map((role) =>
     typeof role === "string" ? { title: role } : role
   );
+
+  const handleApplyClick = (e: React.MouseEvent) => {
+    if (!isSignedIn && appData) {
+      e.preventDefault();
+      const destination = `/applications/form?id=${appData.id}`;
+      const loginUrl = new URL("/onboarding", window.location.origin);
+      loginUrl.searchParams.set("mode", "login");
+      loginUrl.searchParams.set("redirect_url", destination);
+
+      router.push(loginUrl.toString());
+    }
+  };
 
   return (
     <MobileScreen>
@@ -276,6 +291,7 @@ export function MobileApplyDetail() {
               ) : (
                 <Button
                   href={`/applications/form?id=${appData.id}`}
+                  onClick={handleApplyClick}
                   size="sm"
                   className="w-full justify-center shadow-sm"
                 >
