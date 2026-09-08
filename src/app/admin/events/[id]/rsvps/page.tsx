@@ -7,6 +7,7 @@ import { MobileScreen } from "@/components/mobile/ui/MobileScreen";
 import { MobileAdminNav } from "@/components/mobile/admin/MobileAdminNav";
 import { SendReminderButton } from "@/components/admin/send-reminder-button";
 import type { Prisma } from "@prisma/client";
+import { getAuthenticatedUser } from "@/lib/auth";
 
 export const metadata: Metadata = {
   title: "AIS Admin — Event RSVPs",
@@ -132,6 +133,9 @@ async function getEventDashboardData(eventId: string) {
 export default async function EventRsvpsPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const data = await getEventDashboardData(id);
+  const user = await getAuthenticatedUser();
+  const userRole = user?.role;
+  const canSendReminder = userRole === "DIRECTOR" || userRole === "EXECUTIVE";
 
   if (!data) notFound();
 
@@ -164,13 +168,15 @@ export default async function EventRsvpsPage({ params }: { params: Promise<{ id:
               </div>
             </div>
 
-            <div className="shrink-0">
-              <SendReminderButton
-                eventId={event.id}
-                eventTitle={event.title}
-                rsvpCount={stats.totalRsvps}
-              />
-            </div>
+            {canSendReminder && (
+              <div className="shrink-0">
+                <SendReminderButton
+                  eventId={event.id}
+                  eventTitle={event.title}
+                  rsvpCount={stats.totalRsvps}
+                />
+              </div>
+            )}
           </div>
 
           <div className="flex flex-col gap-[16px] pb-[40px]">

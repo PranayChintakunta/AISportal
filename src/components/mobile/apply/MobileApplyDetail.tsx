@@ -1,8 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
+import { useUser } from "@clerk/nextjs";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { MobileScreen } from "@/components/mobile/ui/MobileScreen";
@@ -136,6 +137,8 @@ export function MobileApplyDetail() {
     useState<ApplicationDetailResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const { isSignedIn, isLoaded } = useUser();
+  const router = useRouter();
 
   useEffect(() => {
     const controller = new AbortController();
@@ -205,6 +208,18 @@ export function MobileApplyDetail() {
     typeof role === "string" ? { title: role } : role
   );
 
+  const handleApplyClick = (e: React.MouseEvent) => {
+    if (!isSignedIn && appData) {
+      e.preventDefault();
+      const destination = `/applications/form?id=${appData.id}`;
+      const loginUrl = new URL("/onboarding", window.location.origin);
+      loginUrl.searchParams.set("mode", "login");
+      loginUrl.searchParams.set("redirect_url", destination);
+
+      router.push(loginUrl.toString());
+    }
+  };
+
   return (
     <MobileScreen>
       {/* Back Link */}
@@ -241,7 +256,7 @@ export function MobileApplyDetail() {
               <div className="flex items-center gap-1.5 style-mobile-body text-ink-muted text-xs">
                 <Calendar className="h-3.5 w-3.5 text-ink-faint shrink-0" />
                 <span>
-                  Decision Date: {formatDate(appData.decisionDate, "TBD")}
+                  Deadline: {formatDate(appData.closeAt, "TBD")}
                 </span>
               </div>
             </div>
@@ -276,6 +291,7 @@ export function MobileApplyDetail() {
               ) : (
                 <Button
                   href={`/applications/form?id=${appData.id}`}
+                  onClick={handleApplyClick}
                   size="sm"
                   className="w-full justify-center shadow-sm"
                 >

@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { EventForm } from "@/components/admin/event-form";
 import { CoverPhotoCard } from "@/components/admin/cover-photo-card";
-import { SettingsCard } from "@/components/admin/settings-card";
+import { SettingRow, SettingsCard } from "@/components/admin/settings-card";
 import { MobileScreen } from "@/components/mobile/ui/MobileScreen";
 import { MobileAdminNav } from "@/components/mobile/admin/MobileAdminNav";
 import { eventTags, eventSettings } from "@/lib/data";
@@ -18,6 +18,7 @@ type EventDefaultValues = {
   capacity: string;
   status: string;
   visibility: string;
+  isRsvpOpen: boolean;
   imageUrl?: string | null;
   tags: string[];
   items: Array<{ name: string; type: "MEAL" | "DRINK" | "MERCH" | "OTHER" }>;
@@ -28,9 +29,10 @@ type MobileAdminEditEventProps = {
   defaultValues: EventDefaultValues;
   isPublished: boolean;
   userRole: string;
+  eventSettings: SettingRow[];
 };
 
-export function MobileAdminEditEvent({ eventId, defaultValues, isPublished, userRole }: MobileAdminEditEventProps) {
+export function MobileAdminEditEvent({ eventId, defaultValues, isPublished, userRole, eventSettings }: MobileAdminEditEventProps) {
   // defaultValues is already converted to CT string format by EditEventPage
   return (
     <MobileScreen withBottomNavPadding={false}>
@@ -48,8 +50,8 @@ export function MobileAdminEditEvent({ eventId, defaultValues, isPublished, user
       <form action={updateEvent} className="flex flex-col gap-6">
         <input type="hidden" name="id" value={eventId} />
 
-        <EventForm tags={eventTags} defaultValues={defaultValues} />
         <CoverPhotoCard defaultImageUrl={defaultValues.imageUrl} />
+        <EventForm tags={eventTags} defaultValues={defaultValues} />
         <SettingsCard items={eventSettings} />
 
         <div className="flex flex-col gap-2.5">

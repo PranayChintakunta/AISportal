@@ -94,7 +94,7 @@ export function RsvpsCard({ items }: { items: RsvpItem[] }) {
 
   return (
     <Card className="relative flex max-h-95 min-h-0 w-full shrink-0 flex-col gap-[16px] self-stretch overflow-hidden p-[29px] xl:w-[360px]">
-      <div aria-hidden className="absolute inset-x-0 top-0 h-[4px] bg-purple-300" />
+      <div aria-hidden className="absolute inset-x-0 top-0 h-[4px] rounded-t-2xl bg-purple-300" />
       <SectionHeader title="Your Events & RSVPs" />
 
       <div className="flex flex-1 min-h-0 flex-col overflow-y-auto pr-1">
