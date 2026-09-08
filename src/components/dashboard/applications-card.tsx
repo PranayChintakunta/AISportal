@@ -45,7 +45,7 @@ function ApplicationRow({ item }: { item: ApplicationItem }) {
 export function ApplicationsCard({ items }: { items: ApplicationItem[] }) {
   return (
     <Card className="relative flex w-full shrink-0 flex-col gap-[16px] self-stretch overflow-hidden p-[29px] xl:w-[440px]">
-      <div aria-hidden className="absolute inset-x-0 top-0 h-[4px] bg-orange-300" />
+      <div aria-hidden className="absolute inset-x-0 top-0 h-[4px] rounded-t-2xl bg-orange-300" />
       <SectionHeader
         title="Your Applications"
         action={
