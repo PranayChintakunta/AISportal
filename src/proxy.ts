@@ -8,6 +8,8 @@ const PUBLIC_PREFIXES = [
   '/onboarding',
   '/api/webhooks',
   '/api/onboarding/profile',
+  '/api/applications',
+  '/applications/detail',
 ];
 
 export default clerkMiddleware(async (auth, req) => {
@@ -15,7 +17,7 @@ export default clerkMiddleware(async (auth, req) => {
 
   // 1. Root route redirect
   if (pathname === '/') {
-    return NextResponse.redirect(new URL('/dashboard', req.url));
+    return NextResponse.redirect(new URL('/events', req.url));
   }
 
   // 2. Check if route is public using standard string matching

@@ -91,7 +91,7 @@ export function BottomNav() {
           <Show when="signed-out">
             <Link
               href="/onboarding?mode=login"
-              className="rounded-full bg-brand px-3 py-2 style-nav-link text-white whitespace-nowrap shrink-0"
+              className="rounded-lg bg-[linear-gradient(135deg,#f2a968_0%,#7d64c4_60%)] px-3 py-2 style-nav-link text-white whitespace-nowrap shrink-0"
             >
               Sign In
             </Link>

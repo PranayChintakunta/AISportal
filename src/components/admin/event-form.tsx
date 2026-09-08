@@ -25,6 +25,7 @@ type EventFormProps = {
     endTime?: string;
     capacity?: string;
     visibility?: string;
+    isRsvpOpen?: boolean;
     status?: string;
     tags?: string[];
     programs?: MembershipType[];
@@ -40,29 +41,29 @@ export function EventForm({ tags, defaultValues }: EventFormProps) {
   const [eventItems, setEventItems] = useState<EventItemInput[]>(defaultValues?.items ?? []);
 
   const toggleTag = (tag: string) => {
-    setSelectedTags((current) =>
-      current.includes(tag) ? current.filter((item) => item !== tag) : [...current, tag]
+    setSelectedTags((current: string[]) =>
+      current.includes(tag) ? current.filter((item: string) => item !== tag) : [...current, tag]
     );
   };
 
   const toggleProgram = (program: MembershipType) => {
-    setSelectedPrograms((current) =>
+    setSelectedPrograms((current: MembershipType[]) =>
       current.includes(program)
-        ? current.filter((item) => item !== program)
+        ? current.filter((item: MembershipType) => item !== program)
         : [...current, program]
     );
   };
 
   const addItem = () => {
-    setEventItems((current) => [...current, { name: "", type: "MEAL" }]);
+    setEventItems((current: EventItemInput[]) => [...current, { name: "", type: "MEAL" }]);
   };
 
   const removeItem = (index: number) => {
-    setEventItems((current) => current.filter((_, i) => i !== index));
+    setEventItems((current: EventItemInput[]) => current.filter((_: EventItemInput, i: number) => i !== index));
   };
 
   const updateItem = (index: number, field: keyof EventItemInput, value: string) => {
-    setEventItems((current) => {
+    setEventItems((current: EventItemInput[]) => {
       const updated = [...current];
       updated[index] = { ...updated[index], [field]: value };
       return updated;
@@ -146,19 +147,19 @@ export function EventForm({ tags, defaultValues }: EventFormProps) {
 
         {eventItems.length > 0 && (
           <div className="flex flex-col gap-3 mt-2">
-            {eventItems.map((item, index) => (
+            {eventItems.map((item: EventItemInput, index: number) => (
               <div key={index} className="flex items-center gap-3 rounded-xl border border-border-soft bg-background p-3">
                 <input
                   type="text"
                   placeholder="Item Name (e.g. Pizza Slice, T-Shirt)"
                   value={item.name}
-                  onChange={(e) => updateItem(index, "name", e.target.value)}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateItem(index, "name", e.target.value)}
                   className="flex-1 rounded-lg border border-border-soft bg-white px-3 py-2 style-caption text-sm text-ink outline-none focus:border-brand"
                   required
                 />
                 <select
                   value={item.type}
-                  onChange={(e) => updateItem(index, "type", e.target.value as EventItemInput["type"])}
+                  onChange={(e: React.ChangeEvent<HTMLSelectElement>) => updateItem(index, "type", e.target.value as EventItemInput["type"])}
                   className="rounded-lg border border-border-soft bg-white px-3 py-2 style-caption text-sm text-ink outline-none focus:border-brand"
                 >
                   <option value="MEAL">MEAL</option>
@@ -181,8 +182,7 @@ export function EventForm({ tags, defaultValues }: EventFormProps) {
         )}
       </div>
 
-      {/* Programs Section — drives member status: attendance is measured
-          against the events tagged for a member's programs. */}
+      {/* Programs Section */}
       <div className="flex w-full flex-col gap-[7px] border-t border-border-soft pt-5">
         <span className="style-body-text leading-[20.3px] text-ink-muted">
           Counts toward
@@ -191,7 +191,7 @@ export function EventForm({ tags, defaultValues }: EventFormProps) {
           Leave empty for a general event that counts for every member.
         </span>
         <div className="mt-[4px] flex flex-wrap gap-[8px]">
-          {ASSIGNABLE_PROGRAMS.map((program) => {
+          {ASSIGNABLE_PROGRAMS.map((program: MembershipType) => {
             const isActive = selectedPrograms.includes(program);
             const badge = PROGRAM_BADGES[program];
             return (
@@ -207,7 +207,7 @@ export function EventForm({ tags, defaultValues }: EventFormProps) {
                 }`}
                 style={
                   isActive
-                    ? { backgroundColor: badge.bg ?? "#efece3", color: badge.color ?? "#16161c" }
+                    ? { backgroundColor: badge?.bg ?? "#efece3", color: badge?.color ?? "#16161c" }
                     : undefined
                 }
               >
@@ -225,7 +225,7 @@ export function EventForm({ tags, defaultValues }: EventFormProps) {
           Tags
         </span>
         <div className="flex flex-wrap gap-[8px]">
-          {tags.map((t) => {
+          {tags.map((t: TagData) => {
             const isActive = selectedTags.includes(t.label.toUpperCase());
             return (
               <button
