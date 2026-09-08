@@ -568,6 +568,23 @@ export function AdminApplicationsManager({
     if (!selectedSubmission) return [];
     const payload = (selectedSubmission.formPayloadJson ?? {}) as Record<string, unknown>;
 
+    // Helper to extract values by ID, exact label, or trimmed label
+    const getValueFromPayload = (id: string, label: string): unknown => {
+      // 1. Check ID
+      if (payload[id] !== undefined) return payload[id];
+
+      // 2. Check exact Label
+      if (payload[label] !== undefined) return payload[label];
+
+      // 3. Check trimmed Label (handles trailing/leading spaces like in Q7)
+      const cleanLabel = label.trim();
+      const matchedKey = Object.keys(payload).find(
+        (key) => key.trim() === cleanLabel
+      );
+
+      return matchedKey ? payload[matchedKey] : undefined;
+    };
+
     const processAnswer = (val: unknown, type?: string) => {
       if (val && typeof val === "object" && !Array.isArray(val)) {
         const obj = val as Record<string, any>;
@@ -616,7 +633,7 @@ export function AdminApplicationsManager({
         index: idx + 1,
         question: q.label,
         type: q.type,
-        answer: processAnswer(payload[q.id] ?? payload[q.label], q.type),
+        answer: processAnswer(getValueFromPayload(q.id, q.label), q.type),
       }));
     }
 

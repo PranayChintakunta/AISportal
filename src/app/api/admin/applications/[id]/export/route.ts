@@ -33,7 +33,7 @@ export async function GET(
     if (fieldKey.startsWith("q_")) {
       const qId = fieldKey.replace(/^q_/, "");
       const q = dynamicQuestions.find((item) => item.id === qId);
-      const label = q ? q.label : qId;
+      const label = q ? q.label.trim() : qId;
       return `"${label.replace(/"/g, '""')}"`;
     }
     return `"${fieldKey.replace(".", " ").toUpperCase()}"`;
@@ -63,11 +63,19 @@ export async function GET(
         const qId = fieldKey.replace(/^q_/, "");
         const questionObj = dynamicQuestions.find((q) => q.id === qId);
 
-        rawVal =
-          payload[qId] ??
-          (questionObj ? payload[questionObj.label] : undefined) ??
-          payload[fieldKey] ??
-          "";
+        if (payload[qId] !== undefined) {
+          rawVal = payload[qId];
+        } else if (questionObj && payload[questionObj.label] !== undefined) {
+          rawVal = payload[questionObj.label];
+        } else if (questionObj) {
+          const cleanLabel = questionObj.label.trim();
+          const matchedKey = Object.keys(payload).find(
+            (key) => key.trim() === cleanLabel
+          );
+          rawVal = matchedKey ? payload[matchedKey] : (payload[fieldKey] ?? "");
+        } else {
+          rawVal = payload[fieldKey] ?? "";
+        }
       }
 
       let strVal = "";
