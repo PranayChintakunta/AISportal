@@ -1,12 +1,16 @@
 import { redirect } from "next/navigation";
 import { getAdminViewer } from "@/lib/admin-access";
 
-// Placeholder page. Officer-only: the /admin layout also admits application reviewers.
-export default async function App() {
+export default async function AdminEventsLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   const viewer = await getAdminViewer();
+
   if (!viewer?.isAdmin) {
     redirect("/dashboard");
   }
 
-  return null;
+  return <>{children}</>;
 }
