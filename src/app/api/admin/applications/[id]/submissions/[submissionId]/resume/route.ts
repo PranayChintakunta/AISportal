@@ -1,22 +1,24 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { getAuthenticatedUser } from "@/lib/auth";
+import { getApplicationReviewer, postingOutOfScopeResponse } from "@/lib/admin-app-auth";
+import { canReviewProgramType } from "@/lib/roles";
 
 export async function GET(
-  req: NextRequest,
+  _req: NextRequest,
   ctx: { params: Promise<{ id: string; submissionId: string }> }
 ) {
   try {
-    const user = await getAuthenticatedUser();
-    if (!user || user.role === "MEMBER") {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    // Was a flat "role must not be MEMBER" check, which would lock out AIM
+    // mentors — they review with role MEMBER and an AIM_MENTOR membership.
+    const reviewer = await getApplicationReviewer();
+    if ("error" in reviewer) return reviewer.error;
 
     const { submissionId } = await ctx.params;
 
     const submission = await prisma.applicationSubmission.findUnique({
       where: { id: submissionId },
       include: {
+        application: { select: { programType: true } },
         user: {
           include: {
             profile: {
@@ -27,7 +29,16 @@ export async function GET(
       },
     });
 
-    const file = submission?.user?.profile?.resumeFile;
+    if (!submission) {
+      return NextResponse.json({ error: "Resume file not found" }, { status: 404 });
+    }
+
+    // Scope against the submission's own posting, not the id in the URL.
+    if (!canReviewProgramType(reviewer.allowedProgramTypes, submission.application.programType)) {
+      return postingOutOfScopeResponse();
+    }
+
+    const file = submission.user?.profile?.resumeFile;
 
     if (!file?.storageKey) {
       return NextResponse.json({ error: "Resume file not found" }, { status: 404 });
