@@ -11,19 +11,22 @@ import { isAdminRole } from "@/lib/roles";
 
 const NAV_ITEMS = ["Events", "Apply", "Dashboard"] as const;
 const ADMIN_LABEL = "Admin" as const;
+/** Entry point for AIM mentors — reviews applications, nothing else in /admin. */
+const REVIEW_LABEL = "Review" as const;
 
-const NAV_ROUTES: Record<(typeof NAV_ITEMS)[number] | typeof ADMIN_LABEL, string> = {
+const NAV_ROUTES: Record<(typeof NAV_ITEMS)[number] | typeof ADMIN_LABEL | typeof REVIEW_LABEL, string> = {
   Events: "/events",
   Apply: "/applications",
   Dashboard: "/dashboard",
   Admin: "/admin/events",
+  Review: "/admin/applications",
 };
 
 const ACTIVE_PILL_GRADIENT = "linear-gradient(135deg, #f2a968 0%, #7d64c4 100%)";
 
 type NavbarProps = {
   /** Which primary link is highlighted. Defaults to the dashboard. */
-  active?: (typeof NAV_ITEMS)[number] | "Profile" | typeof ADMIN_LABEL;
+  active?: (typeof NAV_ITEMS)[number] | "Profile" | typeof ADMIN_LABEL | typeof REVIEW_LABEL;
 };
 
 function ActivePill() {
@@ -50,6 +53,9 @@ export function Navbar({ active = "Dashboard" }: NavbarProps) {
     null;
 
   const showAdminLink = role ? isAdminRole(role) : false;
+  // Only the server-resolved account can know this — it comes from an active
+  // Membership row, which Clerk's session metadata has no concept of.
+  const showReviewLink = account?.isReviewerOnly ?? false;
   const accountLabel = account?.firstName?.trim() || user?.firstName?.trim() || "Profile";
 
   const [isScrolled, setIsScrolled] = useState(false);
@@ -119,6 +125,23 @@ export function Navbar({ active = "Dashboard" }: NavbarProps) {
               >
                 {active === ADMIN_LABEL && <ActivePill />}
                 Admin
+              </Link>
+            </li>
+          ) : null}
+
+          {/* AIM mentors: role stays MEMBER, so they never get the Admin pill above —
+              this is their only way into /admin/applications without typing the URL. */}
+          {showReviewLink ? (
+            <li>
+              <Link
+                href={NAV_ROUTES.Review}
+                className={cn(
+                  "relative style-nav-link tracking-[0.5px] px-[24px] py-[10px] rounded-full transition-all duration-200 flex items-center justify-center",
+                  active === REVIEW_LABEL ? "text-white" : "text-ink hover:bg-gray-100 hover:scale-105"
+                )}
+              >
+                {active === REVIEW_LABEL && <ActivePill />}
+                Review
               </Link>
             </li>
           ) : null}

@@ -288,6 +288,11 @@ export function AdminApplicationsManager({
   const isExecutiveOrDirector = userRole === "EXECUTIVE" || userRole === "DIRECTOR";
   const isOfficerOrAbove = isExecutiveOrDirector || userRole === "OFFICER";
 
+  const isReviewerOnly = !isOfficerOrAbove;
+
+  /** The postings rail is collapsed and untoggleable for a single-posting reviewer. */
+  const showPostingsList = isAppsListOpen && !isReviewerOnly;
+
   const canEditOrPublish = isExecutiveOrDirector;
   const canDelete = userRole === "EXECUTIVE";
 
@@ -319,7 +324,12 @@ export function AdminApplicationsManager({
     });
 
     setApplications(allowed);
-    setSelectedId((current) => current || allowed[0]?.id || "");
+    // A posting id from the URL that this viewer cannot see — a scoped reviewer
+    // following a link to another program's posting — is dropped rather than
+    // left selected, which would strand them on a load error.
+    setSelectedId((current) =>
+      current && allowed.some((app) => app.id === current) ? current : allowed[0]?.id || ""
+    );
     setLoading(false);
   }
 
@@ -331,6 +341,7 @@ export function AdminApplicationsManager({
     const response = await fetch(`/api/admin/applications/${applicationId}`);
     if (!response.ok) throw new Error("Unable to load application details.");
     const payload = (await response.json()) as { application: Detail };
+    setError(null);
     setDetail(payload.application);
     setEditForm(payload.application);
     setEditOpenAt(formatChicagoDateTimeInput(payload.application.openAt));
@@ -661,6 +672,7 @@ export function AdminApplicationsManager({
 
           <div className="flex flex-wrap items-center gap-2">
             {/* Blind Review Mode Toggle */}
+            {!isReviewerOnly ? (
             <button
               type="button"
               onClick={() => setIsBlindReviewMode((prev) => !prev)}
@@ -675,9 +687,11 @@ export function AdminApplicationsManager({
               </svg>
               <span>{isBlindReviewMode ? "Blind Review ON" : "Blind Review OFF"}</span>
             </button>
+            ) : null}
 
             {/* View Layout Toggles */}
             <div className="flex items-center rounded-lg border border-border-soft bg-white p-1 shadow-xs">
+              {!isReviewerOnly ? (
               <button
                 type="button"
                 onClick={() => setIsAppsListOpen((prev) => !prev)}
@@ -693,6 +707,7 @@ export function AdminApplicationsManager({
                 </svg>
                 <span>Listings</span>
               </button>
+              ) : null}
               <button
                 type="button"
                 onClick={() => setIsSubmissionsListOpen((prev) => !prev)}
@@ -727,17 +742,17 @@ export function AdminApplicationsManager({
         {/* Dynamic Grid Layout */}
         <div
           className={`grid gap-5 transition-all duration-300 ease-in-out ${
-            isAppsListOpen && isSubmissionsListOpen
+            showPostingsList && isSubmissionsListOpen
               ? "grid-cols-1 lg:grid-cols-[260px_320px_1fr]"
-              : isAppsListOpen && !isSubmissionsListOpen
+              : showPostingsList && !isSubmissionsListOpen
               ? "grid-cols-1 lg:grid-cols-[280px_1fr]"
-              : !isAppsListOpen && isSubmissionsListOpen
+              : !showPostingsList && isSubmissionsListOpen
               ? "grid-cols-1 lg:grid-cols-[340px_1fr]"
               : "grid-cols-1"
           }`}
         >
           {/* Applications Sidebar */}
-          {isAppsListOpen ? (
+          {showPostingsList ? (
             <aside className="flex flex-col gap-3 min-w-0 transition-all">
               <div className="flex items-center justify-between px-1">
                 <h2 className="style-body-text text-xs font-bold uppercase tracking-wider text-ink-muted">
@@ -964,7 +979,7 @@ export function AdminApplicationsManager({
                 <div className="border-b border-border-soft pb-4">
                   <div className="flex flex-wrap items-center justify-between gap-4">
                     <div className="flex items-center gap-3">
-                      {!isAppsListOpen ? (
+                      {!showPostingsList && !isReviewerOnly ? (
                         <button
                           type="button"
                           onClick={() => setIsAppsListOpen(true)}

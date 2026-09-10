@@ -6,7 +6,8 @@ import { MembersToolbar } from "@/components/admin/members-toolbar";
 import { MembersPagination } from "@/components/admin/members-pagination";
 import { MobileAdminMembers } from "@/components/mobile/admin/MobileAdminMembers";
 import { Button } from "@/components/ui/button";
-import { getAuthenticatedUser } from "@/lib/auth";
+import { redirect } from "next/navigation";
+import { getAdminViewer } from "@/lib/admin-access";
 import { parseMembersQuery } from "@/lib/members/query-params";
 import { getMembersViewModel } from "@/lib/members/view-model";
 import { canManageRoles } from "@/lib/roles";
@@ -21,12 +22,16 @@ export default async function AdminMembersPage({
 }: {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
+  // The directory is officer-only. Application reviewers pass the /admin layout
+  // and may open a specific member profile, but get no way to browse everyone.
+  const viewer = await getAdminViewer();
+  if (!viewer?.isAdmin) {
+    redirect("/dashboard");
+  }
+
   const query = parseMembersQuery(await searchParams);
-  const [view, viewer] = await Promise.all([
-    getMembersViewModel(query),
-    getAuthenticatedUser(),
-  ]);
-  const editable = canManageRoles(viewer?.role);
+  const view = await getMembersViewModel(query);
+  const editable = canManageRoles(viewer.role);
 
   return (
     <>
