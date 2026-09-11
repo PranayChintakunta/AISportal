@@ -150,7 +150,7 @@ export function MobileEventsBrowse({ upcomingEvents, pastEvents }: MobileEventsB
           <>
             {filteredUpcoming.length > 0 && (
               <div className="flex flex-col gap-[16px]">
-                <h2 className="style-mobile-title text-ink">
+                <h2 className="style-section-header text-ink">
                   Upcoming Events
                 </h2>
                 <div className="grid grid-cols-1 gap-[16px]">
@@ -176,7 +176,7 @@ export function MobileEventsBrowse({ upcomingEvents, pastEvents }: MobileEventsB
 
             {filteredPast.length > 0 && (
               <div className="flex flex-col gap-[16px]">
-                <h2 className="style-mobile-title text-ink-muted">
+                <h2 className="style-section-header text-ink-muted">
                   Past Events
                 </h2>
                 <div className="grid grid-cols-1 gap-[16px] opacity-80">

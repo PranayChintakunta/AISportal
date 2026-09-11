@@ -6,7 +6,7 @@ import { getAuthenticatedUser } from "@/lib/auth";
 import { AdminSidebar } from "@/components/admin/admin-sidebar";
 import { EventForm } from "@/components/admin/event-form";
 import { CoverPhotoCard } from "@/components/admin/cover-photo-card";
-import { SettingsCard } from "@/components/admin/settings-card";
+import { SettingsCard, SettingRow} from "@/components/admin/settings-card";
 import { MobileAdminEditEvent } from "@/components/mobile/admin/MobileAdminEditEvent";
 import { eventTags, eventSettings } from "@/lib/data";
 import { updateEvent, deleteEvent } from "./actions";
@@ -52,6 +52,7 @@ export default async function EditEventPage({
     capacity: event.capacity?.toString() ?? "",
     status: event.status as string,
     visibility: event.visibility as string,
+    isRsvpOpen: event.isRsvpOpen ?? true,
     imageUrl: event.imageUrl,
     tags: event.tags as string[],
     programs: event.programs,
@@ -61,6 +62,21 @@ export default async function EditEventPage({
     })),
   };
 
+  // Build settings rows dynamically with initial values from the DB
+  const dynamicSettings: SettingRow[] = [
+    {
+      label: "Allow RSVPs",
+      type: "toggle",
+      name: "isRsvpOpen", // Sent in formData as "true" or "false"
+      defaultOn: defaultValues.isRsvpOpen,
+    },
+    {
+      label: "Event Visibility",
+      type: "badge",
+      badge: event.isPublished ? "Public" : "Draft",
+    },
+  ];
+
   return (
     <>
       <div className="md:hidden">
@@ -69,6 +85,7 @@ export default async function EditEventPage({
           defaultValues={defaultValues} 
           isPublished={event.isPublished} 
           userRole={user.role}
+          eventSettings={dynamicSettings}
         />
       </div>
 
@@ -102,7 +119,7 @@ export default async function EditEventPage({
 
               <div className="flex w-full flex-col gap-5 lg:w-[382px] lg:shrink-0">
                 <CoverPhotoCard defaultImageUrl={event.imageUrl} />
-                <SettingsCard items={eventSettings} />
+                <SettingsCard items={dynamicSettings} />
                 
                 <div className="flex flex-col gap-2.5">
                   <EventActionButtons isPublished={event.isPublished} userRole={user.role}/>

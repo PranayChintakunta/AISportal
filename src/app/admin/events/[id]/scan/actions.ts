@@ -35,7 +35,7 @@ export async function processScan(
       ? `${rsvp.user.profile.firstName} ${rsvp.user.profile.lastName}`
       : rsvp.user.email;
 
-    // 3. Handle Event Check-In
+    // 3. Handle Event Check-In Only
     if (scanType === "attendance") {
       if (rsvp.attendance) {
         return { 
@@ -64,49 +64,79 @@ export async function processScan(
       };
     }
 
-    // 4. Handle Item Scans (Meals, Drinks, Merch) using ItemScan model
-    if (scanType === "item" && eventItemId) {
-      if (!rsvp.attendance) {
-        return { 
-          success: false, 
-          error: `${name} must check into the event first!`,
-          isWalkIn: rsvp.isWalkIn 
-        };
+    // 4. Handle Item Scans (Guaranteed Atomic Auto Check-In + Item Creation)
+    if (scanType === "item") {
+      if (!eventItemId) {
+        return { success: false, error: "No item selected for scanning." };
       }
 
-      const existingScan = await prisma.itemScan.findUnique({
-        where: {
-          attendanceId_eventItemId: {
-            attendanceId: rsvp.attendance.id,
-            eventItemId: eventItemId,
+      return await prisma.$transaction(async (tx) => {
+        let activeAttendanceId = rsvp.attendance?.id;
+        let wasAutoCheckedIn = false;
+
+        // Step 4A: Check or Create Attendance Record
+        if (!activeAttendanceId) {
+          // Double-check if created in a concurrent request
+          const existingAttendance = await tx.attendance.findUnique({
+            where: { rsvpId: rsvp.id },
+            select: { id: true },
+          });
+
+          if (existingAttendance) {
+            activeAttendanceId = existingAttendance.id;
+          } else {
+            const newAttendance = await tx.attendance.create({
+              data: {
+                eventId,
+                userId: rsvp.userId,
+                rsvpId: rsvp.id,
+                method: AttendanceMethod.QR_SCAN,
+                qrTokenUsed: qrToken,
+              },
+              select: { id: true },
+            });
+            activeAttendanceId = newAttendance.id;
+            wasAutoCheckedIn = true;
+          }
+        }
+
+        // Step 4B: Check for duplicate item claim
+        const existingScan = await tx.itemScan.findUnique({
+          where: {
+            attendanceId_eventItemId: {
+              attendanceId: activeAttendanceId,
+              eventItemId: eventItemId,
+            },
           },
-        },
-      });
+        });
 
-      if (existingScan) {
+        if (existingScan) {
+          return { 
+            success: false, 
+            error: `${name} already claimed this item!`,
+            isWalkIn: rsvp.isWalkIn 
+          };
+        }
+
+        // Step 4C: Create Item Scan linked directly to activeAttendanceId
+        await tx.itemScan.create({
+          data: {
+            attendanceId: activeAttendanceId,
+            eventItemId: eventItemId,
+            scannedById: currentUser.id,
+          },
+        });
+
+        const messagePrefix = wasAutoCheckedIn 
+          ? `Checked in & item claimed for ${name}` 
+          : `Item claimed for ${name}`;
+
         return { 
-          success: false, 
-          error: `${name} already claimed this item!`,
+          success: true, 
+          message: rsvp.isWalkIn ? `${messagePrefix} [Walk-In]` : messagePrefix,
           isWalkIn: rsvp.isWalkIn 
         };
-      }
-
-      // Create the item scan record and link it to the admin's database ID
-      await prisma.itemScan.create({
-        data: {
-          attendanceId: rsvp.attendance.id,
-          eventItemId: eventItemId,
-          scannedById: currentUser.id,
-        },
       });
-
-      return { 
-        success: true, 
-        message: rsvp.isWalkIn 
-          ? `Item claimed for ${name} [Walk-In]` 
-          : `Item claimed for ${name}`,
-        isWalkIn: rsvp.isWalkIn 
-      };
     }
 
     return { success: false, error: "Invalid scan configuration." };

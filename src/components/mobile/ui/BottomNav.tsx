@@ -18,31 +18,37 @@ export function BottomNav() {
   const metadataRole = isKnownRole(rawMetadataRole) ? rawMetadataRole : undefined;
   const [fetchedRole, setFetchedRole] = useState<string | null>(null);
 
-  // 2. Fetch fallback logic identical to the desktop navbar
+  const [isReviewerOnly, setIsReviewerOnly] = useState(false);
+
   useEffect(() => {
-    if (!isSignedIn || metadataRole) return;
+    if (!isSignedIn) return;
 
     let isMounted = true;
-    async function loadRole() {
+    async function loadAccount() {
       try {
         const response = await fetch("/api/me");
         if (!isMounted) return;
         if (!response.ok) {
           setFetchedRole(null);
+          setIsReviewerOnly(false);
           return;
         }
         const data = await response.json();
         setFetchedRole(data?.role ?? null);
+        setIsReviewerOnly(Boolean(data?.isReviewerOnly));
       } catch {
-        if (isMounted) setFetchedRole(null);
+        if (isMounted) {
+          setFetchedRole(null);
+          setIsReviewerOnly(false);
+        }
       }
     }
 
-    loadRole();
+    loadAccount();
     return () => {
       isMounted = false;
     };
-  }, [isSignedIn, metadataRole]);
+  }, [isSignedIn]);
 
   const role = isSignedIn ? metadataRole ?? fetchedRole : null;
   const isAdmin = isAdminRole(role);
@@ -57,6 +63,10 @@ export function BottomNav() {
   // 4. Inject Admin route if permissions pass
   if (isSignedIn && isAdmin) {
     tabs.push({ label: "Admin", href: "/admin/events" });
+  }
+
+  if (isSignedIn && isReviewerOnly) {
+    tabs.push({ label: "Review", href: "/admin/applications" });
   }
 
   const isProfileActive = pathname?.startsWith("/profile");
@@ -91,7 +101,7 @@ export function BottomNav() {
           <Show when="signed-out">
             <Link
               href="/onboarding?mode=login"
-              className="rounded-full bg-brand px-3 py-2 style-nav-link text-white whitespace-nowrap shrink-0"
+              className="rounded-lg bg-[linear-gradient(135deg,#f2a968_0%,#7d64c4_60%)] px-3 py-2 style-nav-link text-white whitespace-nowrap shrink-0"
             >
               Sign In
             </Link>

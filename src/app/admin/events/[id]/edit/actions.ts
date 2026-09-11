@@ -170,6 +170,9 @@ export async function updateEvent(formData: FormData): Promise<void> {
   // visibility is a plain String? in the Prisma schema
   const visibility = String(formData.get("visibility") ?? "PUBLIC").toUpperCase();
 
+  const rawRsvpOpen = formData.get("isRsvpOpen");
+  const isRsvpOpen = rawRsvpOpen === "true" || rawRsvpOpen === "on" || rawRsvpOpen === "1";
+
   const tags = parseTags(formData.getAll("tags").length > 0 ? formData.getAll("tags") : formData.get("tags"));
   const programs = parsePrograms(formData.getAll("programs").length > 0 ? formData.getAll("programs") : formData.get("programs"));
 
@@ -204,6 +207,7 @@ export async function updateEvent(formData: FormData): Promise<void> {
       capacity,
       status,
       visibility,
+      isRsvpOpen,
       imageUrl: imageResult.imageUrl,
       tags,
       programs,

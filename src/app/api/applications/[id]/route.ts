@@ -2,7 +2,7 @@ import { ProgramType } from "@prisma/client";
 import { NextResponse } from "next/server";
 import { createErrorResponse } from "@/lib/api-error";
 import { prisma } from "@/lib/prisma";
-import { getAuthenticatedUser } from "@/lib/auth";
+import { auth } from "@clerk/nextjs/server";
 
 export interface Question {
   id: string;
@@ -14,17 +14,23 @@ export interface Question {
   mappedToProfileKey?: string | null;
 }
 
-async function getCurrentUser() {
-  // Fix 1: Properly destructure userId from Clerk's auth() helper
-  const user = await getAuthenticatedUser();
+async function getOptionalUserId() {
+  const session = await auth();
 
-  if (!user) {
-    return {
-      error: createErrorResponse("User not found", "USER_NOT_FOUND", 404),
-    } as const;
+  if (!session?.userId) {
+    return null;
   }
 
-  return { userId: user.id, role: user.role } as const;
+  const user = await prisma.user.findUnique({
+    where: {
+      clerkId: session.userId,
+    },
+    select: {
+      id: true,
+    },
+  });
+
+  return user?.id ?? null;
 }
 
 function getPhase(openAt: Date, closeAt: Date, now: Date) {
@@ -92,68 +98,72 @@ export async function GET(
   _request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const currentUser = await getCurrentUser();
-  if ("error" in currentUser) {
-    return currentUser.error;
-  }
-
+  const userId = await getOptionalUserId();
   const { id } = await params;
 
-  // Execute application lookup in parallel with draft and submission checks
-  const [application, draft, submission] = await Promise.all([
-    prisma.programApplication.findFirst({
-      where: { id },
-      select: {
-        id: true,
-        title: true,
-        description: true,
-        link: true,
-        questionsJson: true,
-        eligibility: true,
-        roles: true,
-        requiredProfileFields: true,
-        programType: true,
-        openAt: true,
-        closeAt: true,
-        decisionDate: true,
-        visibleToUsers: true,
-        retentionUntil: true,
-        createdById: true,
-        createdAt: true,
-        updatedAt: true,
-      },
-    }),
-    prisma.applicationDraft.findUnique({
-      where: {
-        applicationId_userId: {
-          applicationId: id,
-          userId: currentUser.userId,
-        },
-      },
-      select: { stepIndex: true, isSubmitted: true },
-    }),
-    prisma.applicationSubmission.findFirst({
-      where: { applicationId: id, userId: currentUser.userId },
-      orderBy: [{ submittedAt: "desc" }, { updatedAt: "desc" }],
-      select: { id: true, status: true },
-    }),
-  ]);
+  // 1. Fetch the application
+  const application = await prisma.programApplication.findUnique({
+    where: { id },
+    select: {
+      id: true,
+      title: true,
+      description: true,
+      link: true,
+      questionsJson: true,
+      eligibility: true,
+      roles: true,
+      requiredProfileFields: true,
+      programType: true,
+      openAt: true,
+      closeAt: true,
+      decisionDate: true,
+      visibleToUsers: true,
+      retentionUntil: true,
+      createdById: true,
+      createdAt: true,
+      updatedAt: true,
+    },
+  });
 
   if (!application) {
     return createErrorResponse("Application not found", "NOT_FOUND", 404);
   }
 
-  // Fix 2: Guard hidden applications for non-admin applicants
-  if (!application.visibleToUsers && currentUser.role === "MEMBER") {
+  if (!application.visibleToUsers) {
     return createErrorResponse("Application not available", "NOT_FOUND", 404);
   }
 
-  const questions = parseQuestions(application.questionsJson);
-  const eligibilityList = (application.eligibility as string[] ?? []);
+  // 2. Conditionally fetch user draft & submission if authenticated
+  let draft = null;
+  let submission = null;
+
+  if (userId) {
+    [draft, submission] = await Promise.all([
+      prisma.applicationDraft.findUnique({
+        where: {
+          applicationId_userId: {
+            applicationId: id,
+            userId,
+          },
+        },
+        select: { stepIndex: true, isSubmitted: true },
+      }),
+      prisma.applicationSubmission.findFirst({
+        where: { applicationId: id, userId },
+        orderBy: [{ submittedAt: "desc" }, { updatedAt: "desc" }],
+        select: { id: true, status: true },
+      }),
+    ]);
+  }
+
+  // 3. Only parse and include questions if userId exists (authenticated session)
+  const questions = userId ? parseQuestions(application.questionsJson) : [];
+  const eligibilityList = (application.eligibility as string[]) ?? [];
 
   return NextResponse.json({
     application: {
       ...application,
+      questionsJson: undefined, // Strip raw JSON string from public response
       eligibility:
         eligibilityList.length > 0
           ? application.eligibility
@@ -165,6 +175,6 @@ export async function GET(
     },
     draft: draft ?? null,
     submissionStatus: submission?.status ?? null,
-    submissionId: submission?.id ?? null
+    submissionId: submission?.id ?? null,
   });
 }

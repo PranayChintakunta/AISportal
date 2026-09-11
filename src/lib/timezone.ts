@@ -13,11 +13,9 @@ export function utcToChicagoInput(date: Date | string | null | undefined): strin
   const d = typeof date === "string" ? new Date(date) : date;
   if (isNaN(d.getTime())) return "";
 
-  // formatInTimeZone explicitly handles CDT/CST shifts automatically
   return formatInTimeZone(d, CHICAGO_TZ, "yyyy-MM-dd'T'HH:mm");
 }
 
-/** Alias for backward compatibility if used elsewhere in your app */
 export const formatChicagoDateTimeInput = utcToChicagoInput;
 
 /**
@@ -29,13 +27,30 @@ export function chicagoInputToUtc(localDateTimeString: string): Date {
     return new Date(NaN);
   }
 
-  // Interprets local time string in Chicago context and returns standard UTC Date
-  return new TZDate(localDateTimeString, CHICAGO_TZ);
+  // Extract date components directly from "YYYY-MM-DDTHH:mm"
+  const [datePart, timePart] = localDateTimeString.split("T");
+  if (!datePart || !timePart) return new Date(NaN);
+
+  const [year, month, day] = datePart.split("-").map(Number);
+  const [hours, minutes] = timePart.split(":").map(Number);
+
+  if (
+    isNaN(year) ||
+    isNaN(month) ||
+    isNaN(day) ||
+    isNaN(hours) ||
+    isNaN(minutes)
+  ) {
+    return new Date(NaN);
+  }
+
+  // Pass individual integer components (Month is 0-indexed in JS Dates: January = 0)
+  // This explicitly creates a TZDate anchored in Chicago time without UTC string misinterpretation.
+  return new TZDate(year, month - 1, day, hours, minutes, 0, CHICAGO_TZ);
 }
 
 /**
  * 3. Formats a UTC ISO string or Date into a human-readable Chicago display format.
- * Example output: "Sep 4, 2026, 2:57 PM" or "TBD" if null/invalid.
  */
 export function formatChicagoDisplayDate(value?: Date | string | null): string {
   if (!value) return "TBD";
