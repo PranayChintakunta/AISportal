@@ -1,9 +1,12 @@
 import Link from "next/link";
 import { cn } from "@/lib/utils";
-import { getAuthenticatedUser } from "@/lib/auth";
+import { adminRoleLabel, getAdminViewer } from "@/lib/admin-access";
 import { Button } from "../ui/button";
 
 const NAV_ITEMS = ["Applications", "Events", "Members", "Exit"] as const;
+
+/** Sections an application reviewer may reach. Everything else is officer-only. */
+const REVIEWER_NAV_ITEMS: readonly (typeof NAV_ITEMS)[number][] = ["Applications", "Exit"];
 
 const NAV_ROUTES: Record<(typeof NAV_ITEMS)[number], string> = {
   Applications: "/admin/applications",
@@ -25,14 +28,15 @@ type AdminSidebarProps = {
 export async function AdminSidebar({
   active = "Applications",
 }: AdminSidebarProps) {
-  
-  const user = await getAuthenticatedUser();
-  // Format role nicely (e.g., fallback to "Officer" or capitalize if it's "ADMIN", "OFFICER", etc.)
-  const rawRole = user?.role || "Officer";
-  const displayRole = (rawRole.charAt(0).toUpperCase() + rawRole.slice(1).toLowerCase());
-  
-  const fname = user?.profile?.firstName;
-  const lname = user?.profile?.lastName;
+
+  const viewer = await getAdminViewer();
+  // Reviewers see their program, not "Member" — the role they hold is not the
+  // reason they are here.
+  const displayRole = adminRoleLabel(viewer);
+  const navItems = viewer?.isReviewerOnly ? REVIEWER_NAV_ITEMS : NAV_ITEMS;
+
+  const fname = viewer?.firstName;
+  const lname = viewer?.lastName;
   return (
     <aside className="flex min-h-screen w-[248px] shrink-0 flex-col border-r border-border-soft bg-white px-[24px] pb-[30px] pt-[30px]">
       <div className="flex flex-col gap-2">
@@ -45,7 +49,7 @@ export async function AdminSidebar({
       </div>
 
       <nav className="mt-[18px] flex flex-col gap-[6px]">
-        {NAV_ITEMS.map((label) => {
+        {navItems.map((label) => {
           const isActive = label === active;
           return (
             <Link

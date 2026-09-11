@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createErrorResponse } from "@/lib/api-error";
-import { getAdminUser } from "@/lib/admin-app-auth";
+import { getApplicationReviewer, postingOutOfScopeResponse } from "@/lib/admin-app-auth";
+import { canReviewProgramType } from "@/lib/roles";
 import { prisma } from "@/lib/prisma";
 import { ApplicationStatus } from "@prisma/client";
 
@@ -8,7 +9,9 @@ export async function PATCH(
   request: Request,
   { params }: { params: Promise<{ id: string; submissionId: string }> }
 ) {
-  const currentUser = await getAdminUser();
+  // Reviewers, not just admins: an AIM mentor reaches this with role MEMBER.
+  // Status changes stay Director/Executive-only, enforced below.
+  const currentUser = await getApplicationReviewer();
   if ("error" in currentUser) return currentUser.error;
 
   const { submissionId } = await params;
@@ -19,25 +22,45 @@ export async function PATCH(
       notes?: string;
     };
 
-    // 1. Fetch current submission status if needed for default review status
     const currentSubmission = await prisma.applicationSubmission.findUnique({
       where: { id: submissionId },
-      select: { status: true },
+      select: {
+        status: true,
+        application: { select: { programType: true } },
+      },
     });
 
     if (!currentSubmission) {
       return createErrorResponse("Submission not found", "NOT_FOUND", 404);
     }
 
-    // 2. Update overall submission status if provided
+    if (
+      !canReviewProgramType(
+        currentUser.allowedProgramTypes,
+        currentSubmission.application.programType
+      )
+    ) {
+      return postingOutOfScopeResponse();
+    }
+
     if (status) {
+      const userRole = currentUser.user.role; // MEMBER | OFFICER | DIRECTOR | EXECUTIVE
+      const isAllowedToChangeStatus = userRole === "DIRECTOR" || userRole === "EXECUTIVE";
+
+      if (!isAllowedToChangeStatus) {
+        return createErrorResponse(
+          "Forbidden: Only Directors and Executives can modify application status.",
+          "FORBIDDEN",
+          403
+        );
+      }
+
       await prisma.applicationSubmission.update({
         where: { id: submissionId },
         data: { status },
       });
     }
 
-    // 3. Upsert reviewer notes safely satisfying Prisma constraints
     if (notes !== undefined) {
       const reviewStatus = status || currentSubmission.status || ApplicationStatus.IN_REVIEW;
 
@@ -61,19 +84,6 @@ export async function PATCH(
       });
     }
 
-    if (status) {
-      const userRole = currentUser.user.role; // Matches UserRole enum: MEMBER | OFFICER | DIRECTOR | EXECUTIVE
-      const isAllowedToChangeStatus = userRole === "DIRECTOR" || userRole === "EXECUTIVE";
-
-      if (!isAllowedToChangeStatus) {
-        return createErrorResponse(
-          "Forbidden: Only Directors and Executives can modify application status.",
-          "FORBIDDEN",
-          403
-        );
-      }
-    }
-    
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error("Failed to update submission:", error);

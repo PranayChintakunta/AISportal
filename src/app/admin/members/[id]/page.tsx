@@ -5,7 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { AdminSidebar } from "@/components/admin/admin-sidebar";
 import { MobileAdminNav } from "@/components/mobile/admin/MobileAdminNav";
 import { Badge } from "@/components/ui/badge";
-import { getAuthenticatedUser } from "@/lib/auth";
+import { getAdminViewer } from "@/lib/admin-access";
 import { canManageRoles } from "@/lib/roles";
 import { MemberRolesEditor } from "@/components/admin/member-roles-editor";
 
@@ -104,17 +104,24 @@ export default async function MemberProfilePage({
       ? decodeURIComponent(resolvedSearchParams.from)
       : null;
 
-  const backUrl = rawRedirect && rawRedirect.startsWith("/") ? rawRedirect : "/admin/members";
-  const backLabel = backUrl.includes("/rsvps") ? "Back to Event RSVPs" : "Back to Members";
-
   const now = new Date();
 
   const [member, viewer] = await Promise.all([
     getFullMemberDetails(id),
-    getAuthenticatedUser(),
+    getAdminViewer(),
   ]);
 
   if (!member) notFound();
+
+  // Reviewers reach this page from the applicant list and cannot open the
+  // members directory, so their fallback goes back to Applications instead.
+  const fallbackBackUrl = viewer?.isReviewerOnly ? "/admin/applications" : "/admin/members";
+  const backUrl = rawRedirect && rawRedirect.startsWith("/") ? rawRedirect : fallbackBackUrl;
+  const backLabel = backUrl.includes("/rsvps")
+    ? "Back to Event RSVPs"
+    : backUrl === "/admin/applications"
+    ? "Back to Applications"
+    : "Back to Members";
 
   const editable = canManageRoles(viewer?.role);
   const name = member.profile
