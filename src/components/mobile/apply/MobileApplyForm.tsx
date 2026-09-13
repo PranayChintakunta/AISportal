@@ -1098,7 +1098,7 @@ export function MobileApplyForm() {
               Submit Your Application?
             </h3>
             <p className="mt-2 text-sm text-ink-muted">
-              Are you sure you're ready to submit? You won't be able to edit
+              Are you sure you&apos;re ready to submit? You won&apos;t be able to edit
               your responses or uploaded files after finalizing your
               submission.
             </p>

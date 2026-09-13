@@ -77,6 +77,8 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
                   linkedinUrl: true, 
                   githubUrl: true, 
                   portfolioUrl: true, 
+                  phoneNumber: true,
+                  personalEmail: true,
                   resumeFile: { select: { fileName: true } } 
                 } 
               } 
@@ -86,6 +88,7 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
             include: { 
               reviewer: { 
                 select: { 
+                  id: true,
                   profile: { select: { firstName: true, lastName: true } }, 
                   email: true 
                 } 
@@ -104,6 +107,7 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
   }
 
   return NextResponse.json({
+    currentUserId: currentUser.user.id,
     application: {
       ...application,
       questions: application.questionsJson ?? [],
