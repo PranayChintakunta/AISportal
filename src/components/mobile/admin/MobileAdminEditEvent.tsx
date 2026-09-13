@@ -4,7 +4,7 @@ import { CoverPhotoCard } from "@/components/admin/cover-photo-card";
 import { SettingRow, SettingsCard } from "@/components/admin/settings-card";
 import { MobileScreen } from "@/components/mobile/ui/MobileScreen";
 import { MobileAdminNav } from "@/components/mobile/admin/MobileAdminNav";
-import { eventTags, eventSettings } from "@/lib/data";
+import { eventTags } from "@/lib/data";
 import { updateEvent, deleteEvent } from "@/app/admin/events/[id]/edit/actions";
 import { DeleteEventButton } from "@/components/admin/delete-event-button";
 import { EventActionButtons } from "@/components/admin/admin-event-actions";

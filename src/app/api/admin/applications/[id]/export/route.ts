@@ -52,15 +52,20 @@ export async function GET(
   });
 
   // Helper to extract nested properties dynamically
-  const getNestedValue = (obj: any, path: string) => {
-    return path.split(".").reduce((acc, part) => acc && acc[part], obj);
+  const getNestedValue = (obj: unknown, path: string): unknown => {
+    return path.split(".").reduce<unknown>((acc, part) => {
+      if (acc && typeof acc === "object" && part in acc) {
+        return (acc as Record<string, unknown>)[part];
+      }
+      return undefined;
+    }, obj);
   };
 
   const csvRows = appData.submissions.map((sub) => {
-    const payload = (sub.formPayloadJson ?? {}) as Record<string, any>;
+    const payload = (sub.formPayloadJson ?? {}) as Record<string, unknown>;
 
     return selectedFields.map((fieldKey) => {
-      let rawVal: any = "";
+      let rawVal: unknown = "";
 
       if (fieldKey.startsWith("profile.")) {
         const path = fieldKey.replace(/^profile\./, "");
@@ -97,10 +102,13 @@ export async function GET(
         } else if (typeof rawVal === "object") {
           if (Array.isArray(rawVal)) {
             strVal = rawVal.join(", ");
-          } else if (rawVal.fileName && (rawVal.url || rawVal.key)) {
-            strVal = rawVal.url || rawVal.key || rawVal.fileName;
           } else {
-            strVal = JSON.stringify(rawVal);
+            const obj = rawVal as Record<string, unknown>;
+            if (obj.fileName && (obj.url || obj.key)) {
+              strVal = String(obj.url || obj.key || obj.fileName);
+            } else {
+              strVal = JSON.stringify(rawVal);
+            }
           }
         } else {
           strVal = String(rawVal);

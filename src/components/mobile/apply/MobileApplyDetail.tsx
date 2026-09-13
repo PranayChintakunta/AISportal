@@ -137,7 +137,7 @@ export function MobileApplyDetail() {
     useState<ApplicationDetailResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const { isSignedIn, isLoaded } = useUser();
+  const { isSignedIn } = useUser();
   const router = useRouter();
 
   useEffect(() => {

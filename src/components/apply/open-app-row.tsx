@@ -6,11 +6,9 @@ import type { ReactNode, MouseEvent } from "react";
 import Image from "next/image";
 import { motion } from "framer-motion";
 import {
-  Clock,
   Sparkles,
   Calendar,
   ChevronRight,
-  CircleDot,
   Flame,
   ArrowUpRight,
 } from "lucide-react";
@@ -73,8 +71,6 @@ export function OpenAppRow({
 }: OpenApp) {
   const router = useRouter();
   const { isSignedIn } = useAuth();
-
-  const detailUrl = actions.find((action) => action.label === "Learn more")?.href;
   // Navigate to detailed view on card click
   const handleRowClick = () => {
     router.push(`/applications/detail?id=${id}`);

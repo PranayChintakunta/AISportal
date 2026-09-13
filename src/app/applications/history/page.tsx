@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Navbar } from "@/components/navbar";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { MobileScreen } from "@/components/mobile/ui/MobileScreen";
 import { BottomNav } from "@/components/mobile/ui/BottomNav";
 
