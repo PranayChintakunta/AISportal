@@ -27,8 +27,10 @@ export function ProfileForm({ children, initialUpdatedAt }: ProfileFormProps) {
       try {
         await updateProfile(formData);
         setShowSuccessModal(true);
-      } catch (err: any) {
-        setErrorMessage(err?.message || "Something went wrong. Please try again.");
+      } catch (err) {
+        setErrorMessage(
+          err instanceof Error ? err.message : "Something went wrong. Please try again."
+        );
       }
     });
   };

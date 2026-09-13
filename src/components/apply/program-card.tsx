@@ -27,7 +27,7 @@ export type Program = {
   showActionButton?: boolean;
 };
 
-function ProgramLogoIcon({ title, iconColor }: { title: string; iconColor: string }) {
+function ProgramLogoIcon({ title, iconColor: _iconColor }: { title: string; iconColor: string }) {
   if (title.toLowerCase().includes("academy")) {
     return (
       <svg className="size-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -58,7 +58,7 @@ function ProgramLogoIcon({ title, iconColor }: { title: string; iconColor: strin
  * One of the three "Choose Your AIS Path" program cards.
  */
 export function ProgramCard({
-  icon,
+  icon: _icon,
   iconBg,
   iconColor,
   image,

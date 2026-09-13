@@ -12,7 +12,7 @@ export function ExportCustomizerModal({
   application,
   onClose,
 }: {
-  application: { id: string; title: string; questionsJson?: any };
+  application: { id: string; title: string; questionsJson?: unknown };
   onClose: () => void;
 }) {
   const systemFields = [
@@ -260,6 +260,8 @@ export function AdminApplicationsManager({
   const [rawQuery, setRawQuery] = useState("");
   const debouncedQuery = useDebounce(rawQuery, 300);
   const [filter, setFilter] = useState<"all" | "new" | "shortlisted" | "reviewed">("all");
+  const [selectedProjectFilter, setSelectedProjectFilter] = useState<string>("all");
+  const [selectedChoiceRankFilter, setSelectedChoiceRankFilter] = useState<"all" | "1" | "2" | "3" | "4">("all");
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -361,18 +363,163 @@ export function AdminApplicationsManager({
   }
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     void loadApplications().catch((caught) => {
       setError((caught as Error).message);
       setLoading(false);
     });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setIsEditingApp(false);
+    setSelectedProjectFilter("all");
+    setSelectedChoiceRankFilter("all");
     if (selectedId) {
       void loadDetail(selectedId).catch((caught) => setError((caught as Error).message));
     }
   }, [selectedId]);
+
+  const choiceQuestions = useMemo(() => {
+    if (!detail) return [];
+    const questions = (detail.questions || detail.questionsJson || []) as Array<{
+      id: string;
+      label: string;
+      options?: string[];
+    }>;
+    return questions.filter((q) => q.options && Array.isArray(q.options) && q.options.length > 0);
+  }, [detail]);
+
+  const availableProjectOptions = useMemo(() => {
+    if (!detail) return [];
+
+    const optionsSet = new Set<string>();
+
+    if (detail.roles && Array.isArray(detail.roles)) {
+      detail.roles.forEach((r) => {
+        if (typeof r === "string" && r.trim()) optionsSet.add(r.trim());
+      });
+    }
+
+    for (const q of choiceQuestions) {
+      if (q.options) {
+        q.options.forEach((opt) => {
+          if (typeof opt === "string" && opt.trim()) optionsSet.add(opt.trim());
+        });
+      }
+    }
+
+    for (const sub of detail.submissions ?? []) {
+      if (!sub.formPayloadJson) continue;
+      const payload = sub.formPayloadJson as Record<string, unknown>;
+
+      for (const [key, val] of Object.entries(payload)) {
+        const keyLower = key.toLowerCase();
+        const isProjectKey =
+          keyLower.includes("project") ||
+          keyLower.includes("choice") ||
+          keyLower.includes("pick") ||
+          keyLower.includes("preference") ||
+          keyLower.includes("role") ||
+          keyLower.includes("track") ||
+          keyLower.includes("team");
+
+        if (isProjectKey) {
+          if (typeof val === "string" && val.trim()) {
+            optionsSet.add(val.trim());
+          } else if (Array.isArray(val)) {
+            val.forEach((item) => {
+              if (typeof item === "string" && item.trim()) {
+                optionsSet.add(item.trim());
+              }
+            });
+          }
+        }
+      }
+    }
+
+    return Array.from(optionsSet).sort();
+  }, [detail, choiceQuestions]);
+
+  const submissionMatchesProjectAndRank = (
+    submission: NonNullable<typeof detail>["submissions"][number],
+    targetProject: string,
+    rankFilter: "all" | "1" | "2" | "3" | "4"
+  ) => {
+    if (targetProject === "all") return true;
+
+    const payload = (submission.formPayloadJson ?? {}) as Record<string, unknown>;
+
+    const getAnswerForRank = (rankNum: number): string | null => {
+      // 1. Try choiceQuestions array at index (rankNum - 1)
+      const questionAtIndex = choiceQuestions[rankNum - 1];
+      if (questionAtIndex) {
+        const answer = payload[questionAtIndex.id] ?? payload[questionAtIndex.label];
+        if (typeof answer === "string" && answer.trim()) return answer.trim();
+        if (Array.isArray(answer) && typeof answer[0] === "string") return answer[0].trim();
+      }
+
+      // 2. Match payload keys by rank keywords
+      const rankKeywords =
+        rankNum === 1
+          ? ["1st", "first", "choice 1", "pick 1", "preference 1"]
+          : rankNum === 2
+          ? ["2nd", "second", "choice 2", "pick 2", "preference 2"]
+          : rankNum === 3
+          ? ["3rd", "third", "choice 3", "pick 3", "preference 3"]
+          : ["4th", "fourth", "choice 4", "pick 4", "preference 4"];
+
+      for (const [key, val] of Object.entries(payload)) {
+        const keyLower = key.toLowerCase();
+        if (rankKeywords.some((kw) => keyLower.includes(kw))) {
+          if (typeof val === "string" && val.trim()) return val.trim();
+          if (Array.isArray(val) && typeof val[0] === "string") return val[0].trim();
+        }
+      }
+
+      return null;
+    };
+
+    if (rankFilter !== "all") {
+      const rankNum = parseInt(rankFilter, 10);
+      const answer = getAnswerForRank(rankNum);
+      return answer === targetProject;
+    }
+
+    // Check all ranks 1..4
+    for (let r = 1; r <= 4; r++) {
+      const ans = getAnswerForRank(r);
+      if (ans === targetProject) return true;
+    }
+
+    // Fallback: check exact value matches under any project key in payload
+    return Object.entries(payload).some(([key, val]) => {
+      const keyLower = key.toLowerCase();
+      const isProjectKey =
+        keyLower.includes("project") ||
+        keyLower.includes("choice") ||
+        keyLower.includes("pick") ||
+        keyLower.includes("preference") ||
+        keyLower.includes("role");
+
+      if (isProjectKey) {
+        if (typeof val === "string" && val.trim() === targetProject) return true;
+        if (Array.isArray(val) && val.some((v) => typeof v === "string" && v.trim() === targetProject)) return true;
+      }
+      return false;
+    });
+  };
+
+  const getApplicantCountForProject = (
+    project: string,
+    rankFilter: "all" | "1" | "2" | "3" | "4" = selectedChoiceRankFilter
+  ) => {
+    if (!detail) return 0;
+    return detail.submissions.filter((sub) =>
+      submissionMatchesProjectAndRank(sub, project, rankFilter)
+    ).length;
+  };
 
   const submissions = useMemo(
     () =>
@@ -381,12 +528,26 @@ export function AdminApplicationsManager({
           submission.user.profile?.lastName ?? ""
         } ${submission.user.profile?.utdNetId ?? ""} ${submission.user.email}`.toLowerCase();
         if (debouncedQuery && !name.includes(debouncedQuery.toLowerCase())) return false;
-        if (filter === "new") return submission.status === "SUBMITTED";
-        if (filter === "shortlisted") return submission.status === "IN_CONSIDERATION";
-        if (filter === "reviewed") return submission.reviews.length > 0;
+        if (filter === "new" && submission.status !== "SUBMITTED") return false;
+        if (filter === "shortlisted" && submission.status !== "IN_CONSIDERATION") return false;
+        if (filter === "reviewed" && submission.reviews.length === 0) return false;
+
+        if (selectedProjectFilter !== "all") {
+          if (
+            !submissionMatchesProjectAndRank(
+              submission,
+              selectedProjectFilter,
+              selectedChoiceRankFilter
+            )
+          ) {
+            return false;
+          }
+        }
+
         return true;
       }),
-    [detail, filter, debouncedQuery]
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [detail, filter, debouncedQuery, selectedProjectFilter, selectedChoiceRankFilter, choiceQuestions]
   );
 
   const selectedSubmission =
@@ -394,6 +555,7 @@ export function AdminApplicationsManager({
 
   useEffect(() => {
     const review = selectedSubmission?.reviews[0];
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setNotes(review?.notesInternal ?? "");
   }, [selectedSubmissionId, selectedSubmission]);
 
@@ -598,12 +760,12 @@ export function AdminApplicationsManager({
 
     const processAnswer = (val: unknown, type?: string) => {
       if (val && typeof val === "object" && !Array.isArray(val)) {
-        const obj = val as Record<string, any>;
+        const obj = val as Record<string, unknown>;
         if (obj.fileName && (obj.url || obj.key)) {
           return {
             isFile: true,
-            fileName: obj.fileName,
-            url: obj.url || obj.key,
+            fileName: String(obj.fileName),
+            url: String(obj.url || obj.key),
             raw: JSON.stringify(val),
           };
         }
@@ -623,7 +785,9 @@ export function AdminApplicationsManager({
             };
           }
         }
-      } catch (err) {}
+      } catch {
+        // Ignore JSON parse errors
+      }
 
       if (rawString.startsWith("http://") || rawString.startsWith("https://")) {
         const rawName = rawString.split("/").pop() || "Uploaded File";
@@ -891,6 +1055,44 @@ export function AdminApplicationsManager({
                 onChange={(event) => setRawQuery(event.target.value)}
                 placeholder={isBlindReviewMode ? "Filter by candidate status..." : "Search candidate or NetID…"}
               />
+
+              {availableProjectOptions.length > 0 ? (
+                <div className="flex flex-wrap items-center gap-1.5">
+                  <select
+                    value={selectedProjectFilter}
+                    onChange={(e) => setSelectedProjectFilter(e.target.value)}
+                    className="rounded-lg border border-border-soft bg-white px-3 py-2 text-xs font-medium text-ink focus:border-brand outline-none shadow-xs"
+                  >
+                    <option value="all">
+                      All Projects ({detail?.submissions.length ?? 0})
+                    </option>
+                    {availableProjectOptions.map((proj) => {
+                      const count = getApplicantCountForProject(proj, selectedChoiceRankFilter);
+                      return (
+                        <option key={proj} value={proj}>
+                          {proj} ({count})
+                        </option>
+                      );
+                    })}
+                  </select>
+
+                  <select
+                    value={selectedChoiceRankFilter}
+                    onChange={(e) =>
+                      setSelectedChoiceRankFilter(
+                        e.target.value as "all" | "1" | "2" | "3" | "4"
+                      )
+                    }
+                    className="rounded-lg border border-border-soft bg-white px-2.5 py-2 text-xs font-medium text-ink focus:border-brand outline-none shadow-xs"
+                  >
+                    <option value="all">Any Pick (1st - 4th)</option>
+                    <option value="1">1st Pick Only</option>
+                    <option value="2">2nd Pick Only</option>
+                    <option value="3">3rd Pick Only</option>
+                    <option value="4">4th Pick Only</option>
+                  </select>
+                </div>
+              ) : null}
 
               <div className="flex flex-wrap gap-1">
                 {(["all", "new", "shortlisted", "reviewed"] as const).map((item) => (
@@ -1415,7 +1617,7 @@ export function AdminApplicationsManager({
               Confirm Candidate Decision
             </h3>
             <p className="mt-2 text-xs text-ink-muted">
-              Are you sure you want to change this applicant's status to{" "}
+              Are you sure you want to change this applicant&apos;s status to{" "}
               <strong className="text-ink">{statusLabel(pendingStatus)}</strong>?
             </p>
             <div className="mt-6 flex items-center justify-end gap-3">
