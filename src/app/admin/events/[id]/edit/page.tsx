@@ -8,7 +8,7 @@ import { EventForm } from "@/components/admin/event-form";
 import { CoverPhotoCard } from "@/components/admin/cover-photo-card";
 import { SettingsCard, SettingRow} from "@/components/admin/settings-card";
 import { MobileAdminEditEvent } from "@/components/mobile/admin/MobileAdminEditEvent";
-import { eventTags, eventSettings } from "@/lib/data";
+import { eventTags } from "@/lib/data";
 import { updateEvent, deleteEvent } from "./actions";
 import { DeleteEventButton } from "@/components/admin/delete-event-button";
 import { EventActionButtons } from "@/components/admin/admin-event-actions";

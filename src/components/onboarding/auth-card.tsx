@@ -360,7 +360,7 @@ function AuthCardInner({ redirectUrl }: AuthCardProps) {
             disabled={submitting}
             className={`text-brand disabled:opacity-50 ${CARD_LINK}`}
           >
-            Didn't get it? Send a new code
+            Didn&apos;t get it? Send a new code
           </button>
           <p className="text-center text-xs font-mono-alt text-helper-ink">
             UTD applies long security filters. The code can take up to a minute to arrive in your inbox.
@@ -384,7 +384,7 @@ function AuthCardInner({ redirectUrl }: AuthCardProps) {
           Reset your password
         </h2>
         <p className="mt-2 style-body-text text-ink-muted">
-          We'll email you a 6-digit code to set a new password.
+          We&apos;ll email you a 6-digit code to set a new password.
         </p>
 
         <form onSubmit={handleResetRequestSubmit} className="flex flex-col">
@@ -498,7 +498,7 @@ function AuthCardInner({ redirectUrl }: AuthCardProps) {
             disabled={submitting}
             className={`text-brand disabled:opacity-50 ${CARD_LINK}`}
           >
-            Didn't get it? Send a new code
+            Didn&apos;t get it? Send a new code
           </button>
           <p className="text-center text-xs text-helper-ink">
             UTD applies long security filters. The code can take up to a minute to arrive in your inbox.

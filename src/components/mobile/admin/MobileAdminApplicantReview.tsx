@@ -88,6 +88,7 @@ export function MobileAdminApplicantReview({ applicationId }: { applicationId: s
     detail?.submissions.find((s) => s.id === selectedSubmissionId) ?? null;
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setNotes(selectedSubmission?.reviews[0]?.notesInternal ?? "");
   }, [selectedSubmission]);
 

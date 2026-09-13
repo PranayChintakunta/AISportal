@@ -14,6 +14,7 @@ import type { SideEvent } from "@/components/events/side-event-card";
 import type { MiniEvent } from "@/components/events/mini-event-card";
 import type { PastTileData } from "@/components/events/past-tile";
 import type { EventGridItem } from "@/components/events/event-grid-card";
+export type { EventGridItem };
 
 export const statusStats: Stat[] = [
   { kind: "dot", label: "Membership", value: "Active", dotColor: "#356b2e" },

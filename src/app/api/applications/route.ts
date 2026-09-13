@@ -1,6 +1,5 @@
 import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
-import { createErrorResponse } from "@/lib/api-error";
 import { prisma } from "@/lib/prisma";
 
 async function getCurrentUser() {
@@ -84,7 +83,7 @@ export async function GET() {
 
   // Fetch user-specific data only if authenticated
   let drafts: Array<{ applicationId: string; stepIndex: number; isSubmitted: boolean }> = [];
-  let submissions: Array<{ id: string; applicationId: string; status: any; submittedAt: Date }> = [];
+  let submissions: Array<{ id: string; applicationId: string; status: unknown; submittedAt: Date }> = [];
 
   if (userId) {
     [drafts, submissions] = await Promise.all([

@@ -12,7 +12,7 @@ export function ExportCustomizerModal({
   application,
   onClose,
 }: {
-  application: { id: string; title: string; questionsJson?: any };
+  application: { id: string; title: string; questionsJson?: unknown };
   onClose: () => void;
 }) {
   const systemFields = [
@@ -352,13 +352,16 @@ export function AdminApplicationsManager({
   }
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     void loadApplications().catch((caught) => {
       setError((caught as Error).message);
       setLoading(false);
     });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setIsEditingApp(false);
     setSelectedProjectFilter("all");
     setSelectedChoiceRankFilter("all");
@@ -532,6 +535,7 @@ export function AdminApplicationsManager({
 
         return true;
       }),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [detail, filter, debouncedQuery, selectedProjectFilter, selectedChoiceRankFilter, choiceQuestions]
   );
 
@@ -540,6 +544,7 @@ export function AdminApplicationsManager({
 
   useEffect(() => {
     const review = selectedSubmission?.reviews[0];
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setNotes(review?.notesInternal ?? "");
   }, [selectedSubmissionId, selectedSubmission]);
 
@@ -744,12 +749,12 @@ export function AdminApplicationsManager({
 
     const processAnswer = (val: unknown, type?: string) => {
       if (val && typeof val === "object" && !Array.isArray(val)) {
-        const obj = val as Record<string, any>;
+        const obj = val as Record<string, unknown>;
         if (obj.fileName && (obj.url || obj.key)) {
           return {
             isFile: true,
-            fileName: obj.fileName,
-            url: obj.url || obj.key,
+            fileName: String(obj.fileName),
+            url: String(obj.url || obj.key),
             raw: JSON.stringify(val),
           };
         }
@@ -769,7 +774,9 @@ export function AdminApplicationsManager({
             };
           }
         }
-      } catch (err) {}
+      } catch {
+        // Ignore JSON parse errors
+      }
 
       if (rawString.startsWith("http://") || rawString.startsWith("https://")) {
         const rawName = rawString.split("/").pop() || "Uploaded File";
@@ -1595,7 +1602,7 @@ export function AdminApplicationsManager({
               Confirm Candidate Decision
             </h3>
             <p className="mt-2 text-xs text-ink-muted">
-              Are you sure you want to change this applicant's status to{" "}
+              Are you sure you want to change this applicant&apos;s status to{" "}
               <strong className="text-ink">{statusLabel(pendingStatus)}</strong>?
             </p>
             <div className="mt-6 flex items-center justify-end gap-3">

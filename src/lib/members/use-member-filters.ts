@@ -2,7 +2,7 @@
 
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState, useTransition } from "react";
-import { membersHref, type MembersQuery } from "@/lib/members/query-params";
+import type { MembersQuery } from "@/lib/members/query-params";
 
 export function useMemberFilters(initialQuery: MembersQuery) {
   const router = useRouter();

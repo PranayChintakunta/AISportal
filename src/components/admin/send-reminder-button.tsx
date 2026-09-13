@@ -11,7 +11,7 @@ interface SendReminderButtonProps {
 
 export function SendReminderButton({
   eventId,
-  eventTitle,
+  eventTitle: _eventTitle,
   rsvpCount,
 }: SendReminderButtonProps) {
   const [loading, setLoading] = useState(false);

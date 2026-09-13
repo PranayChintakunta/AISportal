@@ -1138,7 +1138,7 @@ function ApplyFormContent() {
             </h3>
             
             <p className="mt-2 text-sm text-ink-muted">
-              Are you sure you're ready to submit? You won't be able to edit your responses or uploaded files after finalizing your submission.
+              Are you sure you&apos;re ready to submit? You won&apos;t be able to edit your responses or uploaded files after finalizing your submission.
             </p>
 
             <div className="mt-6 flex items-center justify-end gap-3">

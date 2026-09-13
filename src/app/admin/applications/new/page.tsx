@@ -46,7 +46,7 @@ export default function CreateApplicationPage({ embedded = true }: { embedded?: 
 
   const [questions, setQuestions] = useState<Question[]>([
     {
-      id: `q_${Date.now()}_0`,
+      id: "q_init_0",
       label: "",
       description: "",
       type: "TEXT",
