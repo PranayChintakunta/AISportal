@@ -842,30 +842,30 @@ export function AdminApplicationsManager({
     <div className={embedded ? "min-w-0 flex-1 p-4 lg:p-6" : "min-h-screen bg-cream p-4 md:p-8"}>
       <div className="flex w-full flex-col gap-5">
         {/* Portal Header */}
-        <div className="flex flex-col gap-4 border-b border-border-soft pb-4 sm:flex-row sm:items-center sm:justify-between">
-          <div className="min-w-0 flex-1">
+        <div className="flex flex-col gap-3 border-b border-border-soft pb-4 md:flex-row md:items-center md:justify-between">
+          <div className="min-w-0">
             <h1 className="style-section-header text-2xl font-bold tracking-tight text-ink">
               Applications
             </h1>
           </div>
 
-          <div className="flex flex-wrap items-center gap-2 sm:flex-nowrap sm:justify-end">
+          <div className="flex flex-wrap items-center gap-2 sm:justify-end">
             {canEditOrPublish && (
-              <div className="w-full sm:w-auto">
-                <Button
-                  size="sm"
-                  className="h-9 w-full sm:w-auto"
-                  onClick={() => router.push("/admin/applications/new")}
-                >
-                  + Create Application
-                </Button>
-              </div>
+              <Button
+                size="sm"
+                variant="outline"
+                className="h-9 shrink-0 border-border-soft text-xs font-normal text-ink-muted hover:bg-stone-50 hover:text-ink"
+                onClick={() => router.push("/admin/applications/new")}
+              >
+                + Create Application
+              </Button>
             )}
+
             {!isReviewerOnly && (
               <button
                 type="button"
                 onClick={() => setIsBlindReviewMode((prev) => !prev)}
-                className={`flex h-9 flex-1 items-center justify-center gap-1.5 rounded-lg border px-3 text-xs font-semibold transition-all sm:flex-none ${
+                className={`flex h-9 shrink-0 items-center justify-center gap-1.5 rounded-lg border px-3 text-xs font-semibold transition-all ${
                   isBlindReviewMode
                     ? "border-orange bg-orange/15 text-orange-ink shadow-xs"
                     : "border-border-soft bg-white text-ink-muted hover:bg-stone-50"
@@ -885,14 +885,14 @@ export function AdminApplicationsManager({
               </button>
             )}
 
-            <div className="flex h-9 flex-1 items-center rounded-lg border border-border-soft bg-white p-1 gap-1 shadow-xs sm:flex-none">
+            <div className="flex h-9 shrink-0 items-center rounded-lg border border-border-soft bg-white p-1 gap-1 shadow-xs">
               {!isReviewerOnly && (
                 <button
                   type="button"
                   onClick={() => setIsAppsListOpen((prev) => !prev)}
-                  className={`flex h-full flex-1 items-center justify-center gap-1.5 rounded-md px-2.5 text-xs font-medium transition-colors sm:flex-none ${
+                  className={`flex h-full items-center justify-center gap-1.5 rounded-md px-2.5 text-xs font-medium transition-colors ${
                     isAppsListOpen
-                      ? "border-purple-ink/60 border-2 bg-purple-soft text-purple-ink shadow-xs"
+                      ? "border-brand/60 border-2 bg-brand-soft text-brand shadow-xs"
                       : "text-ink-muted hover:bg-stone-50 hover:text-ink"
                   }`}
                   title={isAppsListOpen ? "Hide Applications List" : "Show Applications List"}
@@ -900,14 +900,14 @@ export function AdminApplicationsManager({
                   <svg className="size-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h8m-8 6h16" />
                   </svg>
-                  <span>Listings</span>
+                  <span className="whitespace-nowrap">Forms</span>
                 </button>
               )}
 
               <button
                 type="button"
                 onClick={() => setIsSubmissionsListOpen((prev) => !prev)}
-                className={`flex h-full flex-1 items-center justify-center gap-1.5 rounded-md px-2.5 text-xs font-medium transition-colors sm:flex-none ${
+                className={`flex h-full items-center justify-center gap-1.5 rounded-md px-2.5 text-xs font-medium transition-colors ${
                   isSubmissionsListOpen
                     ? "border-purple-ink/60 border-2 bg-purple-soft text-purple-ink shadow-xs"
                     : "text-ink-muted hover:bg-stone-50 hover:text-ink"
@@ -922,7 +922,7 @@ export function AdminApplicationsManager({
                     d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
                   />
                 </svg>
-                <span>Applicants</span>
+                <span className="whitespace-nowrap">Applicants</span>
               </button>
             </div>
           </div>
@@ -951,7 +951,7 @@ export function AdminApplicationsManager({
             <aside className={`flex flex-col h-full gap-3 min-w-0 transition-all ${mobileView === "detail" ? "hidden md:flex" : "flex"}`}>
               <div className="flex items-center justify-between px-1">
                 <h2 className="style-body-text text-xs font-bold uppercase tracking-wider text-ink-muted">
-                  Forms ({visibleApplications.length})
+                  Application Forms ({visibleApplications.length})
                 </h2>
                 <button
                   type="button"
@@ -974,8 +974,8 @@ export function AdminApplicationsManager({
                       onClick={() => setSelectedId(app.id)}
                       className={`w-full rounded-xl border p-3.5 text-left transition-all ${
                         selectedId === app.id
-                          ? "border-brand bg-brand-soft shadow-xs"
-                          : "border-border-soft bg-white hover:border-brand/40"
+                          ? "border-brand/70 bg-brand-soft border-3 shadow-xs"
+                          : "border-border-soft bg-white hover:border-purple-ink/40"
                       }`}
                     >
                       <div className="flex items-start justify-between gap-2">
@@ -984,7 +984,7 @@ export function AdminApplicationsManager({
                         </p>
                         <span
                           className={`mt-0.5 inline-block size-2 rounded-full shrink-0 ${
-                            app.visibleToUsers ? "bg-emerald-500" : "bg-stone-300"
+                            app.visibleToUsers ? "bg-brand-mid" : "bg-stone-300"
                           }`}
                           title={app.visibleToUsers ? "Visible to users" : "Draft / Hidden"}
                         />
@@ -1025,7 +1025,7 @@ export function AdminApplicationsManager({
                     title="Select All Applicants"
                   />
                   <h2 className="style-body-text text-xs font-bold uppercase tracking-wider text-ink-muted">
-                    Submissions ({submissions.length})
+                    Applicants ({submissions.length})
                   </h2>
                 </div>
                 <button
@@ -1161,7 +1161,7 @@ export function AdminApplicationsManager({
                       key={submission.id}
                       className={`group flex items-center gap-2 rounded-xl border p-3 text-left transition-all ${
                         isSelected
-                          ? "border-brand bg-brand-soft/40 shadow-xs"
+                          ? "border-purple-ink/60 border-3 bg-purple-soft shadow-xs"
                           : "border-border-soft bg-white hover:border-stone-300"
                       }`}
                     >
@@ -1207,503 +1207,503 @@ export function AdminApplicationsManager({
             </div>
           ) : null}
 
-          {/* Application Detail View Main Panel */}
-          <section className={`min-w-0 rounded-2xl border border-border-soft bg-white p-5 lg:p-6 shadow-xs ${mobileView === "list" ? "hidden md:block" : "block"}`}>
-            {detail ? (
-              <>
-                <div className="border-b border-border-soft pb-4">
-                  <div className="flex flex-col items-left justify-between gap-4">
-                    {/* Native-style Back Button on Mobile */}
-                    <div className="md:hidden">
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        className="p-0 text-brand hover:bg-transparent font-medium"
-                        onClick={() => setMobileView("list")}
-                      >
-                        ← Back to List
-                      </Button>
-                    </div>
+         {/* Application Detail View Main Panel */}
+        <section className={`w-full min-w-0 flex-1 rounded-2xl border border-border-soft bg-white p-5 lg:p-6 shadow-xs ${mobileView === "list" ? "hidden md:block" : "block"}`}>
+          {detail ? (
+            <>
+              <div className="w-full min-w-0 border-b border-border-soft pb-4">
+                <div className="flex flex-col items-left justify-between gap-4">
+                  {/* Native-style Back Button on Mobile */}
+                  <div className="md:hidden">
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      className="p-0 text-brand hover:bg-transparent font-medium"
+                      onClick={() => setMobileView("list")}
+                    >
+                      ← Back to Applicants
+                    </Button>
+                  </div>
 
-                    <div className="flex items-center gap-3">
-                      <div className="flex items-center justify-between gap-3 w-full">
-                        <div>
-                          <div className="flex items-center gap-3">
-                            <h2 className="style-section-header text-xl font-bold text-ink">
-                              {detail.title}
-                            </h2>
-                            <span
-                              className={`rounded-full px-2.5 py-0.5 text-xs font-medium border ${
-                                detail.visibleToUsers
-                                  ? "bg-emerald-50 text-emerald-700 border-emerald-200"
-                                  : "bg-amber-50 text-amber-700 border-amber-200"
-                              }`}
-                            >
-                              {detail.visibleToUsers ? "Live" : "Draft"}
-                            </span>
-                          </div>
-                          <p className="style-caption mt-0.5 text-xs text-ink-faint">
-                            {detail.submissions.length} total submissions · {detail.acceptedCount ?? 0}{" "}
-                            accepted
-                          </p>
-                        </div>
-
-                        <div className="flex items-center gap-1">
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            onClick={selectPrevApplicant}
-                            aria-label="Previous Candidate"
+                  <div className="flex items-center gap-3 w-full min-w-0">
+                    <div className="flex items-center justify-between gap-3 w-full min-w-0">
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-3 min-w-0">
+                          <h2 className="style-section-header text-xl font-bold text-ink truncate min-w-0">
+                            {detail.title}
+                          </h2>
+                          <span
+                            className={`shrink-0 rounded-full px-2.5 py-0.5 text-xs font-medium border ${
+                              detail.visibleToUsers
+                                ? "bg-brand-soft text-brand border-brand/60 border-2"
+                                : "bg-orange-soft text-orange-ink border-orange"
+                            }`}
                           >
-                            &lt;
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            onClick={selectNextApplicant}
-                            aria-label="Next Candidate"
-                          >
-                            &gt;
-                          </Button>
+                            {detail.visibleToUsers ? "Published" : "Unpublished"}
+                          </span>
                         </div>
+                        <p className="style-caption mt-0.5 text-xs text-ink-faint truncate">
+                          {detail.submissions.length} total submissions · {detail.acceptedCount ?? 0}{" "}
+                          accepted
+                        </p>
                       </div>
-                    </div>
 
-                    <div className="flex flex-wrap items-center gap-2">
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => setShowExportModal(true)}
-                      >
-                        ↓ Export Custom CSVs
-                      </Button>
-
-                      {canEditOrPublish ? (
+                      <div className="flex items-center gap-1 shrink-0">
                         <Button
                           size="sm"
-                          variant={detail.visibleToUsers ? "outline" : "primary"}
-                          onClick={() => {
-                            setPendingVisibilityState(!detail.visibleToUsers);
-                            setShowPublishModal(true);
-                          }}
+                          variant="ghost"
+                          onClick={selectPrevApplicant}
+                          aria-label="Previous Candidate"
                         >
-                          {detail.visibleToUsers ? "Unpublish" : "Publish Live"}
+                          &lt;
                         </Button>
-                      ) : null}
-
-                      {canEditOrPublish ? (
                         <Button
                           size="sm"
-                          variant="outline"
-                          onClick={() => setIsEditingApp((prev) => !prev)}
+                          variant="ghost"
+                          onClick={selectNextApplicant}
+                          aria-label="Next Candidate"
                         >
-                          {isEditingApp ? "Close Settings" : "Edit Settings"}
+                          &gt;
                         </Button>
-                      ) : null}
-
-                      {canDelete ? (
-                        <Button
-                          size="sm"
-                          variant="danger"
-                          onClick={() => setShowDeleteModal(true)}
-                        >
-                          Delete
-                        </Button>
-                      ) : null}
+                      </div>
                     </div>
                   </div>
 
-                  {isEditingApp && canEditOrPublish ? (
-                    <div className="mt-4 flex flex-col gap-6 rounded-xl border border-border-soft bg-row-soft p-5">
-                      <div className="flex items-center justify-between border-b border-border-soft pb-3">
-                        <h3 className="style-body-text font-semibold text-ink text-sm">
-                          Application Configuration & Settings
-                        </h3>
-                        <span className="style-caption text-xs text-ink-faint">Timezone: America/Chicago</span>
-                      </div>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => setShowExportModal(true)}
+                    >
+                      ↓ Export Custom CSVs
+                    </Button>
 
-                      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                        <div>
-                          <label className="style-caption text-xs font-medium text-ink-muted">Posting Title</label>
-                          <input
-                            className="mt-1 w-full rounded-lg border border-border-soft bg-white p-2.5 text-xs"
-                            value={editForm.title ?? ""}
-                            onChange={(e) =>
-                              setEditForm((prev) => ({ ...prev, title: e.target.value }))
-                            }
-                            required
-                          />
-                        </div>
+                    {canEditOrPublish ? (
+                      <Button
+                        size="sm"
+                        variant={detail.visibleToUsers ? "outline" : "primary"}
+                        onClick={() => {
+                          setPendingVisibilityState(!detail.visibleToUsers);
+                          setShowPublishModal(true);
+                        }}
+                      >
+                        {detail.visibleToUsers ? "Unpublish" : "Publish Live"}
+                      </Button>
+                    ) : null}
 
-                        <div>
-                          <label className="style-caption text-xs font-medium text-ink-muted">Program Category</label>
-                          <select
-                            className="mt-1 w-full rounded-lg border border-border-soft bg-white p-2.5 text-xs"
-                            value={editForm.programType ?? "AI_ACADEMY"}
-                            onChange={(e) =>
-                              setEditForm((prev) => ({ ...prev, programType: e.target.value as ProgramType }))
-                            }
-                          >
-                            <option value="AI_ACADEMY">AI Academy</option>
-                            <option value="AI_INNOVATION">AI Innovation</option>
-                            <option value="AI_MENTORSHIP_MENTOR">AIM Mentor</option>
-                            <option value="AI_MENTORSHIP_MENTEE">AIM Mentee</option>
-                            <option value="OFFICER">Officer</option>
-                            <option value="OTHER">Other</option>
-                          </select>
-                        </div>
+                    {canEditOrPublish ? (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => setIsEditingApp((prev) => !prev)}
+                      >
+                        {isEditingApp ? "Close Settings" : "Edit Settings"}
+                      </Button>
+                    ) : null}
 
-                        <div className="md:col-span-2">
-                          <label className="style-caption text-xs font-medium text-ink-muted">Cohort Description</label>
-                          <textarea
-                            className="mt-1 w-full rounded-lg border border-border-soft bg-white p-2.5 text-xs"
-                            rows={3}
-                            value={editForm.description ?? ""}
-                            onChange={(e) =>
-                              setEditForm((prev) => ({ ...prev, description: e.target.value }))
-                            }
-                          />
-                        </div>
-
-                        <div>
-                          <label className="style-caption text-xs font-medium text-ink-muted">
-                            Available Roles (One per line)
-                          </label>
-                          <textarea
-                            className="mt-1 w-full rounded-lg border border-border-soft bg-white p-2.5 text-xs"
-                            rows={3}
-                            value={editRolesInput}
-                            onChange={(e) => setEditRolesInput(e.target.value)}
-                            placeholder="e.g. Full Stack Developer&#10;UI/UX Designer"
-                          />
-                        </div>
-
-                        <div>
-                          <label className="style-caption text-xs font-medium text-ink-muted">
-                            Eligibility Requirements (One per line)
-                          </label>
-                          <textarea
-                            className="mt-1 w-full rounded-lg border border-border-soft bg-white p-2.5 text-xs"
-                            rows={3}
-                            value={editEligibilityInput}
-                            onChange={(e) => setEditEligibilityInput(e.target.value)}
-                            placeholder="e.g. Open to enrolled UTD students&#10;Must commit 5 hrs/week"
-                          />
-                        </div>
-
-                        <div>
-                          <label className="style-caption text-xs font-medium text-ink-muted">
-                            Reference Links on Application (One per line)
-                          </label>
-                          <textarea
-                            className="mt-1 w-full rounded-lg border border-border-soft bg-white p-2.5 text-xs"
-                            rows={3}
-                            value={editLinkInput}
-                            onChange={(e) => setEditLinkInput(e.target.value)}
-                            placeholder="Format: AIM Project Descriptions|https://docs.google.com/"
-                          />
-                        </div>
-
-                        <div>
-                          <label className="style-caption text-xs font-medium text-ink-muted">
-                            Opening Date & Time (CT)
-                          </label>
-                          <input
-                            type="datetime-local"
-                            className="mt-1 w-full rounded-lg border border-border-soft bg-white p-2.5 text-xs"
-                            value={editOpenAt}
-                            onChange={(e) => setEditOpenAt(e.target.value)}
-                          />
-                        </div>
-
-                        <div>
-                          <label className="style-caption text-xs font-medium text-ink-muted">
-                            Closing Date & Time (CT)
-                          </label>
-                          <input
-                            type="datetime-local"
-                            className="mt-1 w-full rounded-lg border border-border-soft bg-white p-2.5 text-xs"
-                            value={editCloseAt}
-                            onChange={(e) => setEditCloseAt(e.target.value)}
-                          />
-                        </div>
-
-                        <div>
-                          <label className="style-caption text-xs font-medium text-ink-muted">
-                            Decision Date & Time (CT)
-                          </label>
-                          <input
-                            type="datetime-local"
-                            className="mt-1 w-full rounded-lg border border-border-soft bg-white p-2.5 text-xs"
-                            value={editDecisionDate}
-                            onChange={(e) => setEditDecisionDate(e.target.value)}
-                          />
-                        </div>
-                      </div>
-
-                      <div className="flex items-center gap-3 border-t border-border-soft pt-4">
-                        <Button
-                          type="button"
-                          size="sm"
-                          disabled={saving}
-                          onClick={() => setShowSaveModal(true)}
-                        >
-                          Save Changes
-                        </Button>
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => setIsEditingApp(false)}
-                        >
-                          Cancel
-                        </Button>
-                      </div>
-                    </div>
-                  ) : null}
+                    {canDelete ? (
+                      <Button
+                        size="sm"
+                        variant="danger"
+                        onClick={() => setShowDeleteModal(true)}
+                      >
+                        Delete
+                      </Button>
+                    ) : null}
+                  </div>
                 </div>
 
-                <div className="mt-5 w-full min-w-0">
-                  {selectedSubmission ? (
-                    <div className="flex w-full flex-col gap-6">
-                      {/* 1. Candidate Header Card */}
-                      <div className="w-full rounded-xl border border-border-soft bg-row-soft p-5 shadow-xs">
-                        <div className="flex w-full items-start justify-between gap-4">
-                          <div className="min-w-0 flex-1">
-                            {isBlindReviewMode ? (
-                              <h3 className="style-section-header text-lg font-bold text-amber-900">
-                                Anonymous Applicant #{submissions.findIndex((s) => s.id === selectedSubmission.id) + 1}
-                              </h3>
-                            ) : (
-                              <Link 
-                                href={`/admin/members/${selectedSubmission.userId}`} 
-                                className="hover:underline transition-opacity hover:opacity-80 inline-block"
-                              >
-                                <h3 className="style-section-header text-lg font-bold text-ink">
-                                  {selectedSubmission.user.profile
-                                    ? `${selectedSubmission.user.profile.firstName} ${selectedSubmission.user.profile.lastName}`
-                                    : selectedSubmission.user.email}
-                                </h3>
-                              </Link>
-                            )}
+                {isEditingApp && canEditOrPublish ? (
+                  <div className="mt-4 flex flex-col gap-6 rounded-xl border border-border-soft bg-row-soft p-5 w-full min-w-0">
+                    <div className="flex items-center justify-between border-b border-border-soft pb-3">
+                      <h3 className="style-body-text font-semibold text-ink text-sm">
+                        Application Configuration & Settings
+                      </h3>
+                      <span className="style-caption text-xs text-ink-faint">Timezone: America/Chicago</span>
+                    </div>
 
-                            <p className="style-caption text-xs text-ink-faint mt-1">
-                              {isBlindReviewMode
-                                ? `Submission ID: ${selectedSubmission.id}`
-                                : `${selectedSubmission.user.profile?.utdNetId ?? "No NetID"} · ${selectedSubmission.user.email}`}
-                              {" "}· Submitted {formatChicagoDisplayDate(selectedSubmission.submittedAt)}
-                            </p>
-
-                            {/* Contact Details (Copy Email Action) */}
-                            {!isBlindReviewMode && (selectedSubmission.user.profile?.personalEmail || selectedSubmission.user.profile?.phoneNumber || selectedSubmission.user.email) && (
-                              <div className="mt-2.5 flex flex-wrap items-center gap-2 text-xs text-ink-muted">
-                                {(selectedSubmission.user.profile?.personalEmail || selectedSubmission.user.email) && (
-                                  <button
-                                    type="button"
-                                    onClick={() =>
-                                      copyEmailToClipboard(
-                                        selectedSubmission.user.profile?.personalEmail ?? selectedSubmission.user.email
-                                      )
-                                    }
-                                    className="inline-flex items-center gap-1 rounded-lg bg-white/80 px-2 py-1 border border-border-soft hover:text-brand transition-colors text-xs"
-                                  >
-                                    <span className="style-caption text-xs text-ink-faint">Email:</span>
-                                    <span>
-                                      {selectedSubmission.user.profile?.personalEmail ?? selectedSubmission.user.email}
-                                    </span>
-                                    <span className="ml-1 text-[10px] text-ink-faint">
-                                      {copiedEmail === (selectedSubmission.user.profile?.personalEmail ?? selectedSubmission.user.email)
-                                        ? "Copied!"
-                                        : "(Copy)"}
-                                    </span>
-                                  </button>
-                                )}
-                                {selectedSubmission.user.profile?.phoneNumber && (
-                                  <a 
-                                    href={`tel:${selectedSubmission.user.profile.phoneNumber}`}
-                                    className="inline-flex items-center gap-1.5 rounded-lg bg-white/80 px-2.5 py-1 border border-border-soft hover:text-brand transition-colors"
-                                  >
-                                    <span className="font-medium text-ink-faint">Phone:</span>
-                                    <span>{selectedSubmission.user.profile.phoneNumber}</span>
-                                  </a>
-                                )}
-                              </div>
-                            )}
-                          </div>
-
-                          <span
-                            className={`shrink-0 rounded-full px-3 py-1 text-xs font-semibold border ${statusBadgeColor(
-                              selectedSubmission.status
-                            )}`}
-                          >
-                            {statusLabel(selectedSubmission.status)}
-                          </span>
-                        </div>
-
-                        {!isBlindReviewMode && (
-                          <div className="mt-4 flex w-full flex-wrap items-center gap-3 border-t border-border-soft/60 pt-3">
-                            {selectedSubmission.user.profile?.resumeFile && (
-                              <a
-                                className="inline-flex items-center gap-1 text-xs font-medium text-brand hover:underline"
-                                href={`/api/admin/applications/${detail.id}/submissions/${selectedSubmission.id}/resume`}
-                                target="_blank"
-                                rel="noreferrer"
-                              >
-                                Resume ↗
-                              </a>
-                            )}
-                            {selectedSubmission.user.profile?.linkedinUrl && (
-                              <a
-                                className="inline-flex items-center gap-1 text-xs font-medium text-brand hover:underline"
-                                href={normalizeUrl(selectedSubmission.user.profile.linkedinUrl)}
-                                target="_blank"
-                                rel="noreferrer"
-                              >
-                                LinkedIn ↗
-                              </a>
-                            )}
-                            {selectedSubmission.user.profile?.githubUrl && (
-                              <a
-                                className="inline-flex items-center gap-1 text-xs font-medium text-brand hover:underline"
-                                href={normalizeUrl(selectedSubmission.user.profile.githubUrl)}
-                                target="_blank"
-                                rel="noreferrer"
-                              >
-                                GitHub ↗
-                              </a>
-                            )}
-                            {selectedSubmission.user.profile?.portfolioUrl && (
-                              <a
-                                className="inline-flex items-center gap-1 text-xs font-medium text-brand hover:underline"
-                                href={normalizeUrl(selectedSubmission.user.profile.portfolioUrl)}
-                                target="_blank"
-                                rel="noreferrer"
-                              >
-                                Portfolio ↗
-                              </a>
-                            )}
-                          </div>
-                        )}
+                    <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                      <div>
+                        <label className="style-caption text-xs font-medium text-ink-muted">Posting Title</label>
+                        <input
+                          className="mt-1 w-full rounded-lg border border-border-soft bg-white p-2.5 text-xs"
+                          value={editForm.title ?? ""}
+                          onChange={(e) =>
+                            setEditForm((prev) => ({ ...prev, title: e.target.value }))
+                          }
+                          required
+                        />
                       </div>
 
-                      {/* 2. Responses Section */}
-                      <div className="flex w-full flex-col gap-3">
-                        <h4 className="style-body-text text-sm font-semibold text-ink">
-                          Application Responses ({orderedResponses.length})
-                        </h4>
+                      <div>
+                        <label className="style-caption text-xs font-medium text-ink-muted">Program Category</label>
+                        <select
+                          className="mt-1 w-full rounded-lg border border-border-soft bg-white p-2.5 text-xs"
+                          value={editForm.programType ?? "AI_ACADEMY"}
+                          onChange={(e) =>
+                            setEditForm((prev) => ({ ...prev, programType: e.target.value as ProgramType }))
+                          }
+                        >
+                          <option value="AI_ACADEMY">AI Academy</option>
+                          <option value="AI_INNOVATION">AI Innovation</option>
+                          <option value="AI_MENTORSHIP_MENTOR">AIM Mentor</option>
+                          <option value="AI_MENTORSHIP_MENTEE">AIM Mentee</option>
+                          <option value="OFFICER">Officer</option>
+                          <option value="OTHER">Other</option>
+                        </select>
+                      </div>
 
-                        <div className="w-full space-y-3">
-                          {orderedResponses.map((item) => (
-                            <div
-                              key={item.index}
-                              className="w-full rounded-xl border border-border-soft bg-stone-50/40 p-4 shadow-2xs"
+                      <div className="md:col-span-2">
+                        <label className="style-caption text-xs font-medium text-ink-muted">Cohort Description</label>
+                        <textarea
+                          className="mt-1 w-full rounded-lg border border-border-soft bg-white p-2.5 text-xs"
+                          rows={3}
+                          value={editForm.description ?? ""}
+                          onChange={(e) =>
+                            setEditForm((prev) => ({ ...prev, description: e.target.value }))
+                          }
+                        />
+                      </div>
+
+                      <div>
+                        <label className="style-caption text-xs font-medium text-ink-muted">
+                          Available Roles (One per line)
+                        </label>
+                        <textarea
+                          className="mt-1 w-full rounded-lg border border-border-soft bg-white p-2.5 text-xs"
+                          rows={3}
+                          value={editRolesInput}
+                          onChange={(e) => setEditRolesInput(e.target.value)}
+                          placeholder="e.g. Full Stack Developer&#10;UI/UX Designer"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="style-caption text-xs font-medium text-ink-muted">
+                          Eligibility Requirements (One per line)
+                        </label>
+                        <textarea
+                          className="mt-1 w-full rounded-lg border border-border-soft bg-white p-2.5 text-xs"
+                          rows={3}
+                          value={editEligibilityInput}
+                          onChange={(e) => setEditEligibilityInput(e.target.value)}
+                          placeholder="e.g. Open to enrolled UTD students&#10;Must commit 5 hrs/week"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="style-caption text-xs font-medium text-ink-muted">
+                          Reference Links on Application (One per line)
+                        </label>
+                        <textarea
+                          className="mt-1 w-full rounded-lg border border-border-soft bg-white p-2.5 text-xs"
+                          rows={3}
+                          value={editLinkInput}
+                          onChange={(e) => setEditLinkInput(e.target.value)}
+                          placeholder="Format: AIM Project Descriptions|https://docs.google.com/"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="style-caption text-xs font-medium text-ink-muted">
+                          Opening Date & Time (CT)
+                        </label>
+                        <input
+                          type="datetime-local"
+                          className="mt-1 w-full rounded-lg border border-border-soft bg-white p-2.5 text-xs"
+                          value={editOpenAt}
+                          onChange={(e) => setEditOpenAt(e.target.value)}
+                        />
+                      </div>
+
+                      <div>
+                        <label className="style-caption text-xs font-medium text-ink-muted">
+                          Closing Date & Time (CT)
+                        </label>
+                        <input
+                          type="datetime-local"
+                          className="mt-1 w-full rounded-lg border border-border-soft bg-white p-2.5 text-xs"
+                          value={editCloseAt}
+                          onChange={(e) => setEditCloseAt(e.target.value)}
+                        />
+                      </div>
+
+                      <div>
+                        <label className="style-caption text-xs font-medium text-ink-muted">
+                          Decision Date & Time (CT)
+                        </label>
+                        <input
+                          type="datetime-local"
+                          className="mt-1 w-full rounded-lg border border-border-soft bg-white p-2.5 text-xs"
+                          value={editDecisionDate}
+                          onChange={(e) => setEditDecisionDate(e.target.value)}
+                        />
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-3 border-t border-border-soft pt-4">
+                      <Button
+                        type="button"
+                        size="sm"
+                        disabled={saving}
+                        onClick={() => setShowSaveModal(true)}
+                      >
+                        Save Changes
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setIsEditingApp(false)}
+                      >
+                        Cancel
+                      </Button>
+                    </div>
+                  </div>
+                ) : null}
+              </div>
+
+              <div className="mt-5 w-full min-w-0 max-w-full overflow-hidden">
+                {selectedSubmission ? (
+                  <div className="flex w-full min-w-0 flex-col gap-6">
+                    {/* 1. Candidate Header Card */}
+                    <div className="w-full min-w-0 rounded-xl border border-border-soft bg-row-soft p-5 shadow-xs">
+                      <div className="flex w-full flex-col justify-between gap-4 sm:flex-row sm:items-start min-w-0">
+                        <div className="min-w-0 flex-1">
+                          {isBlindReviewMode ? (
+                            <h3 className="style-section-header truncate text-lg font-bold text-amber-900">
+                              Anonymous Applicant #{submissions.findIndex((s) => s.id === selectedSubmission.id) + 1}
+                            </h3>
+                          ) : (
+                            <Link 
+                              href={`/admin/members/${selectedSubmission.userId}`} 
+                              className="inline-block max-w-full truncate hover:underline transition-opacity hover:opacity-80"
                             >
-                              <p className="style-caption font-semibold text-xs text-ink-muted">
-                                Q{item.index}. {item.question}
-                              </p>
-                              {item.answer.isFile ? (
-                                <a
-                                  href={item.answer.url}
-                                  target="_blank"
-                                  rel="noreferrer"
-                                  className="mt-2 inline-flex items-center gap-1.5 rounded-lg border border-border-soft bg-white px-3 py-1.5 text-xs font-medium text-brand shadow-2xs hover:border-brand"
+                              <h3 className="style-section-header truncate text-lg font-bold text-ink">
+                                {selectedSubmission.user.profile
+                                  ? `${selectedSubmission.user.profile.firstName} ${selectedSubmission.user.profile.lastName}`
+                                  : selectedSubmission.user.email}
+                              </h3>
+                            </Link>
+                          )}
+
+                          <p className="style-caption mt-1 break-all text-xs text-ink-faint">
+                            {isBlindReviewMode
+                              ? `Submission ID: ${selectedSubmission.id}`
+                              : `${selectedSubmission.user.profile?.utdNetId ?? "No NetID"} · ${selectedSubmission.user.email}`}
+                            {" "}· Submitted {formatChicagoDisplayDate(selectedSubmission.submittedAt)}
+                          </p>
+
+                          {/* Contact Details (Copy Email Action) */}
+                          {!isBlindReviewMode && (selectedSubmission.user.profile?.personalEmail || selectedSubmission.user.profile?.phoneNumber || selectedSubmission.user.email) && (
+                            <div className="mt-2.5 flex flex-wrap items-center gap-2 text-xs text-ink-muted min-w-0">
+                              {(selectedSubmission.user.profile?.personalEmail || selectedSubmission.user.email) && (
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    copyEmailToClipboard(
+                                      selectedSubmission.user.profile?.personalEmail ?? selectedSubmission.user.email
+                                    )
+                                  }
+                                  className="inline-flex max-w-full items-center gap-1 rounded-lg border border-border-soft bg-white/80 px-2 py-1 text-xs hover:text-brand transition-colors min-w-0"
                                 >
-                                  <span className="font-semibold text-ink-faint">Attachment:</span>
-                                  <span>{item.answer.fileName} ↗</span>
+                                  <span className="style-caption shrink-0 text-xs text-ink-faint">Email:</span>
+                                  <span className="truncate">
+                                    {selectedSubmission.user.profile?.personalEmail ?? selectedSubmission.user.email}
+                                  </span>
+                                  <span className="ml-1 shrink-0 text-[10px] text-ink-faint">
+                                    {copiedEmail === (selectedSubmission.user.profile?.personalEmail ?? selectedSubmission.user.email)
+                                      ? "Copied!"
+                                      : "(Copy)"}
+                                  </span>
+                                </button>
+                              )}
+                              {selectedSubmission.user.profile?.phoneNumber && (
+                                <a 
+                                  href={`tel:${selectedSubmission.user.profile.phoneNumber}`}
+                                  className="inline-flex items-center gap-1.5 rounded-lg border border-border-soft bg-white/80 px-2.5 py-1 hover:text-brand transition-colors shrink-0"
+                                >
+                                  <span className="font-medium text-ink-faint">Phone:</span>
+                                  <span>{selectedSubmission.user.profile.phoneNumber}</span>
                                 </a>
-                              ) : (
-                                <p className="mt-2 whitespace-pre-wrap style-body-text text-xs text-ink leading-relaxed">
-                                  {item.answer.raw}
-                                </p>
                               )}
                             </div>
-                          ))}
+                          )}
                         </div>
+
+                        <span
+                          className={`self-start shrink-0 rounded-full px-3 py-1 text-xs font-semibold border ${statusBadgeColor(
+                            selectedSubmission.status
+                          )}`}
+                        >
+                          {statusLabel(selectedSubmission.status)}
+                        </span>
                       </div>
 
-                      {/* 3. Notes & Decision Panel */}
-                      <div className="w-full rounded-xl border border-border-soft bg-white p-5 shadow-xs">
-                        <h4 className="style-body-text text-sm font-semibold text-ink">
-                          Your Notes & Decision
-                        </h4>
+                      {!isBlindReviewMode && (
+                        <div className="mt-4 flex w-full flex-wrap items-center gap-3 border-t border-border-soft/60 pt-3">
+                          {selectedSubmission.user.profile?.resumeFile && (
+                            <a
+                              className="inline-flex items-center gap-1 text-xs font-medium text-brand hover:underline"
+                              href={`/api/admin/applications/${detail.id}/submissions/${selectedSubmission.id}/resume`}
+                              target="_blank"
+                              rel="noreferrer"
+                            >
+                              Resume ↗
+                            </a>
+                          )}
+                          {selectedSubmission.user.profile?.linkedinUrl && (
+                            <a
+                              className="inline-flex items-center gap-1 text-xs font-medium text-brand hover:underline"
+                              href={normalizeUrl(selectedSubmission.user.profile.linkedinUrl)}
+                              target="_blank"
+                              rel="noreferrer"
+                            >
+                              LinkedIn ↗
+                            </a>
+                          )}
+                          {selectedSubmission.user.profile?.githubUrl && (
+                            <a
+                              className="inline-flex items-center gap-1 text-xs font-medium text-brand hover:underline"
+                              href={normalizeUrl(selectedSubmission.user.profile.githubUrl)}
+                              target="_blank"
+                              rel="noreferrer"
+                            >
+                              GitHub ↗
+                            </a>
+                          )}
+                          {selectedSubmission.user.profile?.portfolioUrl && (
+                            <a
+                              className="inline-flex items-center gap-1 text-xs font-medium text-brand hover:underline"
+                              href={normalizeUrl(selectedSubmission.user.profile.portfolioUrl)}
+                              target="_blank"
+                              rel="noreferrer"
+                            >
+                              Portfolio ↗
+                            </a>
+                          )}
+                        </div>
+                      )}
+                    </div>
 
-                        <textarea
-                          className="mt-3 min-h-24 w-full rounded-lg border border-border-soft bg-search-field p-3 text-xs focus:border-brand outline-none transition-all"
-                          value={notes}
-                          onChange={(event) => setNotes(event.target.value)}
-                          placeholder="Add review notes or justification here..."
-                        />
+                    {/* 2. Responses Section */}
+                    <div className="flex w-full min-w-0 flex-col gap-3">
+                      <h4 className="style-body-text text-sm font-semibold text-ink">
+                        Application Responses ({orderedResponses.length})
+                      </h4>
 
-                        <div className="mt-4 flex w-full flex-col gap-3 border-t border-border-soft pt-4">
-                          <div className="flex w-full flex-wrap items-center justify-between gap-2">
+                      <div className="w-full space-y-3 min-w-0">
+                        {orderedResponses.map((item) => (
+                          <div
+                            key={item.index}
+                            className="w-full min-w-0 rounded-xl border border-border-soft bg-stone-50/40 p-4 shadow-2xs overflow-hidden"
+                          >
+                            <p className="style-caption font-semibold text-xs text-ink-muted break-words">
+                              Q{item.index}. {item.question}
+                            </p>
+                            {item.answer.isFile ? (
+                              <a
+                                href={item.answer.url}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="mt-2 inline-flex max-w-full items-center gap-1.5 rounded-lg border border-border-soft bg-white px-3 py-1.5 text-xs font-medium text-brand shadow-2xs hover:border-brand min-w-0"
+                              >
+                                <span className="shrink-0 font-semibold text-ink-faint">Attachment:</span>
+                                <span className="truncate">{item.answer.fileName} ↗</span>
+                              </a>
+                            ) : (
+                              <p className="mt-2 whitespace-pre-wrap style-body-text text-xs text-ink leading-relaxed break-all">
+                                {item.answer.raw}
+                              </p>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* 3. Notes & Decision Panel */}
+                    <div className="w-full min-w-0 rounded-xl border border-border-soft bg-white p-5 shadow-xs">
+                      <h4 className="style-body-text text-sm font-semibold text-ink">
+                        Your Notes & Decision
+                      </h4>
+
+                      <textarea
+                        className="mt-3 min-h-24 w-full rounded-lg border border-border-soft bg-search-field p-3 text-xs focus:border-brand outline-none transition-all"
+                        value={notes}
+                        onChange={(event) => setNotes(event.target.value)}
+                        placeholder="Add review notes or justification here..."
+                      />
+
+                      <div className="mt-4 flex w-full flex-col gap-3 border-t border-border-soft pt-4 min-w-0">
+                        <div className="flex w-full flex-col sm:flex-row sm:items-center justify-between gap-3">
+                          <div className="flex flex-wrap items-center gap-2">
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              disabled={saving}
+                              onClick={() => void updateSubmission()}
+                            >
+                              Save Notes
+                            </Button>
+
+                            {canChangeStatus && (
+                              <Button
+                                size="sm"
+                                variant="accent"
+                                disabled={saving}
+                                onClick={() => setPendingStatus("IN_CONSIDERATION")}
+                              >
+                                Shortlist
+                              </Button>
+                            )}
+                          </div>
+
+                          {canChangeStatus && (
                             <div className="flex items-center gap-2">
                               <Button
                                 size="sm"
-                                variant="ghost"
+                                variant="primary"
                                 disabled={saving}
-                                onClick={() => void updateSubmission()}
+                                onClick={() => setPendingStatus("ACCEPTED")}
                               >
-                                Save Notes
+                                Accept
                               </Button>
-
-                              {canChangeStatus && (
-                                <Button
-                                  size="sm"
-                                  variant="accent"
-                                  disabled={saving}
-                                  onClick={() => setPendingStatus("IN_CONSIDERATION")}
-                                >
-                                  Shortlist
-                                </Button>
-                              )}
+                              <Button
+                                size="sm"
+                                variant="danger"
+                                disabled={saving}
+                                onClick={() => setPendingStatus("REJECTED")}
+                              >
+                                Reject
+                              </Button>
                             </div>
+                          )}
+                        </div>
 
-                            {canChangeStatus && (
-                              <div className="flex items-center gap-2">
-                                <Button
-                                  size="sm"
-                                  variant="primary"
-                                  disabled={saving}
-                                  onClick={() => setPendingStatus("ACCEPTED")}
-                                >
-                                  Accept
-                                </Button>
-                                <Button
-                                  size="sm"
-                                  variant="danger"
-                                  disabled={saving}
-                                  onClick={() => setPendingStatus("REJECTED")}
-                                >
-                                  Reject
-                                </Button>
-                              </div>
-                            )}
-                          </div>
-
-                          <div className="flex w-full justify-between border-t border-border-soft/40 pt-2">
-                            <Button size="sm" variant="soft" onClick={selectPrevApplicant}>
-                              ← Previous
-                            </Button>
-                            <Button size="sm" variant="soft" onClick={selectNextApplicant}>
-                              Next →
-                            </Button>
-                          </div>
+                        <div className="flex w-full justify-between border-t border-border-soft/40 pt-2">
+                          <Button size="sm" variant="soft" onClick={selectPrevApplicant}>
+                            ← Previous
+                          </Button>
+                          <Button size="sm" variant="soft" onClick={selectNextApplicant}>
+                            Next →
+                          </Button>
                         </div>
                       </div>
                     </div>
-                  ) : (
-                    <div className="flex h-64 w-full items-center justify-center rounded-xl border border-dashed border-border-soft text-xs text-ink-muted">
-                      Select an applicant from the panel to view their responses.
-                    </div>
-                  )}
-                </div>
-              </>
-            ) : (
-              <div className="flex h-64 items-center justify-center text-xs text-ink-muted">
-                Select an application posting to view details and candidates.
+                  </div>
+                ) : (
+                  <div className="flex h-64 w-full items-center justify-center rounded-xl border border-dashed border-border-soft text-xs text-ink-muted">
+                    Select an applicant from the panel to view their responses.
+                  </div>
+                )}
               </div>
-            )}
-          </section>
+            </>
+          ) : (
+            <div className="flex h-64 items-center justify-center text-xs text-ink-muted">
+              Select an application posting to view details and candidates.
+            </div>
+          )}
+        </section>
         </div>
       </div>
 
@@ -1786,7 +1786,7 @@ export function AdminApplicationsManager({
             <p className="mt-2 text-xs text-ink-muted">
               {pendingVisibilityState
                 ? `Publishing "${detail?.title}" will make it active and visible to prospective applicants.`
-                : `Unpublishing "${detail?.title}" will hide it from active student listings.`}
+                : `Unpublishing "${detail?.title}" will hide it from active student applications.`}
             </p>
             <div className="mt-6 flex items-center justify-end gap-3">
               <Button variant="ghost" size="sm" onClick={() => setShowPublishModal(false)}>
