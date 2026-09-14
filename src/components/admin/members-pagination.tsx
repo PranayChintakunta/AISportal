@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { membersHref, type MembersQuery } from "@/lib/members/query-params";
 
 /** How many numbered page pills to show at once. */
-const WINDOW = 3;
+const WINDOW = 8;
 
 type Props = {
   query: MembersQuery;

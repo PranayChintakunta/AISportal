@@ -10,16 +10,16 @@ export function useMemberFilters(initialQuery: MembersQuery) {
   const searchParams = useSearchParams();
   const [isPending, startTransition] = useTransition();
 
-  const [term, setTerm] = useState(initialQuery.q);
-  const [syncedQ, setSyncedQ] = useState(initialQuery.q);
+  const [term, setTerm] = useState(initialQuery.q || "");
 
-  if (initialQuery.q !== syncedQ) {
-    setSyncedQ(initialQuery.q);
-    setTerm(initialQuery.q);
-  }
-
+  // Sync local input if the URL changes externally (e.g., browser back/forward)
   useEffect(() => {
-    if (term === initialQuery.q) return;
+    setTerm(initialQuery.q || "");
+  }, [initialQuery.q]);
+
+  // Push local changes to the URL after a 300ms debounce
+  useEffect(() => {
+    if (term === (initialQuery.q || "")) return;
 
     const timer = setTimeout(() => {
       const params = new URLSearchParams(searchParams.toString());
