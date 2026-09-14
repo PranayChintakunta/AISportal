@@ -1,10 +1,17 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { getApplicationReviewer } from "@/lib/admin-app-auth";
+import { canReviewProgramType } from "@/lib/roles";
 
 export async function GET(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  // This route had no authorization of its own: any signed-in user, including a
+  // plain member, could export any posting's full submission set by id.
+  const reviewer = await getApplicationReviewer();
+  if ("error" in reviewer) return reviewer.error;
+
   const { id } = await params;
   const { searchParams } = new URL(req.url);
   const type = searchParams.get("type") || "export";
@@ -26,6 +33,11 @@ export async function GET(
   });
 
   if (!appData) return new NextResponse("Application not found", { status: 404 });
+
+  // A scoped reviewer exports only their own programs' postings.
+  if (!canReviewProgramType(reviewer.allowedProgramTypes, appData.programType)) {
+    return new NextResponse("Application not found", { status: 404 });
+  }
 
   const dynamicQuestions = (appData.questionsJson as Array<{ id: string; label: string; type?: string }>) || [];
 

@@ -1,10 +1,7 @@
 import { auth } from '@clerk/nextjs/server';
 import { redirect } from 'next/navigation';
-import { prisma } from '@/lib/prisma';
-import { isAdminRole, isKnownRole } from '@/lib/roles';
-
-// MUST be exported as default and return JSX / ReactNode
-export default async function AdminEventsLayout({
+import { getAdminViewer } from '@/lib/admin-access';
+export default async function AdminLayout({
   children,
 }: {
   children: React.ReactNode;
@@ -15,21 +12,11 @@ export default async function AdminEventsLayout({
     redirect('/onboarding?mode=login');
   }
 
-  const claimedRole = session.sessionClaims?.metadata?.role;
-  let role = isKnownRole(claimedRole) ? claimedRole : undefined;
+  const viewer = await getAdminViewer();
 
-  if (!role) {
-    const user = await prisma.user.findUnique({
-      where: { clerkId: session.userId },
-      select: { role: true },
-    });
-    role = user?.role;
-  }
-
-  if (!isAdminRole(role)) {
+  if (!viewer?.canReview) {
     redirect('/dashboard');
   }
 
-  // MUST return children inside a wrapper or fragment
   return <>{children}</>;
 }

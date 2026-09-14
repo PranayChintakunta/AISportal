@@ -1,17 +1,22 @@
 import { ProgramType } from "@prisma/client";
 import { NextResponse } from "next/server";
 import { createErrorResponse } from "@/lib/api-error";
-import { getAdminUser } from "@/lib/admin-app-auth";
+import { getAdminUser, getApplicationReviewer } from "@/lib/admin-app-auth";
 import { logAction } from "@/lib/audit";
 import { prisma } from "@/lib/prisma";
 
 const programTypes = Object.values(ProgramType);
 
 export async function GET() {
-  const currentUser = await getAdminUser();
+  // Reviewers, not just admins: an AIM mentor reaches this with role MEMBER.
+  const currentUser = await getApplicationReviewer();
   if ("error" in currentUser) return currentUser.error;
 
+  const { allowedProgramTypes } = currentUser;
+
   const applications = await prisma.programApplication.findMany({
+    // null means unrestricted; anything else narrows the reviewer to their programs.
+    where: allowedProgramTypes ? { programType: { in: allowedProgramTypes } } : undefined,
     orderBy: { createdAt: "desc" },
     select: {
       id: true,

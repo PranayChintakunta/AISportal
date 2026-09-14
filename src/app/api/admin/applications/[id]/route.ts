@@ -1,13 +1,16 @@
 import { NextResponse } from "next/server";
 import { createErrorResponse } from "@/lib/api-error";
-import { getAdminUser } from "@/lib/admin-app-auth";
+import {
+  getAdminUser,
+  getApplicationReviewer,
+  postingOutOfScopeResponse,
+} from "@/lib/admin-app-auth";
+import { canManageApplications, canReviewProgramType } from "@/lib/roles";
 import { prisma } from "@/lib/prisma";
 import { z } from "zod";
 
 // Helper role checks
-function canModifyApplication(role?: string) {
-  return role === "EXECUTIVE" || role === "DIRECTOR";
-}
+const canModifyApplication = canManageApplications;
 
 function canDeleteApplication(role?: string) {
   return role === "EXECUTIVE";
@@ -52,9 +55,10 @@ const updateApplicationSchema = z.object({
 });
 
 export async function GET(_request: Request, { params }: { params: Promise<{ id: string }> }) {
-  const currentUser = await getAdminUser();
+  // Reviewers, not just admins: an AIM mentor reaches this with role MEMBER.
+  const currentUser = await getApplicationReviewer();
   if ("error" in currentUser) return currentUser.error;
-  
+
   const { id } = await params;
   const application = await prisma.programApplication.findUnique({
     where: { id },
@@ -73,6 +77,8 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
                   linkedinUrl: true, 
                   githubUrl: true, 
                   portfolioUrl: true, 
+                  phoneNumber: true,
+                  personalEmail: true,
                   resumeFile: { select: { fileName: true } } 
                 } 
               } 
@@ -82,6 +88,7 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
             include: { 
               reviewer: { 
                 select: { 
+                  id: true,
                   profile: { select: { firstName: true, lastName: true } }, 
                   email: true 
                 } 
@@ -95,7 +102,12 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
 
   if (!application) return createErrorResponse("Application not found", "NOT_FOUND", 404);
 
-  return NextResponse.json({ 
+  if (!canReviewProgramType(currentUser.allowedProgramTypes, application.programType)) {
+    return postingOutOfScopeResponse();
+  }
+
+  return NextResponse.json({
+    currentUserId: currentUser.user.id,
     application: {
       ...application,
       questions: application.questionsJson ?? [],

@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { cn } from "@/lib/utils";
-import { getAuthenticatedUser } from "@/lib/auth";
+import { adminRoleLabel, getAdminViewer } from "@/lib/admin-access";
 
 const NAV_ITEMS = [
   { label: "Applications", href: "/admin/applications" },
@@ -9,18 +9,23 @@ const NAV_ITEMS = [
   { label: "Exit Admin", href: "/dashboard" },
 ] as const;
 
+/** Sections an application reviewer may reach. Everything else is officer-only. */
+const REVIEWER_NAV_LABELS: readonly string[] = ["Applications", "Exit Admin"];
+
 type MobileAdminNavProps = {
   active?: (typeof NAV_ITEMS)[number]["label"];
 };
 
 /** Compact top nav replacing the desktop admin sidebar on narrow screens. */
 export async function MobileAdminNav({ active = "Events" }: MobileAdminNavProps) {
-  // Fetch the authenticated user to determine their actual role
-  const user = await getAuthenticatedUser();
-  
-  // Format role nicely (e.g., fallback to "Officer" or capitalize if it's "ADMIN", "OFFICER", etc.)
-  const rawRole = user?.role || "Officer";
-  const role = rawRole.charAt(0).toUpperCase() + rawRole.slice(1).toLowerCase();
+  const viewer = await getAdminViewer();
+
+  // Reviewers see their program, not "Member" — the role they hold is not the
+  // reason they are here.
+  const role = adminRoleLabel(viewer);
+  const navItems = viewer?.isReviewerOnly
+    ? NAV_ITEMS.filter((item) => REVIEWER_NAV_LABELS.includes(item.label))
+    : NAV_ITEMS;
 
   return (
     <div className="flex flex-col gap-3">
@@ -33,7 +38,7 @@ export async function MobileAdminNav({ active = "Events" }: MobileAdminNavProps)
         </div>
       </div>
       <div className="-mx-[20px] flex gap-1 overflow-x-auto px-[20px] pb-[2px]">
-        {NAV_ITEMS.map((item) => {
+        {navItems.map((item) => {
           const isActive = item.label === active;
           return (
             <Link

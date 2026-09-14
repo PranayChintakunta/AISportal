@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import { redirect } from "next/navigation";
+import { getAdminViewer } from "@/lib/admin-access";
 import { AdminSidebar } from "@/components/admin/admin-sidebar";
 import { StatCard } from "@/components/admin/stat-card";
 import { Button } from "@/components/ui/button";
@@ -15,7 +17,13 @@ export const metadata: Metadata = {
   description: "Admin overview of applications, members, and events.",
 };
 
-export default function AdminOverviewPage() {
+export default async function AdminOverviewPage() {
+  // Officer-only: the /admin layout also admits application reviewers.
+  const viewer = await getAdminViewer();
+  if (!viewer?.isAdmin) {
+    redirect("/dashboard");
+  }
+
   return (
     <>
       <div className="md:hidden">

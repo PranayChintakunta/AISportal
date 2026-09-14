@@ -1,4 +1,4 @@
-import type { MembershipType, UserRole, TEAM } from "@prisma/client";
+import type { MembershipType, ProgramType, UserRole, TEAM } from "@prisma/client";
 
 /**
  * Roles live on three axes:
@@ -15,6 +15,9 @@ export const ADMIN_ROLES = ["OFFICER", "DIRECTOR", "EXECUTIVE"] as const satisfi
 
 /** Roles permitted to assign or modify user roles and team affiliations. */
 export const ROLE_MANAGER_ROLES = ["EXECUTIVE", "DIRECTOR"] as const satisfies readonly UserRole[];
+
+/** Roles permitted to create, edit or publish program applications. */
+export const APPLICATION_MANAGER_ROLES = ["EXECUTIVE", "DIRECTOR"] as const satisfies readonly UserRole[];
 
 /** All valid permission roles. */
 export const ALL_USER_ROLES = ["MEMBER", "OFFICER", "DIRECTOR", "EXECUTIVE"] as const satisfies readonly UserRole[];
@@ -86,6 +89,11 @@ export function canManageRoles(role: string | null | undefined): boolean {
   return !!role && (ROLE_MANAGER_ROLES as readonly string[]).includes(role);
 }
 
+/** Create, edit or publish program applications. Reviewing is a separate axis. */
+export function canManageApplications(role: string | null | undefined): boolean {
+  return !!role && (APPLICATION_MANAGER_ROLES as readonly string[]).includes(role);
+}
+
 export function isAssignableUserRole(value: unknown): value is UserRole {
   return typeof value === "string" && (ASSIGNABLE_USER_ROLES as readonly string[]).includes(value);
 }
@@ -96,4 +104,74 @@ export function isAssignableProgram(value: unknown): value is MembershipType {
 
 export function isAssignableTeam(value: unknown): value is TEAM {
   return typeof value === "string" && (ASSIGNABLE_TEAMS as readonly string[]).includes(value);
+}
+
+/* -------------------------------------------------------------------------- */
+/* Application review access                                                  */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * Postings an AIM mentor may review. Mentors read the applications for the
+ * program they mentor in — not the mentor postings themselves.
+ */
+export const AIM_MENTOR_PROGRAM_TYPES = [
+  "AI_MENTORSHIP_MENTEE",
+] as const satisfies readonly ProgramType[];
+
+/** True when the member holds an active AIM mentor program membership. */
+export function hasAimMentorProgram(
+  programs: readonly MembershipType[] | null | undefined
+): boolean {
+  return !!programs?.includes("AIM_MENTOR");
+}
+
+/**
+ * Whether someone may reach the applications review UI at all.
+ *
+ * Admin roles qualify by role. AIM mentors qualify by program membership alone —
+ * their User.role stays MEMBER, so this is the only thing that lets them in.
+ */
+export function canReviewApplications(
+  role: string | null | undefined,
+  programs: readonly MembershipType[] | null | undefined
+): boolean {
+  return isAdminRole(role) || hasAimMentorProgram(programs);
+}
+
+/**
+ * True only for someone who reaches the review surface purely through a
+ * program membership, never by role — an AIM mentor. Admin roles have their
+ * own "Admin" entry point and are excluded here even if they also happen to
+ * hold an AIM_MENTOR membership.
+ */
+export function isApplicationReviewerOnly(
+  role: string | null | undefined,
+  programs: readonly MembershipType[] | null | undefined
+): boolean {
+  return !isAdminRole(role) && hasAimMentorProgram(programs);
+}
+
+/**
+ * Which postings a reviewer may see, as a program-type allow-list.
+ *
+ * `null` means unrestricted — every posting — and is what admin roles get. An
+ * array narrows the reviewer to those program types; an empty array means no
+ * access at all. Callers must check the requested posting against this rather
+ * than trusting the UI to have filtered it.
+ */
+export function reviewableProgramTypes(
+  role: string | null | undefined,
+  programs: readonly MembershipType[] | null | undefined
+): ProgramType[] | null {
+  if (isAdminRole(role)) return null;
+  return hasAimMentorProgram(programs) ? [...AIM_MENTOR_PROGRAM_TYPES] : [];
+}
+
+/** Whether a specific posting falls inside a reviewer's allow-list. */
+export function canReviewProgramType(
+  allowed: ProgramType[] | null,
+  programType: ProgramType | null | undefined
+): boolean {
+  if (allowed === null) return true;
+  return !!programType && allowed.includes(programType);
 }
