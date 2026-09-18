@@ -505,7 +505,7 @@ function ApplyFormContent() {
 
   if (!loading && !error && alreadySubmitted) {
     return (
-      <div className="flex min-h-screen w-full flex-col bg-cream">
+      <div className="flex min-h-screen w-full flex-col">
         <Navbar active="Apply" />
         <div className="flex w-full flex-1 items-center justify-center px-6 py-10">
           <div className="w-full max-w-[720px] rounded-2xl border border-border-soft bg-white p-8 shadow-sm">
@@ -1172,7 +1172,7 @@ function ApplyFormContent() {
 
 function ApplyFormFallback() {
   return (
-    <div className="flex min-h-screen w-full flex-col bg-cream">
+    <div className="flex min-h-screen w-full flex-col">
       <Navbar active="Apply" />
       <div className="flex w-full flex-col items-center px-10 pt-8 pb-32">
         <div className="w-full max-w-[1346px] rounded-2xl border border-border-soft bg-white p-9 shadow-sm">

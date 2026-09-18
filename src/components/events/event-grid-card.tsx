@@ -9,6 +9,7 @@ import { Tag } from "@/components/ui/tag";
 import type { TagData } from "@/components/dashboard/up-next-card";
 import { normalizeEventTags } from "@/lib/event-tags";
 import { EventCoverImage } from "@/components/events/event-cover-image";
+import { burstConfetti } from "@/lib/confetti";
 
 export type EventGridItem = {
   title: string;
@@ -68,9 +69,10 @@ export function EventGridCard({
       const payload = await response.json();
       
       if (response.ok) {
+        if (!hasRsvpd) burstConfetti(e.clientX, e.clientY);
         setHasRsvpd(!hasRsvpd);
         setMessage(hasRsvpd ? "RSVP canceled" : "See you there!");
-        router.refresh(); 
+        router.refresh();
       } else if (response.status === 409) {
         setHasRsvpd(true);
         setMessage(null);

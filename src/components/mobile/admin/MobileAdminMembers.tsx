@@ -31,7 +31,7 @@ export function MobileAdminMembers({
   editable?: boolean;
 }) {
   return (
-    <MobileScreen withBottomNavPadding={false}>
+    <MobileScreen withBottomNavPadding={false} backgroundColor="bg-cream">
       <MobileAdminNav active="Members" />
 
       <div className="flex items-center justify-between gap-[8px]">

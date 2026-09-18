@@ -35,7 +35,7 @@ type MobileAdminEditEventProps = {
 export function MobileAdminEditEvent({ eventId, defaultValues, isPublished, userRole, eventSettings }: MobileAdminEditEventProps) {
   // defaultValues is already converted to CT string format by EditEventPage
   return (
-    <MobileScreen withBottomNavPadding={false}>
+    <MobileScreen withBottomNavPadding={false} backgroundColor="bg-cream">
       <MobileAdminNav active="Events" />
 
       <div>

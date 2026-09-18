@@ -30,7 +30,7 @@ export function MobileAdminCreateEvent({userRole}: MobileAdminCreateEventProps) 
   ];
 
   return (
-    <MobileScreen withBottomNavPadding={false}>
+    <MobileScreen withBottomNavPadding={false} backgroundColor="bg-cream">
       <MobileAdminNav active="Events" />
 
       <div>

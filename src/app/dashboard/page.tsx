@@ -5,6 +5,7 @@ import { generateCalendarLinks } from "@/lib/calendar";
 
 // Components
 import { Navbar } from "@/components/navbar";
+import { Footer } from "@/components/footer";
 import { UpNextCard } from "@/components/dashboard/up-next-card";
 import { MobileDashboard } from "@/components/mobile/dashboard/MobileDashboard";
 import {
@@ -55,7 +56,7 @@ export default async function DashboardPage() {
 
       {/* --- DESKTOP VIEW --- */}
       <div className="hidden md:block">
-        <div className="relative flex min-h-screen w-full flex-col overflow-x-hidden bg-cream">
+        <div className="relative flex min-h-screen w-full flex-col overflow-x-hidden">
           {/* Ambient accent glow, purely decorative */}
           <div
             aria-hidden
@@ -69,7 +70,7 @@ export default async function DashboardPage() {
           <Navbar />
 
           <div className="mx-auto flex w-full max-w-[1440px] flex-col gap-[28px] px-[46px] pb-[46px] pt-[45px]">
-            <h1 className="style-page-title /*leading-[43.2px] tracking-[-0.4px] [font-variation-settings:'wdth'_100]*/ bg-[linear-gradient(90deg,#f2a968_0%,#7d64c4_100%)] bg-clip-text text-transparent">
+            <h1 className="style-page-title bg-[linear-gradient(90deg,#2f5fe8_0%,#f2a968_100%)] bg-clip-text text-transparent">
               Welcome back, {userName}!
             </h1>
 
@@ -116,6 +117,7 @@ export default async function DashboardPage() {
               </Suspense>
             </div>
           </div>
+          <Footer />
         </div>
       </div>
     </>

@@ -3,6 +3,7 @@
 import { Fragment, useEffect, useState, type ReactNode } from "react";
 import { motion } from "framer-motion";
 import { Navbar } from "@/components/navbar";
+import { Footer } from "@/components/footer";
 import { SectionHeader } from "@/components/ui/section-header";
 import { ProgramCard } from "@/components/apply/program-card";
 import { Marquee } from "@/components/apply/marquee";
@@ -259,7 +260,7 @@ export default function ApplyPage() {
 
       {/* --- DESKTOP LAYOUT --- */}
       <div className="hidden md:block">
-        <div className="relative flex min-h-screen w-full flex-col overflow-x-hidden bg-cream antialiased">
+        <div className="relative flex min-h-screen w-full flex-col overflow-x-hidden antialiased">
           <div
             aria-hidden
             className="pointer-events-none absolute -top-24 left-[15%] -z-10 h-[420px] w-[420px] rounded-full bg-orange-300/25 blur-[110px]"
@@ -274,11 +275,8 @@ export default function ApplyPage() {
           <main className="relative w-full pb-16 pt-8">
             {/* Header Hero Section */}
             <section className="px-8 pt-4 lg:px-12">
-              <h1 className="font-display style-page-title font-bold leading-[1.05] tracking-[-0.02em] text-ink lg:text-5xl [font-variation-settings:'wdth'_100]">
-                Choose Your{" "}
-                <span className="bg-[linear-gradient(90deg,#f2a968_0%,#7d64c4_100%)] bg-clip-text pr-3 text-transparent">
-                  AIS Path
-                </span>
+              <h1 className="style-page-title bg-[linear-gradient(90deg,#2f5fe8_0%,#f2a968_100%)] bg-clip-text text-transparent">
+                Choose Your AIS Path
               </h1>
               <p className="style-page-subtitle lg: mt-3 max-w-4xl font-normal leading-relaxed text-ink/80">
                 Welcome to the enrollment hub. Whether you&apos;re here to learn,
@@ -354,6 +352,7 @@ export default function ApplyPage() {
               )}
             </div>
           </main>
+          <Footer />
         </div>
       </div>
     </>
