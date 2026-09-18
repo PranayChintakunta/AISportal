@@ -48,6 +48,10 @@ function buildWhere(query: MembersQuery): Prisma.UserWhereInput {
     where.memberships = { some: { activeFlag: true, membershipType: "AIM_MENTOR" } };
   } else if (query.filter === "mentees") {
     where.memberships = { some: { activeFlag: true, membershipType: "AIM_MENTEE" } };
+  } else if (query.filter === "academy") {
+    where.memberships = { some: { activeFlag: true, membershipType: "AI_ACADEMY" }};
+  } else if (query.filter === "inno") {
+    where.memberships = { some: { activeFlag: true, membershipType: "INNOVATION_LABS" }};
   }
 
   return where;

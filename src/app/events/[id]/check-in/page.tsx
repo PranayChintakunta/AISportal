@@ -18,7 +18,7 @@ export default async function CheckInPage({ searchParams }: CheckInProps) {
   // 1. Missing Token State
   if (!token) {
     return (
-      <div className="flex min-h-screen flex-col items-center justify-center bg-cream p-6 text-center">
+      <div className="flex min-h-screen flex-col items-center justify-center p-6 text-center">
         <div className="w-full max-w-[420px] rounded-[16px] bg-white p-[36px] border border-border-soft shadow-sm">
           <span className="style-caption font-semibold uppercase tracking-wider text-red-600">
             Error
@@ -59,7 +59,7 @@ export default async function CheckInPage({ searchParams }: CheckInProps) {
 
   if (!event) {
     return (
-      <div className="flex min-h-screen flex-col items-center justify-center bg-cream p-6 text-center">
+      <div className="flex min-h-screen flex-col items-center justify-center p-6 text-center">
         <div className="w-full max-w-[420px] rounded-[16px] bg-white p-[36px] border border-border-soft shadow-sm">
           <span className="style-caption font-semibold uppercase tracking-wider text-ink-muted">
             Not Found
@@ -87,7 +87,7 @@ export default async function CheckInPage({ searchParams }: CheckInProps) {
   const now = new Date();
   if (now > event.endTime) {
     return (
-      <div className="flex min-h-screen flex-col items-center justify-center bg-cream p-6 text-center">
+      <div className="flex min-h-screen flex-col items-center justify-center p-6 text-center">
         <div className="w-full max-w-[420px] rounded-[16px] bg-[#f4f1ea] p-[36px] border border-border-soft">
           <span className="style-caption font-semibold uppercase tracking-wider text-ink-faint">
             Ended
@@ -189,7 +189,7 @@ export default async function CheckInPage({ searchParams }: CheckInProps) {
 
   // 8. Success UI
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-cream p-6 text-center">
+    <div className="flex min-h-screen flex-col items-center justify-center p-6 text-center">
       <div className="w-full max-w-[420px] rounded-[16px] bg-[#d2ecd9] p-[36px] border border-[#b8dfc3]">
         <span className="style-caption font-semibold uppercase tracking-wider">
           Verified

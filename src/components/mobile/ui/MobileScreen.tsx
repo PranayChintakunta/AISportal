@@ -7,7 +7,7 @@ import type { ReactNode, CSSProperties } from "react";
 export function MobileScreen({
   children,
   withBottomNavPadding = true,
-  backgroundColor = "bg-cream",
+  backgroundColor = "",
 }: {
   children: ReactNode;
   withBottomNavPadding?: boolean;

@@ -129,7 +129,7 @@ export function MobileAdminApplicantReview({ applicationId }: { applicationId: s
   }, [selectedSubmission, detail]);
 
   return (
-    <MobileScreen withBottomNavPadding={false}>
+    <MobileScreen withBottomNavPadding={false} backgroundColor="bg-cream">
       <MobileAdminNav active="Applications" />
 
       {/* Header Info */}

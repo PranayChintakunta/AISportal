@@ -30,14 +30,14 @@ export default function EventsPage() {
       </div>
 
       <div className="hidden md:block">
-        <div className="flex min-h-screen w-full flex-col bg-cream">
+        <div className="flex min-h-screen w-full flex-col">
           <Navbar active="Events" />
 
           <div className="relative w-full pb-[46px] pt-[46px]">
             {/* Hero */}
             <div className="flex flex-col gap-[16px] px-[46px] pt-[45px] lg:flex-row lg:items-start lg:justify-between">
               <div className="flex flex-col gap-[10px]">
-                <h1 className="style-page-title leading-[53.76px] tracking-[-0.5px] text-brand">
+                <h1 className="style-page-title bg-[linear-gradient(90deg,#2f5fe8_0%,#f2a968_100%)] bg-clip-text text-transparent">
                   {eventsHero.title}
                 </h1>
                 <p className="max-w-[560px] style-body-text leading-[24px] text-ink">

@@ -55,9 +55,9 @@ export function BottomNav() {
 
   // 3. Base navigation array
   const tabs = [
+    { label: "Dashboard", href: "/dashboard" },
     { label: "Events", href: "/events" },
     { label: "Apply", href: "/applications" },
-    { label: "Dashboard", href: "/dashboard" },
   ];
 
   // 4. Inject Admin route if permissions pass

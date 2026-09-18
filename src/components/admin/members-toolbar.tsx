@@ -21,6 +21,14 @@ export function MembersToolbar({ query }: { query: MembersQuery }) {
         className="h-[42px] flex-1"
       />
 
+      <Link
+        href={membersHref(query, { sort: NEXT_SORT[query.sort] })}
+        aria-label="Change sort"
+        className="rounded-full transition-colors hover:[&>span]:border-brand hover:[&>span]:bg-brand-soft hover:[&>span]:text-brand-dark focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-brand-soft"
+      >
+        <Badge label={SORT_LABELS[query.sort]} variant="outline" />
+      </Link>
+      
       {(Object.keys(FILTER_LABELS) as MemberFilter[]).map((filter) => (
         <Link key={filter} href={membersHref(query, { filter, page: 1 })}>
           <Button
@@ -32,14 +40,6 @@ export function MembersToolbar({ query }: { query: MembersQuery }) {
           </Button>
         </Link>
       ))}
-
-      <Link
-        href={membersHref(query, { sort: NEXT_SORT[query.sort] })}
-        aria-label="Change sort"
-        className="rounded-full transition-colors hover:[&>span]:border-brand hover:[&>span]:bg-brand-soft hover:[&>span]:text-brand-dark focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-brand-soft"
-      >
-        <Badge label={SORT_LABELS[query.sort]} variant="outline" />
-      </Link>
     </div>
   );
 }

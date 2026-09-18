@@ -9,6 +9,7 @@ import { Tag } from "@/components/ui/tag";
 import type { TagData } from "@/components/dashboard/up-next-card";
 import { normalizeEventTags } from "@/lib/event-tags";
 import { EventCoverImage } from "@/components/events/event-cover-image";
+import { burstConfetti } from "@/lib/confetti";
 
 export type EventGridItem = {
   title: string;
@@ -68,9 +69,10 @@ export function EventGridCard({
       const payload = await response.json();
       
       if (response.ok) {
+        if (!hasRsvpd) burstConfetti(e.clientX, e.clientY);
         setHasRsvpd(!hasRsvpd);
         setMessage(hasRsvpd ? "RSVP canceled" : "See you there!");
-        router.refresh(); 
+        router.refresh();
       } else if (response.status === 409) {
         setHasRsvpd(true);
         setMessage(null);
@@ -87,7 +89,7 @@ export function EventGridCard({
   return (
     <Link
       href={`/events/${eventId}`}
-      className="group flex h-full flex-col rounded-2xl border border-border-soft bg-white p-5 transition-all duration-300 hover:-translate-y-1 hover:scale-[1.02] hover:shadow-xl hover:shadow-ink/10"
+      className="group flex h-full flex-col rounded-2xl border-2 border-white/30 bg-white/75 backdrop-blur-xl p-5 transition-all duration-300 hover:-translate-y-1 hover:scale-[1.02] hover:shadow-xl hover:shadow-ink/15"
     >
       <EventCoverImage
         imageUrl={imageUrl}
@@ -103,7 +105,7 @@ export function EventGridCard({
         <p className="mt-1.5 style-meta-text tracking-wide text-ink-faint">
           {meta}
         </p>
-        <p className="mt-3 line-clamp-3 style-body-text leading-relaxed text-ink-muted">
+        <p className="mt-3 line-clamp-3 style-body-text whitespace-pre-wrap leading-relaxed text-ink-muted">
           {description}
         </p>
       </div>
