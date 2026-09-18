@@ -1,4 +1,5 @@
 import { cn } from "@/lib/utils";
+import { CountUp } from "@/components/ui/count-up";
 
 export type StatCardData = {
   value: string;
@@ -31,14 +32,13 @@ export function StatCard({ value, label, highlight }: StatCardData) {
         )}
       />
 
-      <span
+      <CountUp
+        value={value}
         className={cn(
           "style-section-header leading-[34px] [font-variation-settings:'wdth'_100]",
           highlight ? "text-brand" : "text-ink"
         )}
-      >
-        {value}
-      </span>
+      />
       <span className="font-techno  uppercase leading-[16px] tracking-[1.1px] text-ink-faint">
         {label}
       </span>

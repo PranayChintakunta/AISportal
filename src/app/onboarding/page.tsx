@@ -34,7 +34,7 @@ export default async function OnboardingPage({ searchParams }: OnboardingPagePro
 
       <div className="hidden md:block">
         {/* Force immediate side-by-side horizontal split on all desktop/tablet sizes */}
-        <main className="hidden min-h-screen w-full bg-cream md:flex md:flex-row">
+        <main className="hidden min-h-screen w-full md:flex md:flex-row">
           <section className="w-1/2">
             <OnboardingHero />
           </section>

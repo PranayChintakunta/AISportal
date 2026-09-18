@@ -2,8 +2,10 @@
 
 import { useState } from "react";
 import { Navbar } from "@/components/navbar";
+import { Footer } from "@/components/footer";
 import { Tag } from "@/components/ui/tag";
 import { EventGridCard } from "@/components/events/event-grid-card";
+import { ScrollReveal } from "@/components/ui/scroll-reveal";
 import { MobileEventsBrowse } from "@/components/mobile/events/MobileEventsBrowse";
 import { eventFilterTags } from "@/lib/data";
 import { formatEventDate } from "@/lib/utils";
@@ -60,14 +62,14 @@ export function EventsBrowseClient({ upcomingEvents, pastEvents }: EventsBrowseC
 
       {/* Desktop & Tablet Layout */}
       <div className="hidden md:block">
-        <div className="relative flex min-h-screen w-full flex-col overflow-x-hidden bg-cream">
+        <div className="relative flex min-h-screen w-full flex-col overflow-x-hidden">
           <div aria-hidden className="pointer-events-none absolute -top-20 right-[15%] -z-10 h-[400px] w-[400px] rounded-full bg-purple-400/20 blur-[110px]" />
           <div aria-hidden className="pointer-events-none absolute top-[40%] left-[-5%] -z-10 h-[340px] w-[340px] rounded-full bg-orange-300/20 blur-[110px]" />
           <Navbar active="Events" />
           <div className="flex w-full flex-col md:flex-row md:items-stretch">
             
             {/* Tag filter sidebar */}
-            <aside className="flex flex-col gap-[10px] border-b border-border-soft px-6 py-8 md:w-[220px] md:shrink-0 md:border-b-0 md:border-r">
+            <aside className="flex flex-col gap-[10px] border-b border-border-soft bg-white/50 px-6 py-8 md:w-[220px] md:shrink-0 md:border-b-0 md:border-r">
               <p className="font-techno uppercase leading-normal tracking-[3px] text-ink-faint">
                 Tags
               </p>
@@ -115,7 +117,7 @@ export function EventsBrowseClient({ upcomingEvents, pastEvents }: EventsBrowseC
             {/* Main Content Area */}
             <div className="min-w-0 flex-1 flex-col gap-10 p-6 lg:p-11 flex">
               <div>
-                <h1 className="style-page-title mb-3 text-brand">
+                <h1 className="style-page-title mb-3 bg-[linear-gradient(90deg,#2f5fe8_0%,#f2a968_100%)] bg-clip-text text-transparent">
                   Pick Your Next Sidequest
                 </h1>
                 <p className="style-page-subtitle text-ink-muted">
@@ -154,21 +156,22 @@ export function EventsBrowseClient({ upcomingEvents, pastEvents }: EventsBrowseC
                       </p>
                     ) : (
                       <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
-                        {filteredUpcoming.map((event) => (
-                          <EventGridCard
-                            key={event.id}
-                            title={event.title}
-                            meta={`${event.location} · ${formatEventDate(event.startTime, true)}`}
-                            description={event.description}
-                            imageUrl={event.imageUrl}
-                            tags={event.tags}
-                            eventId={event.id}
-                            isRsvpd={event.isRsvpd}
-                            isPast={false}
-                            hasAttended={event.hasAttended}
-                            missedEvent={event.missedEvent}
-                            isRsvpOpen={event.isRsvpOpen}
-                          />
+                        {filteredUpcoming.map((event, index) => (
+                          <ScrollReveal key={event.id} delay={(index % 4) * 80}>
+                            <EventGridCard
+                              title={event.title}
+                              meta={`${event.location} · ${formatEventDate(event.startTime, true)}`}
+                              description={event.description}
+                              imageUrl={event.imageUrl}
+                              tags={event.tags}
+                              eventId={event.id}
+                              isRsvpd={event.isRsvpd}
+                              isPast={false}
+                              hasAttended={event.hasAttended}
+                              missedEvent={event.missedEvent}
+                              isRsvpOpen={event.isRsvpOpen}
+                            />
+                          </ScrollReveal>
                         ))}
                       </div>
                     )}
@@ -181,21 +184,22 @@ export function EventsBrowseClient({ upcomingEvents, pastEvents }: EventsBrowseC
                         Past Events
                       </h2>
                       <div className="grid grid-cols-1 gap-6 opacity-80 xl:grid-cols-2">
-                        {filteredPast.map((event) => (
-                          <EventGridCard
-                            key={event.id}
-                            title={event.title}
-                            meta={`${event.location} · ${formatEventDate(event.startTime, true)}`}
-                            description={event.description}
-                            imageUrl={event.imageUrl}
-                            tags={event.tags}
-                            eventId={event.id}
-                            isRsvpd={event.isRsvpd}
-                            isPast={true}
-                            hasAttended={event.hasAttended}
-                            missedEvent={event.missedEvent}
-                            isRsvpOpen={false}
-                          />
+                        {filteredPast.map((event, index) => (
+                          <ScrollReveal key={event.id} delay={(index % 4) * 80}>
+                            <EventGridCard
+                              title={event.title}
+                              meta={`${event.location} · ${formatEventDate(event.startTime, true)}`}
+                              description={event.description}
+                              imageUrl={event.imageUrl}
+                              tags={event.tags}
+                              eventId={event.id}
+                              isRsvpd={event.isRsvpd}
+                              isPast={true}
+                              hasAttended={event.hasAttended}
+                              missedEvent={event.missedEvent}
+                              isRsvpOpen={false}
+                            />
+                          </ScrollReveal>
                         ))}
                       </div>
                     </section>
@@ -205,6 +209,7 @@ export function EventsBrowseClient({ upcomingEvents, pastEvents }: EventsBrowseC
             </div>
 
           </div>
+          <Footer />
         </div>
       </div>
     </>

@@ -241,7 +241,7 @@ function ApplyDetailContent() {
       </div>
 
       <div className="hidden md:block">
-        <div className="flex min-h-screen w-full flex-col bg-cream">
+        <div className="flex min-h-screen w-full flex-col">
           <Navbar active="Apply" />
 
           <main className="mx-auto flex w-full max-w-5xl flex-col gap-6 px-8 py-10">
@@ -427,7 +427,7 @@ function ApplyDetailContent() {
 
 function DetailPageFallback() {
   return (
-    <div className="flex min-h-screen w-full flex-col bg-cream">
+    <div className="flex min-h-screen w-full flex-col">
       <Navbar active="Apply" />
       <div className="mx-auto flex w-full max-w-5xl flex-col gap-6 px-8 py-10">
         <DetailSkeleton />

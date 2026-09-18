@@ -109,7 +109,7 @@ export function MobileAdminEvents({
   pastRows,
 }: MobileAdminEventsProps) {
   return (
-    <MobileScreen withBottomNavPadding={false}>
+    <MobileScreen withBottomNavPadding={false} backgroundColor="bg-cream">
       <MobileAdminNav active="Events" />
 
       {/* Header */}

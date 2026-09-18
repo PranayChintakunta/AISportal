@@ -82,7 +82,7 @@ export function MobileEventsBrowse({ upcomingEvents, pastEvents }: MobileEventsB
   return (
     <MobileScreen>
       <div className="flex flex-col gap-[6px]">
-        <h1 className="style-page-title leading-tight tracking-tight text-brand">
+        <h1 className="style-page-title bg-[linear-gradient(90deg,#2f5fe8_0%,#f2a968_100%)] bg-clip-text text-transparent">
           Pick Your Next Sidequest
         </h1>
         <p className="style-page-subtitle text-ink-muted">
