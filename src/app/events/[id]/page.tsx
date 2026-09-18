@@ -126,7 +126,7 @@ export default async function EventDetailPage({ params }: EventDetailPageProps) 
                   {formattedDate} · {event.location}
                 </p>
 
-                <p className="mt-[20px] max-w-[640px] style-body-text leading-[24px] text-ink">
+                <p className="mt-[20px] max-w-[640px] whitespace-pre-wrap style-body-text leading-[24px] text-ink">
                   {event.description}
                 </p>
 

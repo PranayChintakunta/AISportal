@@ -103,7 +103,7 @@ export function EventGridCard({
         <p className="mt-1.5 style-meta-text tracking-wide text-ink-faint">
           {meta}
         </p>
-        <p className="mt-3 line-clamp-3 style-body-text leading-relaxed text-ink-muted">
+        <p className="mt-3 line-clamp-3 style-body-text whitespace-pre-wrap leading-relaxed text-ink-muted">
           {description}
         </p>
       </div>
