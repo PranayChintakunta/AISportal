@@ -10,6 +10,7 @@ import { MobileScreen } from "@/components/mobile/ui/MobileScreen";
 import { BottomNav } from "@/components/mobile/ui/BottomNav";
 import { Marquee } from "@/components/apply/marquee";
 import { OpenAppRow } from "@/components/apply/open-app-row";
+import { GradientWavesBackground } from "@/components/gradient-waves-background";
 import { programs } from "@/lib/data";
 import {
   type Application,
@@ -232,6 +233,7 @@ export function MobileApply() {
 
   return (
     <MobileScreen>
+      <GradientWavesBackground />
       <div className="flex flex-col gap-[6px]">
         <h1 className="style-page-title bg-[linear-gradient(90deg,#2f5fe8_0%,#f2a968_100%)] bg-clip-text text-transparent">
           Choose Your AIS Path

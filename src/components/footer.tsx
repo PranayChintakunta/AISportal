@@ -29,21 +29,27 @@ export function Footer() {
     <footer className="w-full border-t border-border-soft bg-cream/85 px-[46px] py-[18px] backdrop-blur-md">
       <div className="mx-auto flex w-full max-w-[1440px] flex-col items-center gap-[12px] sm:flex-row sm:justify-between">
         <div className="flex flex-col items-center gap-[4px] sm:items-start">
-          <Image
-            src="/ais_logo_black.png"
-            alt="AIS Logo"
-            width={120}
-            height={36}
-            className="h-[24px] w-auto object-contain"
-          />
           <Link
+            href="https://aisutd.org"
+            target="_blank"
+          >
+            <Image
+              src="/ais_logo_black.png"
+              alt="AIS Logo"
+              width={120}
+              height={36}
+              className="h-[24px] w-auto object-contain"
+            />
+          </Link>
+          
+          {/* <Link
             href="https://aisutd.org"
             target="_blank"
             rel="noopener noreferrer"
             className="style-caption text-ink-faint hover:text-brand transition-colors"
           >
             aisutd.org
-          </Link>
+          </Link> */}
         </div>
 
         <div className="flex items-center gap-[8px]">

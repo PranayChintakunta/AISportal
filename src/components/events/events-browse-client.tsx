@@ -69,7 +69,7 @@ export function EventsBrowseClient({ upcomingEvents, pastEvents }: EventsBrowseC
           <div className="flex w-full flex-col md:flex-row md:items-stretch">
             
             {/* Tag filter sidebar */}
-            <aside className="flex flex-col gap-[10px] border-b border-border-soft bg-white/50 px-6 py-8 md:w-[220px] md:shrink-0 md:border-b-0 md:border-r">
+            <aside className="flex flex-col gap-[10px] border-b border-white/30 bg-white/50 px-6 py-8 md:w-auto md:shrink-0 md:border-b-0 md:border-r">
               <p className="font-techno uppercase leading-normal tracking-[3px] text-ink-faint">
                 Tags
               </p>
