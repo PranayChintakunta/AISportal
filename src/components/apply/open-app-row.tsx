@@ -71,7 +71,7 @@ export function OpenAppRow({
 }: OpenApp) {
   const router = useRouter();
   const { isSignedIn } = useAuth();
-  // Navigate to detailed view on card click
+
   const handleRowClick = () => {
     router.push(`/applications/detail?id=${id}`);
   };
@@ -80,7 +80,6 @@ export function OpenAppRow({
     e: MouseEvent<HTMLAnchorElement | HTMLButtonElement>,
     action: RowAction,
   ) => {
-    // Prevent the parent row click event from firing when clicking action buttons
     e.stopPropagation();
 
     if ((action.label === "Apply" || action.label === "Remind me") && !isSignedIn) {
@@ -89,12 +88,22 @@ export function OpenAppRow({
     }
   };
 
-  const isLiveOpen = meta.toLowerCase().includes("close") || meta.toLowerCase().includes("open");
-  const isUpcoming = meta.toLowerCase().includes("opens") || meta.toLowerCase().includes("starts");
-
+  // --- REVISED STATUS & DATE LOGIC ---
   const now = new Date().getTime();
   const closeTime = closeAt ? new Date(closeAt).getTime() : null;
   const daysUntilClose = closeTime ? (closeTime - now) / (1000 * 60 * 60 * 24) : null;
+
+  // Check if the application has passed its closing date
+  const isPastCloseDate = closeTime !== null && closeTime < now;
+
+  // Ensure 'meta' explicitly indicates live state and isn't marked as 'closed' or 'draft/unpublished'
+  const metaLower = meta.toLowerCase();
+  const isExplicitlyClosed = metaLower.includes("closed") || isPastCloseDate;
+  const isUnpublished = metaLower.includes("draft") || metaLower.includes("unpublished") || dim;
+
+  // Live status condition
+  const isLiveOpen = !isExplicitlyClosed && !isUnpublished && (metaLower.includes("open") || metaLower.includes("closes"));
+  const isUpcoming = !isExplicitlyClosed && !isUnpublished && (metaLower.includes("opens") || metaLower.includes("starts"));
 
   const isClosingSoon =
     isLiveOpen && daysUntilClose !== null && daysUntilClose >= 0 && daysUntilClose <= 5;
@@ -111,10 +120,7 @@ export function OpenAppRow({
         dim ? "opacity-60 grayscale-[20%]" : "opacity-100"
       }`}
     >
-      {/* 1. Left Accent Status Strip (Z-INDEX: 0 so image overlaps above it) */}
-      
-
-      {/* 2. Light Full-Height Side Color Block (Z-INDEX: 10) */}
+      {/* Side Color Block */}
       {badgeDesign && (
         <div
           className="relative w-full h-12 sm:h-auto sm:w-20 shrink-0 flex items-center justify-end sm:justify-center rounded-t-2xl sm:rounded-t-none sm:rounded-l-2xl border-b sm:border-b-0 sm:border-r transition-colors duration-300 z-10 pr-3 sm:pr-0"
@@ -149,9 +155,8 @@ export function OpenAppRow({
         </div>
       )}
 
-      {/* 3. Main Content Body (Z-INDEX: 20) */}
+      {/* Main Content Body */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 flex-1 p-4 min-w-0 z-20">
-        {/* Info Column */}
         <div className="min-w-0 flex-1 space-y-1">
           {/* Status Badges Row */}
           <div className="flex flex-wrap items-center gap-1.5">
@@ -219,7 +224,7 @@ export function OpenAppRow({
           </div>
         </div>
 
-        {/* 4. Action Buttons Section */}
+        {/* Action Buttons Section */}
         <div className="flex shrink-0 items-center gap-2 w-full sm:w-auto pt-2 sm:pt-0 border-t sm:border-t-0 border-[var(--color-border-soft,#e7e2d4)] z-30">
           {actions.map((action) => (
             <Button

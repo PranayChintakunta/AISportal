@@ -11,6 +11,7 @@ import { PasswordResetButton } from "@/components/profile/PasswordResetButton";
 import { ResumeUploadButton } from "@/components/profile/ResumeUploadButton";
 import { ProfileForm } from "@/components/profile/profile-form";
 import { UTD_MAJORS, UTD_DEGREES, ACADEMIC_YEARS } from "@/lib/utd-data";
+import { USER_ROLE_LABELS } from "@/lib/roles";
 import { updateProfile } from "./actions";
 
 export default async function ProfilePage() {
@@ -34,15 +35,15 @@ export default async function ProfilePage() {
   return (
     <>
       <div className="md:hidden">
-        <MobileProfile profile={profile} completion={completion} updateProfile={updateProfile} />
+        <MobileProfile profile={profile} completion={completion} updateProfile={updateProfile} role={user.role} />
       </div>
 
       <div className="hidden md:block">
-        <div className="flex min-h-screen w-full flex-col bg-cream">
+        <div className="flex min-h-screen w-full flex-col">
           <Navbar active="Profile" />
 
           <div className="mx-auto flex w-full max-w-[1440px] flex-col gap-[28px] px-[46px] pb-[46px] pt-[45px]">
-            <h1 className="style-page-title leading-[43.2px] tracking-[-0.4px] text-brand">
+            <h1 className="style-page-title bg-[linear-gradient(90deg,#2f5fe8_0%,#f2a968_100%)] bg-clip-text text-transparent">
               Profile
             </h1>
 
@@ -59,10 +60,17 @@ export default async function ProfilePage() {
                 <h2 className="style-card-title tracking-[-0.4px] text-ink uppercase">
                   {profile.firstName} {profile.lastName}
                 </h2>
-                <div className="rounded-full bg-pill-amber px-[20px] py-[6px]">
-                  <span className="style-badge-text text-orange-text tracking-widest uppercase">
-                    {profile.major || "No Major Set"} · {profile.year || "No Year Set"}
-                  </span>
+                <div className="flex items-center gap-[10px]">
+                  <div className="rounded-full bg-brand-soft px-[20px] py-[6px]">
+                    <span className="style-badge-text text-brand tracking-widest uppercase">
+                      {USER_ROLE_LABELS[user.role]}
+                    </span>
+                  </div>
+                  <div className="rounded-full bg-pill-amber px-[20px] py-[6px]">
+                    <span className="style-badge-text text-orange-text tracking-widest uppercase">
+                      {profile.major || "No Major Set"} · {profile.year || "No Year Set"}
+                    </span>
+                  </div>
                 </div>
               </Card>
 

@@ -10,7 +10,7 @@ import {
 
 export function MobileAdminOverview() {
   return (
-    <MobileScreen withBottomNavPadding={false}>
+    <MobileScreen withBottomNavPadding={false} backgroundColor="bg-cream">
       <MobileAdminNav /*active="Overview"*/ />
 
       <h2 className="style-mobile-title text-ink">Overview</h2>

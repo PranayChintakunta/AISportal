@@ -151,7 +151,7 @@ export default async function EventRsvpsPage({ params }: { params: Promise<{ id:
     <>
       {/* MOBILE VIEW */}
       <div className="md:hidden">
-        <MobileScreen withBottomNavPadding={false}>
+        <MobileScreen withBottomNavPadding={false} backgroundColor="bg-cream">
           <MobileAdminNav active="Events" />
 
           <div className="relative z-10 flex items-center justify-between pb-[16px] gap-[12px]">

@@ -89,7 +89,7 @@ export default async function EventDetailPage({ params }: EventDetailPageProps) 
       </div>
 
       <div className="hidden md:block">
-        <div className="flex min-h-screen w-full flex-col bg-cream">
+        <div className="flex min-h-screen w-full flex-col">
           <Navbar active="Events" />
 
           <div className="mx-auto flex w-full max-w-[1440px] flex-col gap-[28px] px-[46px] pb-[46px] pt-[45px]">
@@ -126,7 +126,7 @@ export default async function EventDetailPage({ params }: EventDetailPageProps) 
                   {formattedDate} · {event.location}
                 </p>
 
-                <p className="mt-[20px] max-w-[640px] style-body-text leading-[24px] text-ink">
+                <p className="mt-[20px] max-w-[640px] whitespace-pre-wrap style-body-text leading-[24px] text-ink">
                   {event.description}
                 </p>
 

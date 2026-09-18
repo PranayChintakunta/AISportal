@@ -22,6 +22,13 @@ export function MobileMembersToolbar({ query }: { query: MembersQuery }) {
         className="h-[40px] w-full"
       />
       <div className="-mx-[20px] flex items-center gap-[8px] overflow-x-auto px-[20px]">
+        <Link
+          href={membersHref(query, { sort: NEXT_SORT[query.sort] })}
+          aria-label="Change sort"
+          className="shrink-0"
+        >
+          <Badge label={SORT_LABELS[query.sort]} variant="outline" />
+        </Link>
         {(Object.keys(FILTER_LABELS) as MemberFilter[]).map((filter) => (
           <Link key={filter} href={membersHref(query, { filter, page: 1 })} className="shrink-0">
             <Button
@@ -33,13 +40,6 @@ export function MobileMembersToolbar({ query }: { query: MembersQuery }) {
             </Button>
           </Link>
         ))}
-        <Link
-          href={membersHref(query, { sort: NEXT_SORT[query.sort] })}
-          aria-label="Change sort"
-          className="shrink-0"
-        >
-          <Badge label={SORT_LABELS[query.sort]} variant="outline" />
-        </Link>
       </div>
     </div>
   );

@@ -159,6 +159,11 @@
 /* Literal design tokens — plain @theme is fine (and generates the utilities). */
 @theme {
   /* AIS Portal palette (from Figma design system) */
+  /* Overrides Tailwind's default pure-white so every bg-white/border-white/
+     etc. utility site-wide uses the same soft off-white already established
+     as the hover/subtle-surface color (see #fbfaf7 usages across the app),
+     instead of a harsh #ffffff next to the cream page background. */
+  --color-white: #fbfaf7;
   --color-cream: #faf7ee;
   --color-ais-blue: #2f5fe8;
   --color-ink: #16161c;
@@ -347,6 +352,38 @@ body {
   transform: scale(0.95) !important;
 }
 
+/* Specular shine sweep on hover — a thin bright band travels across the
+   button, left:-60% at rest (fully offscreen) and slides to 130% on hover;
+   overflow-hidden on the button clips it to the button's own rounded shape. */
+.btn-specular::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -60%;
+  width: 45%;
+  height: 100%;
+  background: linear-gradient(
+    120deg,
+    transparent,
+    rgba(255, 255, 255, 0.55),
+    transparent
+  );
+  transform: skewX(-20deg);
+  transition: left 0.65s ease;
+  pointer-events: none;
+}
+
+.btn-specular:hover::before {
+  left: 130%;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .btn-specular::before {
+    transition: none;
+    display: none;
+  }
+}
+
 @keyframes marquee-scroll {
   from {
     transform: translateX(0);
@@ -360,12 +397,22 @@ body {
   animation: marquee-scroll 110s linear infinite;
 }
 
-.animate-marquee-scroll:hover {
-  animation-play-state: paused;
+/* Confetti burst (see lib/confetti.ts) — small pieces spawned at a click */
+.confetti-piece {
+  position: fixed;
+  z-index: 9998;
+  pointer-events: none;
+  border-radius: 2px;
+  animation: confetti-burst 0.9s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .animate-marquee-scroll {
-    animation: none;
+@keyframes confetti-burst {
+  0% {
+    transform: translate(-50%, -50%) translate(0, 0) rotate(0deg);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(-50%, -50%) translate(var(--dx), var(--dy)) rotate(var(--rot));
+    opacity: 0;
   }
 }

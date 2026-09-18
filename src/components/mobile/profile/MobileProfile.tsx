@@ -15,11 +15,14 @@ import { SignOutButton } from "@clerk/nextjs";
 import { PasswordResetButton } from "@/components/profile/PasswordResetButton";
 import { ResumeUploadButton } from "@/components/profile/ResumeUploadButton";
 import { UTD_MAJORS, UTD_DEGREES, ACADEMIC_YEARS } from "@/lib/utd-data";
+import { USER_ROLE_LABELS } from "@/lib/roles";
+import type { UserRole } from "@prisma/client";
 
 type MobileProfileProps = {
   profile: Profile & { resumeFile?: { fileName: string } | null };
   completion: { percent: number; missingFields: string[] };
   updateProfile: (formData: FormData) => Promise<void>;
+  role: UserRole;
 };
 
 function MobileSelect({
@@ -57,7 +60,7 @@ function MobileSelect({
   );
 }
 
-export function MobileProfile({ profile, completion, updateProfile }: MobileProfileProps) {
+export function MobileProfile({ profile, completion, updateProfile, role }: MobileProfileProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [showSuccessModal, setShowSuccessModal] = useState(false);
@@ -107,11 +110,14 @@ export function MobileProfile({ profile, completion, updateProfile }: MobileProf
           <p className="style-card-title uppercase tracking-[0.5px] text-ink">
             {profile.firstName} {profile.lastName}
           </p>
-          <Badge
-            label={`${profile.major || "No Major"} · ${profile.year || "N/A"}`}
-            bg="#fbe3cb"
-            color="#7a4416"
-          />
+          <div className="flex items-center gap-[8px]">
+            <Badge label={USER_ROLE_LABELS[role]} bg="#e1e8ff" color="#2f5fe8" />
+            <Badge
+              label={`${profile.major || "No Major"} · ${profile.year || "N/A"}`}
+              bg="#fbe3cb"
+              color="#7a4416"
+            />
+          </div>
         </Card>
 
         {/* Links */}

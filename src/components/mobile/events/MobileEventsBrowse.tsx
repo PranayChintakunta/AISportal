@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Tag } from "@/components/ui/tag";
 import { EventGridCard } from "@/components/events/event-grid-card";
 import { MobileScreen } from "@/components/mobile/ui/MobileScreen";
+import { GradientWavesBackground } from "@/components/gradient-waves-background";
 import { BottomNav } from "@/components/mobile/ui/BottomNav";
 import { eventFilterTags } from "@/lib/data";
 import { normalizeEventTags } from "@/lib/event-tags";
@@ -81,8 +82,9 @@ export function MobileEventsBrowse({ upcomingEvents, pastEvents }: MobileEventsB
 
   return (
     <MobileScreen>
+      <GradientWavesBackground />
       <div className="flex flex-col gap-[6px]">
-        <h1 className="style-page-title leading-tight tracking-tight text-brand">
+        <h1 className="style-page-title bg-[linear-gradient(90deg,#2f5fe8_0%,#f2a968_100%)] bg-clip-text text-transparent">
           Pick Your Next Sidequest
         </h1>
         <p className="style-page-subtitle text-ink-muted">

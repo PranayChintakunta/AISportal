@@ -116,7 +116,7 @@ export async function MobileEventDetail({ eventId }: MobileEventDetailProps) {
           ))}
         </div>
 
-        <p className="style-mobile-body leading-relaxed text-ink-muted">
+        <p className="style-mobile-body whitespace-pre-wrap leading-relaxed text-ink-muted">
           {event.description}
         </p>
       </div>

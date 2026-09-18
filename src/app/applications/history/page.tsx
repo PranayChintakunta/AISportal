@@ -142,7 +142,7 @@ export default function ApplicationHistoryPage() {
               ← Back to Applications
             </Link>
 
-            <h1 className="style-page-title  leading-tight text-ink">
+            <h1 className="style-page-title bg-[linear-gradient(90deg,#2f5fe8_0%,#f2a968_100%)] bg-clip-text text-transparent">
               Application History
             </h1>
             <p className="style-page-subtitle  text-ink-muted">
@@ -190,7 +190,7 @@ export default function ApplicationHistoryPage() {
 
       {/* Desktop View */}
       <div className="hidden md:block">
-        <div className="flex min-h-screen w-full flex-col bg-cream">
+        <div className="flex min-h-screen w-full flex-col">
           <Navbar active="Apply" />
 
           <div className="mx-auto flex w-full max-w-[1440px] flex-col gap-[24px] px-[46px] pb-[46px] pt-[45px]">
@@ -203,7 +203,7 @@ export default function ApplicationHistoryPage() {
                 </Link>
 
               <section className="flex flex-col gap-[8px]">
-                <h1 className="style-page-title  leading-[34.56px] tracking-[-0.4px] text-ink [font-variation-settings:'wdth'_100]">
+                <h1 className="style-page-title bg-[linear-gradient(90deg,#2f5fe8_0%,#f2a968_100%)] bg-clip-text text-transparent">
                   Application History
                 </h1>
                 <p className="style-page-subtitle  leading-[21.75px] text-ink-muted">

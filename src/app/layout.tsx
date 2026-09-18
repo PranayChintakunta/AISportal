@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { ClerkProvider } from '@clerk/nextjs';
 import { AccountProvider } from "@/components/account-provider";
+import { GradientWavesBackground } from "@/components/gradient-waves-background";
 import { getNavAccount } from "@/lib/nav-account";
 import { Analytics } from "@vercel/analytics/next";
 import { Inter } from "next/font/google";
@@ -38,6 +39,7 @@ export default async function RootLayout({
       <body
         className={`${inter.variable} ${placard.variable} antialiased`}
       >
+        <GradientWavesBackground />
         <ClerkProvider afterSignOutUrl={"/dashboard"}>
           <AccountProvider account={account}>{children}</AccountProvider>
         </ClerkProvider>

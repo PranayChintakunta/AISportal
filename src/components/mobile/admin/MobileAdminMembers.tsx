@@ -31,15 +31,15 @@ export function MobileAdminMembers({
   editable?: boolean;
 }) {
   return (
-    <MobileScreen withBottomNavPadding={false}>
+    <MobileScreen withBottomNavPadding={false} backgroundColor="bg-cream">
       <MobileAdminNav active="Members" />
 
       <div className="flex items-center justify-between gap-[8px]">
         <h2 className="style-mobile-title text-ink">Members</h2>
-        <div className="flex gap-[8px]">
+        {/* <div className="flex gap-[8px]">
           <Button variant="ghost" size="sm">Export CSV</Button>
           <Button variant="primary" size="sm">+ Invite</Button>
-        </div>
+        </div> */}
       </div>
 
       <div className="grid grid-cols-2 gap-[12px]">

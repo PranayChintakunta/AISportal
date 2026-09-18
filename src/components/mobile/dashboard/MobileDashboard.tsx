@@ -11,6 +11,7 @@ import {
   RsvpsCardSkeleton,
   DashboardRecommendedCard,
 } from "@/components/dashboard/server-cards";
+import { GradientWavesBackground } from "@/components/gradient-waves-background";
 import { formatDaysAway, formatEventDate, type getNextUpcomingRsvp } from "@/lib/dashboard-utils";
 import { MobileScreen } from "@/components/mobile/ui/MobileScreen";
 import { BottomNav } from "@/components/mobile/ui/BottomNav";
@@ -46,7 +47,8 @@ export function MobileDashboard({ userId, userName, nextRsvp, calendarLinks }: M
 
   return (
     <MobileScreen>
-      <h1 className="style-mobile-title text-2xl font-bold bg-[linear-gradient(90deg,#f2a968_0%,#7d64c4_100%)] bg-clip-text text-transparent">
+      <GradientWavesBackground />
+      <h1 className="style-mobile-title text-2xl font-bold bg-[linear-gradient(90deg,#2f5fe8_0%,#f2a968_100%)] bg-clip-text text-transparent">
         Welcome back, {userName}!
       </h1>
 
