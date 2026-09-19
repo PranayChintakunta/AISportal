@@ -6,10 +6,12 @@ import { generateQRToken } from "@/lib/qrToken";
 import { AttendanceMethod } from "@prisma/client";
 
 interface CheckInProps {
+  params: Promise<{id: string }>;
   searchParams: Promise<{ token?: string; redirect?: string }>;
 }
 
-export default async function CheckInPage({ searchParams }: CheckInProps) {
+export default async function CheckInPage({ params, searchParams }: CheckInProps) {
+  const { id } = await params;
   const resolvedParams = await searchParams;
   const token = resolvedParams.token;
   const redirectTo = resolvedParams.redirect || "/events";
@@ -45,11 +47,10 @@ export default async function CheckInPage({ searchParams }: CheckInProps) {
   // 2. Resolve User ID and handle unauthenticated state
   const userId = session?.id || session?.profile?.userId;
   if (!userId) {
-    redirect(
-      `/sign-in?redirect_url=${encodeURIComponent(
-        `/events/check-in?token=${token}&redirect=${redirectTo}`
-      )}`
-    );
+    // Preserve the full path including the event ID
+    const currentPath = `/events/${id}/check-in?token=${token}&redirect=${encodeURIComponent(redirectTo)}`;
+    
+    redirect(`/sign-in?redirect_url=${encodeURIComponent(currentPath)}`);
   }
 
   // 3. Find the event using the unique check-in token

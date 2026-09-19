@@ -8,6 +8,7 @@ import Link from "next/link";
 import QRCode from "react-qr-code";
 import { EventCoverImage } from "../events/event-cover-image";
 import { useRef, useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 
 export type TagData = {
   label: string;
@@ -52,22 +53,61 @@ export function UpNextCard({
   const eventLink = eventId ? `/events/${eventId}` : "/events";
 
   const [dropdownOpen, setDropdownOpen] = useState(false);
-  const dropdownRef = useRef<HTMLDivElement>(null);
-  
+  const [mounted, setMounted] = useState(false);
+  const [coords, setCoords] = useState<{ top: number; left: number; width: number }>({
+    top: 0,
+    left: 0,
+    width: 0,
+  });
+
+  const buttonRef = useRef<HTMLDivElement>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
+
   const googleUrl = calendarLinks?.googleUrl || "";
-  // const outlookUrl = calendarLinks?.outlookUrl || "";
   const icsContent = calendarLinks?.icsContent || "";
 
-    // Close the dropdown if clicking outside
+  // Prevent SSR hydration mismatch for portal
   useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  // Update absolute position of portal dropdown on open/resize/scroll
+  useEffect(() => {
+    if (!dropdownOpen) return;
+
+    function updatePosition() {
+      if (buttonRef.current) {
+        const rect = buttonRef.current.getBoundingClientRect();
+        setCoords({
+          top: rect.bottom + window.scrollY + 8,
+          left: rect.left + window.scrollX,
+          width: rect.width,
+        });
+      }
+    }
+
+    updatePosition();
+
     function handleClickOutside(event: MouseEvent) {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+      const target = event.target as Node;
+      if (
+        buttonRef.current && !buttonRef.current.contains(target) &&
+        menuRef.current && !menuRef.current.contains(target)
+      ) {
         setDropdownOpen(false);
       }
     }
+
+    window.addEventListener("resize", updatePosition);
+    window.addEventListener("scroll", updatePosition, true);
     document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
+
+    return () => {
+      window.removeEventListener("resize", updatePosition);
+      window.removeEventListener("scroll", updatePosition, true);
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [dropdownOpen]);
 
   // Compiles and downloads the .ics file directly on the client browser
   const handleIcsDownload = (e: React.MouseEvent) => {
@@ -180,9 +220,9 @@ export function UpNextCard({
               )}
             </div>
 
-             {/* Calendar Dropdown Trigger */}
+            {/* Calendar Dropdown Trigger */}
             {!isLive && calendarLinks && (
-              <div className="pt-0.5 w-full relative" ref={dropdownRef}>
+              <div className="pt-0.5 w-full relative" ref={buttonRef}>
                 <Button 
                   onClick={() => setDropdownOpen(!dropdownOpen)} 
                   variant="primary" 
@@ -192,9 +232,18 @@ export function UpNextCard({
                   Add to Calendar
                 </Button>
 
-                {/* Dropdown Options List */}
-                {dropdownOpen && (
-                  <div className="absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-50 overflow-hidden">
+                {/* Dropdown Options List Portaled to Document Body */}
+                {dropdownOpen && mounted && createPortal(
+                  <div
+                    ref={menuRef}
+                    style={{
+                      position: "absolute",
+                      top: `${coords.top}px`,
+                      left: `${coords.left}px`,
+                      width: `${coords.width}px`,
+                    }}
+                    className="rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-9999 overflow-hidden"
+                  >
                     <div className="py-1" role="menu" aria-orientation="vertical">
                       {googleUrl && (
                         <a
@@ -208,18 +257,6 @@ export function UpNextCard({
                           Google Calendar
                         </a>
                       )}
-                      {/* {outlookUrl && (
-                        <a
-                          href={outlookUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 border-t border-gray-100 transition-colors"
-                          role="menuitem"
-                          onClick={() => setDropdownOpen(false)}
-                        >
-                          Outlook Web
-                        </a>
-                      )} */}
                       {icsContent && (
                         <button
                           onClick={handleIcsDownload}
@@ -230,9 +267,10 @@ export function UpNextCard({
                         </button>
                       )}
                     </div>
-                  </div>
+                  </div>,
+                  document.body
                 )}
-                </div>
+              </div>
             )}
           </div>
         </div>

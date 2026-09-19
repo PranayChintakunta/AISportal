@@ -7,6 +7,7 @@ import { useUser } from "@clerk/nextjs";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { MobileScreen } from "@/components/mobile/ui/MobileScreen";
+import { Footer } from "@/components/footer";
 import { BottomNav } from "@/components/mobile/ui/BottomNav";
 import { RoleCard, type Role } from "@/components/apply/role-card";
 import { FormattedLinks } from "@/components/ui/formatted-link";
@@ -391,6 +392,10 @@ export function MobileApplyDetail() {
         </>
       ) : null}
 
+      {/* Footer Wrapper with Margin Cancellation & Bottom Spacing for Fixed Nav */}
+      <div className="-mx-5 mt-8 pt-6">
+        <Footer />
+      </div>
       <BottomNav />
     </MobileScreen>
   );

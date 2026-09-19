@@ -41,7 +41,7 @@ function ApplicationSkeleton() {
 
 function ApplicationEmptyState({ message }: { message: string }) {
   return (
-    <div className="style-body-text rounded-2xl border border-border-soft/80 bg-white/60 px-6 py-6 leading-relaxed text-ink-muted transition-colors">
+    <div className="style-body-text rounded-2xl border border-white/35 bg-white/60 px-6 py-6 leading-relaxed text-ink-muted transition-colors">
       {message}
     </div>
   );
@@ -135,10 +135,10 @@ function ProgramFlowArrow() {
       className="flex shrink-0 items-center justify-center text-brand"
       aria-hidden="true"
     >
-      <span className="flex h-11 w-11 items-center justify-center rounded-full border border-border-soft bg-[#fbfaf7] text-lg font-medium shadow-xs transition-transform hover:scale-105 lg:hidden">
+      <span className="flex h-11 w-11 items-center justify-center rounded-full border border-white/35 bg-white text-lg font-medium shadow-xs transition-transform hover:scale-105 lg:hidden">
         ↓
       </span>
-      <span className="hidden h-11 w-11 items-center justify-center rounded-full border border-border-soft bg-[#fbfaf7] text-xl font-medium shadow-xs transition-transform hover:scale-105 lg:flex">
+      <span className="hidden h-11 w-11 items-center justify-center rounded-full border border-white/35 bg-white text-xl font-medium shadow-xs transition-transform hover:scale-105 lg:flex">
         →
       </span>
     </div>
@@ -272,7 +272,7 @@ export default function ApplyPage() {
 
           <Navbar active="Apply" />
 
-          <main className="relative w-full pb-16 pt-8">
+          <main className="relative w-full pb-16 pt-28">
             {/* Header Hero Section */}
             <section className="px-8 pt-4 lg:px-12">
               <h1 className="style-page-title bg-[linear-gradient(90deg,#2f5fe8_0%,#f2a968_100%)] bg-clip-text text-transparent">

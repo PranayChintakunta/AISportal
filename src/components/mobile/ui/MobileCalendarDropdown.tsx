@@ -1,11 +1,11 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { Button } from "@/components/ui/button";
 
 type CalendarLinksObject = {
   googleUrl: string;
-  // outlookUrl: string;
   icsContent: string;
 };
 
@@ -17,17 +17,58 @@ export function MobileCalendarDropdown({
   eventId: string; 
 }) {
   const [dropdownOpen, setDropdownOpen] = useState(false);
-  const dropdownRef = useRef<HTMLDivElement>(null);
+  const [mounted, setMounted] = useState(false);
+  const [coords, setCoords] = useState<{ top: number; left: number; width: number }>({
+    top: 0,
+    left: 0,
+    width: 0,
+  });
 
+  const buttonRef = useRef<HTMLDivElement>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  // Avoid SSR hydration mismatch for portal
   useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  // Recalculate menu position when opened or window resizes
+  useEffect(() => {
+    if (!dropdownOpen) return;
+
+    function updatePosition() {
+      if (buttonRef.current) {
+        const rect = buttonRef.current.getBoundingClientRect();
+        setCoords({
+          top: rect.bottom + window.scrollY + 8, // 8px margin
+          left: rect.left + window.scrollX,
+          width: rect.width,
+        });
+      }
+    }
+
+    updatePosition();
+
     function handleClickOutside(event: MouseEvent) {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+      const target = event.target as Node;
+      if (
+        buttonRef.current && !buttonRef.current.contains(target) &&
+        menuRef.current && !menuRef.current.contains(target)
+      ) {
         setDropdownOpen(false);
       }
     }
+
+    window.addEventListener("resize", updatePosition);
+    window.addEventListener("scroll", updatePosition, true);
     document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
+
+    return () => {
+      window.removeEventListener("resize", updatePosition);
+      window.removeEventListener("scroll", updatePosition, true);
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [dropdownOpen]);
 
   const handleIcsDownload = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -44,7 +85,7 @@ export function MobileCalendarDropdown({
   };
 
   return (
-    <div className="w-full relative mt-2" ref={dropdownRef}>
+    <div className="w-full relative mt-2" ref={buttonRef}>
       <Button
         onClick={() => setDropdownOpen(!dropdownOpen)}
         variant="primary"
@@ -54,8 +95,17 @@ export function MobileCalendarDropdown({
         Add to Calendar
       </Button>
 
-      {dropdownOpen && (
-        <div className="absolute left-0 right-0 mt-2 rounded-md shadow-xl bg-white ring-1 ring-black ring-opacity-5 z-50 overflow-hidden">
+      {dropdownOpen && mounted && createPortal(
+        <div
+          ref={menuRef}
+          style={{
+            position: "absolute",
+            top: `${coords.top}px`,
+            left: `${coords.left}px`,
+            width: `${coords.width}px`,
+          }}
+          className="rounded-md shadow-xl bg-white ring-1 ring-black ring-opacity-5 z-9999 overflow-hidden"
+        >
           <div className="py-1">
             {calendarLinks.googleUrl && (
               <a
@@ -68,17 +118,6 @@ export function MobileCalendarDropdown({
                 Google Calendar
               </a>
             )}
-            {/* {calendarLinks.outlookUrl && (
-              <a
-                href={calendarLinks.outlookUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="block px-4 py-3 text-sm text-gray-700 active:bg-gray-100 border-b border-gray-50 transition-colors"
-                onClick={() => setDropdownOpen(false)}
-              >
-                Outlook Web
-              </a>
-            )} */}
             {calendarLinks.icsContent && (
               <button
                 onClick={handleIcsDownload}
@@ -88,7 +127,8 @@ export function MobileCalendarDropdown({
               </button>
             )}
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );

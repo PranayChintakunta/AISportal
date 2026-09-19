@@ -6,6 +6,7 @@ import { EventGridCard } from "@/components/events/event-grid-card";
 import { MobileScreen } from "@/components/mobile/ui/MobileScreen";
 import { GradientWavesBackground } from "@/components/gradient-waves-background";
 import { BottomNav } from "@/components/mobile/ui/BottomNav";
+import { Footer } from "@/components/footer";
 import { eventFilterTags } from "@/lib/data";
 import { normalizeEventTags } from "@/lib/event-tags";
 import { formatEventDate } from "@/lib/utils";
@@ -160,7 +161,7 @@ export function MobileEventsBrowse({ upcomingEvents, pastEvents }: MobileEventsB
                     <EventGridCard
                       key={event.id}
                       title={event.title}
-                      meta={`${formatEventDate(event.startTime)} · ${event.location}`}
+                      meta={`${formatEventDate(event.startTime, true)} · ${event.location}`}
                       description={event.description}
                       imageUrl={event.imageUrl}
                       tags={normalizeEventTags(event.tags)}
@@ -220,6 +221,10 @@ export function MobileEventsBrowse({ upcomingEvents, pastEvents }: MobileEventsB
             )}
           </div>
         )}
+      </div>
+      {/* Footer Wrapper with Margin Cancellation & Bottom Spacing for Fixed Nav */}
+      <div className="-mx-5 mt-8 pt-6">
+        <Footer />
       </div>
       <BottomNav />
     </MobileScreen>

@@ -22,7 +22,7 @@ export function MembersToolbar({ query }: { query: MembersQuery }) {
       />
 
       <Link
-        href={membersHref(query, { sort: NEXT_SORT[query.sort] })}
+        href={membersHref(query, { sort: NEXT_SORT[query.sort] , page: 1})}
         aria-label="Change sort"
         className="rounded-full transition-colors hover:[&>span]:border-brand hover:[&>span]:bg-brand-soft hover:[&>span]:text-brand-dark focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-brand-soft"
       >

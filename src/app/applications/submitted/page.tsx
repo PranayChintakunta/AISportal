@@ -203,7 +203,7 @@ function SubmittedContent() {
         <div className="flex min-h-screen w-full flex-col">
           <Navbar active="Apply" />
 
-          <div className="mx-auto flex w-full max-w-[1440px] flex-col gap-[24px] px-[46px] pb-[46px] pt-[45px]">
+          <div className="mx-auto flex w-full flex-col gap-[24px] px-[46px] pb-[46px] pt-28">
             <Link
               href="/applications"
               className="style-caption leading-[16.8px] tracking-[0.2px] text-brand"
@@ -307,7 +307,7 @@ function SubmittedFallback() {
   return (
     <div className="flex min-h-screen w-full flex-col">
       <Navbar active="Apply" />
-      <div className="mx-auto flex w-full max-w-[1440px] flex-col gap-[24px] px-[46px] pb-[46px] pt-[45px]">
+      <div className="mx-auto flex w-full max-w-[1440px] flex-col gap-[24px] px-[46px] pb-[46px] pt-28">
         <LoadingState />
       </div>
     </div>
