@@ -47,12 +47,12 @@ export default async function CheckInPage({ params, searchParams }: CheckInProps
   // 2. Resolve User ID and handle unauthenticated state
   const userId = session?.id || session?.profile?.userId;
   if (!userId) {
-    // Preserve the full path including the event ID
-    const currentPath = `/events/${id}/check-in?token=${token}&redirect=${encodeURIComponent(redirectTo)}`;
+    // Build the full relative URL for check-in
+    const checkInPath = `/events/${id}/check-in?token=${token}`;
     
-    redirect(`/sign-in?redirect_url=${encodeURIComponent(currentPath)}`);
+    // Direct user to /onboarding with mode=login and encoded redirect_url
+    redirect(`/onboarding?mode=login&redirect_url=${encodeURIComponent(checkInPath)}`);
   }
-
   // 3. Find the event using the unique check-in token
   const event = await prisma.event.findUnique({
     where: { checkInToken: token },
