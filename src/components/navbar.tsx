@@ -70,10 +70,10 @@ export function Navbar({ active = "Dashboard" }: NavbarProps) {
   return (
     <header
       className={cn(
-        "sticky top-0 z-50 w-full transition-all duration-300",
+        "fixed top-0 z-50 w-full transition-all duration-300",
         isScrolled
           ? "border-b border-border-soft bg-white/80 shadow-md shadow-purple-400/10 backdrop-blur-md"
-          : "border-b border-transparent bg-white"
+          : "border-b border-transparent bg-white/80"
       )}
     >
       <nav className="flex h-[72px] items-center justify-between px-[38px]">

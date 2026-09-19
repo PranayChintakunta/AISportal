@@ -8,6 +8,7 @@ import { Tag } from "@/components/ui/tag";
 import { normalizeEventTags } from "@/lib/event-tags";
 import { MobileScreen } from "@/components/mobile/ui/MobileScreen";
 import { BottomNav } from "@/components/mobile/ui/BottomNav";
+import { Footer } from "@/components/footer";
 import { EventDetailActions, EventQRCode } from "@/components/events/event-detail-actions";
 import { EventCoverImage } from "@/components/events/event-cover-image";
 
@@ -92,10 +93,10 @@ export async function MobileEventDetail({ eventId }: MobileEventDetailProps) {
         alt={`${event.title} cover`}
       />
 
-      <div className="flex flex-col gap-4">
+      <div className="flex flex-col gap-4 bg-white/50 backdrop-blur-md border-2 border-white/35 shadow-ink/15 shadow-sm px-4 py-5 rounded-xl">
         <div className="flex flex-col gap-1.5">
           <div className="flex flex-wrap items-center gap-2">
-            <h1 className="style-mobile-title leading-tight text-ink">
+            <h1 className="style-section-header leading-tight text-ink">
               {event.title}
             </h1>
             {isLive && (
@@ -204,6 +205,10 @@ export async function MobileEventDetail({ eventId }: MobileEventDetailProps) {
         )}
       </div>
 
+      {/* Footer Wrapper with Margin Cancellation & Bottom Spacing for Fixed Nav
+      <div className="-mx-5 mt-8 pt-6">
+        <Footer />
+      </div> */}
       <BottomNav />
     </MobileScreen>
   );

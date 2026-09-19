@@ -30,7 +30,7 @@ export function MobileScreen({
     >
       <div
         className={`flex min-h-screen w-full flex-col gap-5 px-5 pt-5 ${
-          withBottomNavPadding ? "pb-24" : "pb-5"
+          withBottomNavPadding ? "pb-14" : "pb-5"
         }`}
       >
         {children}
