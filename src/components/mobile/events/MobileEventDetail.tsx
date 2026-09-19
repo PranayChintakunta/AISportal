@@ -11,6 +11,7 @@ import { BottomNav } from "@/components/mobile/ui/BottomNav";
 import { Footer } from "@/components/footer";
 import { EventDetailActions, EventQRCode } from "@/components/events/event-detail-actions";
 import { EventCoverImage } from "@/components/events/event-cover-image";
+import { formatEventDate } from "@/lib/utils";
 
 interface MobileEventDetailProps {
   eventId: string;
@@ -55,14 +56,7 @@ export async function MobileEventDetail({ eventId }: MobileEventDetailProps) {
   const attended = userRsvp && 'attendance' in userRsvp ? !!userRsvp.attendance : false;
 
   const normalizedTags = normalizeEventTags(event.tags);
-  const formattedDate = new Intl.DateTimeFormat("en-US", {
-    timeZone: "America/Chicago",
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-    hour: "numeric",
-    minute: "2-digit",
-  }).format(new Date(event.startTime));
+  const formattedDate = formatEventDate(event.startTime.toString(), true);
 
   const cardStyle = isPast
     ? attended

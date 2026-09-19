@@ -161,7 +161,7 @@ export function MobileEventsBrowse({ upcomingEvents, pastEvents }: MobileEventsB
                     <EventGridCard
                       key={event.id}
                       title={event.title}
-                      meta={`${formatEventDate(event.startTime)} · ${event.location}`}
+                      meta={`${formatEventDate(event.startTime, true)} · ${event.location}`}
                       description={event.description}
                       imageUrl={event.imageUrl}
                       tags={normalizeEventTags(event.tags)}
