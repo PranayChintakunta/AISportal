@@ -49,7 +49,8 @@ export function membersHref(current: MembersQuery, patch: Partial<MembersQuery>)
   const params = new URLSearchParams();
   if (next.q) params.set("q", next.q);
   if (next.filter !== "all") params.set("filter", next.filter);
-  if (next.sort !== "az") params.set("sort", next.sort);
+  if (next.sort && next.sort !== "recent") params.set("sort", next.sort);
+
   if (next.page > 1) params.set("page", String(next.page));
 
   const queryString = params.toString();

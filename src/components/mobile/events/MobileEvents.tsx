@@ -6,6 +6,7 @@ import { Tag } from "@/components/ui/tag";
 import { Button } from "@/components/ui/button";
 import { MobileScreen } from "@/components/mobile/ui/MobileScreen";
 import { BottomNav } from "@/components/mobile/ui/BottomNav";
+import { Footer } from "@/components/footer";
 import { normalizeEventTags } from "@/lib/event-tags";
 import {
   eventsHero,
@@ -158,6 +159,10 @@ export function MobileEvents() {
         </div>
       </div>
 
+      {/* Footer Wrapper with Margin Cancellation & Bottom Spacing for Fixed Nav */}
+      <div className="-mx-5 mt-8 pt-6">
+        <Footer />
+      </div>
       <BottomNav />
     </MobileScreen>
   );

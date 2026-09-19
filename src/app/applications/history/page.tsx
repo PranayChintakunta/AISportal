@@ -193,7 +193,7 @@ export default function ApplicationHistoryPage() {
         <div className="flex min-h-screen w-full flex-col">
           <Navbar active="Apply" />
 
-          <div className="mx-auto flex w-full max-w-[1440px] flex-col gap-[24px] px-[46px] pb-[46px] pt-[45px]">
+          <div className="mx-auto flex w-full flex-col gap-[24px] px-[46px] pb-[46px] pt-28">
             <div className="flex flex-col gap-[14px]">
               <Link
                   href="/applications"

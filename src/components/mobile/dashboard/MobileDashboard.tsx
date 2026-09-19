@@ -3,6 +3,7 @@ import QRCode from "react-qr-code";
 import { cn } from "@/lib/utils";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Footer } from "@/components/footer";
 import { Button } from "@/components/ui/button";
 import {
   DashboardApplicationsCard,
@@ -162,7 +163,11 @@ export function MobileDashboard({ userId, userName, nextRsvp, calendarLinks }: M
       >
         <DashboardRecommendedCard userId={userId} />
       </Suspense>
-
+      
+      {/* Footer Wrapper with Margin Cancellation & Bottom Spacing for Fixed Nav */}
+        <div className="-mx-5 mt-8 pt-6">
+          <Footer />
+        </div>
       <BottomNav />
     </MobileScreen>
   );

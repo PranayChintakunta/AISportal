@@ -150,7 +150,7 @@ export function RecommendedCard({ items }: { items: RecommendedItem[] }) {
   }
 
   return (
-    <Card className="flex h-auto min-w-0 flex-1 flex-col gap-[14px] self-stretch p-[27px]">
+    <Card className="flex h-auto min-w-0 flex-1 flex-col gap-[14px] border-t-4 border-t-green/60 self-stretch p-[27px]">
       <SectionHeader
         title="Recommended for you"
       />

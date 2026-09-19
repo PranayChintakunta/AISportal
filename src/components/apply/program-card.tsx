@@ -81,7 +81,7 @@ export function ProgramCard({
 
   const iconChip = image ? (
     <div
-      className="relative flex size-15 shrink-0 items-center justify-center rounded-[14px] p-0.5 overflow-hidden shadow-2xs border border-border-soft/60 transition-transform duration-300 group-hover:scale-105"
+      className="relative flex size-15 shrink-0 items-center justify-center rounded-[14px] p-0.5 overflow-hidden shadow-sm shadow-ink/15 border border-white/35 transition-transform duration-300 group-hover:scale-105"
       style={{ backgroundColor: `color-mix(in srgb, ${iconBg} 20%, transparent)` }}
     >
       <Image
