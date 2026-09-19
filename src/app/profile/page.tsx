@@ -14,7 +14,7 @@ import { UTD_MAJORS, UTD_DEGREES, ACADEMIC_YEARS } from "@/lib/utd-data";
 import { USER_ROLE_LABELS } from "@/lib/roles";
 import { MEMBERSHIP_TYPE_LABELS } from "@/lib/membership-types";
 import { updateProfile } from "./actions";
-import { Footer } from "@/components/footer";
+// import { Footer } from "@/components/footer";
 
 export default async function ProfilePage() {
   const clerkUser = await currentUser();
