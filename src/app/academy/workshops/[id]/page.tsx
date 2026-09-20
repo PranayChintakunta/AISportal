@@ -25,10 +25,10 @@ export default async function WorkshopDetailPage({ params }: WorkshopDetailPageP
       <AcademyGradientBackground />
       <Navbar active="Academy" />
 
-      <main className="mx-auto flex w-full max-w-[1100px] flex-col gap-[24px] px-[24px] pb-[64px] pt-[40px] lg:px-[46px]">
+      <main className="mx-auto flex w-full max-w-[1100px] h-screen flex-col gap-[24px] px-[24px] pb-[64px] pt-28 lg:px-[46px]">
         <Link
           href="/academy"
-          className="style-caption w-fit leading-[16.8px] tracking-[0.2px] text-[#7aa2ff]"
+          className="style-caption w-fit leading-[16.8px] tracking-[0.2px] text-[#d4af37]"
         >
           ← Back to AI Academy
         </Link>

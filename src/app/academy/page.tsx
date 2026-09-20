@@ -19,7 +19,7 @@ export default function AcademyPage() {
       <AcademyGradientBackground />
       <Navbar active="Academy" />
 
-      <main className="mx-auto flex w-full max-w-[1300px] flex-col gap-[40px] px-[24px] pb-[64px] pt-[40px] lg:px-[46px]">
+      <main className="mx-auto flex w-full max-w-[1300px] flex-col gap-[40px] px-[24px] pb-[64px] pt-28 lg:px-[46px]">
         {/* Intro */}
         <section className="flex flex-col items-start gap-[28px] text-left lg:flex-row lg:items-center lg:justify-between">
           <div className="flex flex-col items-start gap-[16px] text-left">
