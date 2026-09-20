@@ -57,6 +57,7 @@ export function BottomNav() {
   const tabs = [
     { label: "Dashboard", href: "/dashboard" },
     { label: "Events", href: "/events" },
+    { label: "Academy", href: "/academy" },
     { label: "Apply", href: "/applications" },
   ];
 

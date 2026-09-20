@@ -1,6 +1,18 @@
 @import "tailwindcss";
 @source "../**/*.{js,ts,jsx,tsx,mdx}";
 
+/* Hides the native scrollbar on an overflow-x-auto row while keeping it
+   wheel/touch/keyboard scrollable — used by horizontally-scrolling card rows
+   (bottom nav tabs, academy resource/workshop rows). */
+.scrollbar-none {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}
+
 :root {
   --background: #ffffff;
   --foreground: #171717;
