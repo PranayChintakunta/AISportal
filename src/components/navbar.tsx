@@ -9,13 +9,14 @@ import { useAccount } from "@/components/account-provider";
 import Image from "next/image";
 import { isAdminRole } from "@/lib/roles";
 
-const NAV_ITEMS = ["Dashboard", "Events", "Apply"] as const;
+const NAV_ITEMS = ["Dashboard", "Events", "Academy", "Apply"] as const;
 const ADMIN_LABEL = "Admin" as const;
 /** Entry point for AIM mentors — reviews applications, nothing else in /admin. */
 const REVIEW_LABEL = "Review" as const;
 
 const NAV_ROUTES: Record<(typeof NAV_ITEMS)[number] | typeof ADMIN_LABEL | typeof REVIEW_LABEL, string> = {
   Events: "/events",
+  Academy: "/academy",
   Apply: "/applications",
   Dashboard: "/dashboard",
   Admin: "/admin/events",
