@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { MobileReadOnlyField } from "@/components/mobile/apply/MobileReadOnlyField";
 import { MobileScreen } from "@/components/mobile/ui/MobileScreen";
 import { BottomNav } from "@/components/mobile/ui/BottomNav";
+import { Footer } from "@/components/footer";
 import { SectionHeader } from "@/components/ui/section-header";
 import { personalFields } from "@/lib/data";
 import {
@@ -277,6 +278,10 @@ export function MobileSubmitted() {
         </div>
       ) : null}
 
+      {/* Footer Wrapper with Margin Cancellation & Bottom Spacing for Fixed Nav */}
+      <div className="-mx-5 mt-8 pt-6">
+        <Footer />
+      </div>
       <BottomNav />
     </MobileScreen>
   );

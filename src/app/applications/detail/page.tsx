@@ -244,7 +244,7 @@ function ApplyDetailContent() {
         <div className="flex min-h-screen w-full flex-col">
           <Navbar active="Apply" />
 
-          <main className="mx-auto flex w-full max-w-5xl flex-col gap-6 px-8 py-10">
+          <main className="mx-auto flex w-full max-w-5xl flex-col gap-6 pt-28 px-8 py-10">
             {/* Navigation back link */}
             <Link
               href="/applications"
@@ -429,7 +429,7 @@ function DetailPageFallback() {
   return (
     <div className="flex min-h-screen w-full flex-col">
       <Navbar active="Apply" />
-      <div className="mx-auto flex w-full max-w-5xl flex-col gap-6 px-8 py-10">
+      <div className="mx-auto flex w-full max-w-5xl flex-col gap-6 pt-28 px-8 py-10">
         <DetailSkeleton />
       </div>
     </div>

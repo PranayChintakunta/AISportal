@@ -11,6 +11,7 @@ import { normalizeEventTags } from "@/lib/event-tags";
 import { MobileEventDetail } from "@/components/mobile/events/MobileEventDetail";
 import { EventDetailActions, EventQRCode } from "@/components/events/event-detail-actions";
 import { EventCoverImage } from "@/components/events/event-cover-image";
+import { formatEventDate } from "@/lib/utils";
 
 export async function generateMetadata({
   params,
@@ -73,14 +74,7 @@ export default async function EventDetailPage({ params }: EventDetailPageProps) 
   const attended = userRsvp && 'attendance' in userRsvp ? !!userRsvp.attendance : false;
   
   const normalizedTags = normalizeEventTags(event.tags);
-  const formattedDate = new Intl.DateTimeFormat("en-US", {
-    timeZone: "America/Chicago",
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-    hour: "numeric",
-    minute: "2-digit",
-  }).format(new Date(event.startTime));
+  const formattedDate = formatEventDate(event.startTime.toString(), true);
 
   return (
     <>
@@ -92,7 +86,7 @@ export default async function EventDetailPage({ params }: EventDetailPageProps) 
         <div className="flex min-h-screen w-full flex-col">
           <Navbar active="Events" />
 
-          <div className="mx-auto flex w-full max-w-[1440px] flex-col gap-[28px] px-[46px] pb-[46px] pt-[45px]">
+          <div className="mx-auto flex w-full flex-col gap-6 px-[46px] pb-24 pt-28">
             {/* Back link */}
             <Link
               href="/events"
@@ -103,38 +97,43 @@ export default async function EventDetailPage({ params }: EventDetailPageProps) 
 
             <div className="flex flex-col gap-[32px] lg:flex-row lg:items-stretch">
               {/* Event body */}
-              <div className="flex min-w-px flex-1 flex-col">
+              <div className="flex min-w-px flex-1 flex-col gap-6">
                 <EventCoverImage
                   imageUrl={event.imageUrl}
                   className="h-[300px] w-full"
                   alt={`${event.title} cover`}
                 />
                 
-                <div className="mt-[20px] flex items-center gap-3">
-                  <h1 className="style-section-header leading-[41px] tracking-[-0.4px] text-ink [font-variation-settings:'wdth'_100]">
-                    {event.title}
-                  </h1>
-                  {isLive && (
-                    <span className="style-badge-text inline-flex items-center gap-1.5 rounded-full bg-checked px-3 py-1 uppercase tracking-wider text-checked-text">
-                      <span className="h-2 w-2 rounded-full bg-green animate-pulse" />
-                      Happening Now
-                    </span>
-                  )}
+                <div className="flex flex-col rounded-2xl bg-white/50 backdrop-blur-md border-white/35 border-2 shadow-sm shadow-ink/15 px-6 py-6">
+                  <div className="flex items-center gap-3">
+                    <h1 className="style-section-header leading-[41px] tracking-[-0.4px] text-ink [font-variation-settings:'wdth'_100]">
+                      {event.title}
+                    </h1>
+                    {isLive && (
+                      <span className="style-badge-text inline-flex items-center gap-1.5 rounded-full bg-checked px-3 py-1 uppercase tracking-wider text-checked-text">
+                        <span className="h-2 w-2 rounded-full bg-green animate-pulse" />
+                        Happening Now
+                      </span>
+                    )}
+                  </div>
+
+                  <p className="mt-[10px] style-caption font-medium leading-[20px] tracking-[0.2px] text-ink-muted">
+                    {formattedDate} · {event.location}
+                  </p>
+
+                  <p className="mt-[20px] max-w-[640px] whitespace-pre-wrap style-body-text leading-[24px] text-ink">
+                    {event.description}
+                  </p>
+
+                  <div className="mt-[20px] flex flex-wrap gap-[10px]">
+                    {normalizedTags.map((t) => (
+                      <Tag key={t.label} label={t.label} bg={t.bg} color={t.color} />
+                    ))}
+                  </div>
+
                 </div>
-
-                <p className="mt-[10px] style-caption font-medium leading-[20px] tracking-[0.2px] text-ink-muted">
-                  {formattedDate} · {event.location}
-                </p>
-
-                <p className="mt-[20px] max-w-[640px] style-body-text leading-[24px] text-ink">
-                  {event.description}
-                </p>
-
-                <div className="mt-[20px] flex flex-wrap gap-[10px]">
-                  {normalizedTags.map((t) => (
-                    <Tag key={t.label} label={t.label} bg={t.bg} color={t.color} />
-                  ))}
-                </div>
+                
+                
               </div>
 
               {/* Status & Action Card Sidebar */}
@@ -142,9 +141,9 @@ export default async function EventDetailPage({ params }: EventDetailPageProps) 
                 className={`flex w-full flex-col items-center justify-center gap-[16px] self-stretch rounded-[16px] p-[33px] lg:w-[360px] lg:shrink-0 ${
                   isPast
                     ? attended
-                      ? "bg-checked border-2 border-green"
+                      ? "bg-checked/55 border-2 border-green backdrop-blur-md"
                       : isRsvpd
-                      ? "bg-danger-ink/20 border-2 border-danger-ink"
+                      ? "bg-danger-ink/20 border-2 border-danger-ink backdrop-blur-md"
                       : "bg-[#f4f1ea] border border-border-soft"
                     : attended
                     ? "bg-checked"

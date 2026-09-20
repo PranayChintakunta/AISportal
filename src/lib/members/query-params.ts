@@ -3,8 +3,8 @@ export const MEMBERS_PATH = "/admin/members";
 /** Rows per page. Matches the "Showing 1–8 of N" footer. */
 export const PAGE_SIZE = 25;
 
-export const MEMBER_FILTERS = ["all", "officers", "mentors", "mentees"] as const;
-export const MEMBER_SORTS = ["az", "za", "recent"] as const;
+export const MEMBER_FILTERS = ["all", "officers", "mentors", "mentees", "academy", "inno"] as const;
+export const MEMBER_SORTS = ["recent", "oldest", "az", "za"] as const;
 
 export type MemberFilter = (typeof MEMBER_FILTERS)[number];
 export type MemberSort = (typeof MEMBER_SORTS)[number];
@@ -31,7 +31,7 @@ export function parseMembersQuery(raw: RawParams): MembersQuery {
   return {
     q: first(raw.q).trim(),
     filter: MEMBER_FILTERS.includes(filter) ? filter : "all",
-    sort: MEMBER_SORTS.includes(sort) ? sort : "az",
+    sort: MEMBER_SORTS.includes(sort) ? sort : "recent",
     page: Number.isInteger(page) && page > 0 ? page : 1,
   };
 }
@@ -49,7 +49,8 @@ export function membersHref(current: MembersQuery, patch: Partial<MembersQuery>)
   const params = new URLSearchParams();
   if (next.q) params.set("q", next.q);
   if (next.filter !== "all") params.set("filter", next.filter);
-  if (next.sort !== "az") params.set("sort", next.sort);
+  if (next.sort && next.sort !== "recent") params.set("sort", next.sort);
+
   if (next.page > 1) params.set("page", String(next.page));
 
   const queryString = params.toString();

@@ -69,13 +69,13 @@ export default async function DashboardPage() {
 
           <Navbar />
 
-          <div className="mx-auto flex w-full max-w-[1440px] flex-col gap-[28px] px-[46px] pb-[46px] pt-[45px]">
+          <div className="mx-auto flex w-full flex-col px-16 gap-8 pb-24 pt-28">
             <h1 className="style-page-title bg-[linear-gradient(90deg,#2f5fe8_0%,#f2a968_100%)] bg-clip-text text-transparent">
               Welcome back, {userName}!
             </h1>
 
             {/* Row 1 — featured event + applications */}
-            <div className="mt-[28px] flex flex-col gap-[24px] xl:flex-row xl:items-start">
+            <div className="flex flex-col gap-6 xl:flex-row xl:items-start">
               {nextRsvp ? (
                 <UpNextCard
                   eyebrow={nextRsvp.isLive ? "Happening now" : `${formatDaysAway(nextRsvp.event.startTime)}`}

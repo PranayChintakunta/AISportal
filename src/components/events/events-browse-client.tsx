@@ -66,10 +66,10 @@ export function EventsBrowseClient({ upcomingEvents, pastEvents }: EventsBrowseC
           <div aria-hidden className="pointer-events-none absolute -top-20 right-[15%] -z-10 h-[400px] w-[400px] rounded-full bg-purple-400/20 blur-[110px]" />
           <div aria-hidden className="pointer-events-none absolute top-[40%] left-[-5%] -z-10 h-[340px] w-[340px] rounded-full bg-orange-300/20 blur-[110px]" />
           <Navbar active="Events" />
-          <div className="flex w-full flex-col md:flex-row md:items-stretch">
+          <div className="flex w-full flex-col pt-16 md:flex-row md:items-stretch">
             
             {/* Tag filter sidebar */}
-            <aside className="flex flex-col gap-[10px] border-b border-border-soft bg-white/50 px-6 py-8 md:w-[220px] md:shrink-0 md:border-b-0 md:border-r">
+            <aside className="flex flex-col gap-[10px] border-b border-white/30 bg-white/50 px-6 py-8 backdrop-blur-md md:w-auto md:shrink-0 md:border-b-0 md:border-r">
               <p className="font-techno uppercase leading-normal tracking-[3px] text-ink-faint">
                 Tags
               </p>

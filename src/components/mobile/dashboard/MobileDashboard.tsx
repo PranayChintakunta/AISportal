@@ -3,6 +3,7 @@ import QRCode from "react-qr-code";
 import { cn } from "@/lib/utils";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Footer } from "@/components/footer";
 import { Button } from "@/components/ui/button";
 import {
   DashboardApplicationsCard,
@@ -11,6 +12,7 @@ import {
   RsvpsCardSkeleton,
   DashboardRecommendedCard,
 } from "@/components/dashboard/server-cards";
+import { GradientWavesBackground } from "@/components/gradient-waves-background";
 import { formatDaysAway, formatEventDate, type getNextUpcomingRsvp } from "@/lib/dashboard-utils";
 import { MobileScreen } from "@/components/mobile/ui/MobileScreen";
 import { BottomNav } from "@/components/mobile/ui/BottomNav";
@@ -46,6 +48,7 @@ export function MobileDashboard({ userId, userName, nextRsvp, calendarLinks }: M
 
   return (
     <MobileScreen>
+      <GradientWavesBackground />
       <h1 className="style-mobile-title text-2xl font-bold bg-[linear-gradient(90deg,#2f5fe8_0%,#f2a968_100%)] bg-clip-text text-transparent">
         Welcome back, {userName}!
       </h1>
@@ -160,7 +163,11 @@ export function MobileDashboard({ userId, userName, nextRsvp, calendarLinks }: M
       >
         <DashboardRecommendedCard userId={userId} />
       </Suspense>
-
+      
+      {/* Footer Wrapper with Margin Cancellation & Bottom Spacing for Fixed Nav */}
+        <div className="-mx-5 mt-8 pt-6">
+          <Footer />
+        </div>
       <BottomNav />
     </MobileScreen>
   );

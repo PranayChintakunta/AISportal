@@ -8,8 +8,10 @@ import { Tag } from "@/components/ui/tag";
 import { Button } from "@/components/ui/button";
 import { MobileScreen } from "@/components/mobile/ui/MobileScreen";
 import { BottomNav } from "@/components/mobile/ui/BottomNav";
+import { Footer } from "@/components/footer";
 import { Marquee } from "@/components/apply/marquee";
 import { OpenAppRow } from "@/components/apply/open-app-row";
+import { GradientWavesBackground } from "@/components/gradient-waves-background";
 import { programs } from "@/lib/data";
 import {
   type Application,
@@ -232,6 +234,7 @@ export function MobileApply() {
 
   return (
     <MobileScreen>
+      <GradientWavesBackground/>
       <div className="flex flex-col gap-[6px]">
         <h1 className="style-page-title bg-[linear-gradient(90deg,#2f5fe8_0%,#f2a968_100%)] bg-clip-text text-transparent">
           Choose Your AIS Path
@@ -243,90 +246,90 @@ export function MobileApply() {
       </div>
 
       {/* Program Flow */}
-<div className="flex flex-col">
-  {programs.map((program, index) => (
-    <Fragment key={program.title}>
-      <motion.div
-        initial={{ opacity: 0, scale: 0.95, y: 16 }}
-        whileInView={{ opacity: 1, scale: 1, y: 0 }}
-        viewport={{ once: true }}
-        transition={{
-          duration: 0.4,
-          delay: index * 0.1,
-          ease: "easeOut",
-        }}
-        className="flex flex-row rounded-[16px] border bg-white overflow-hidden"
-        style={{ borderColor: program.borderColor }}
-      >
-        {/* Left Side: Full-height Icon / Image Container */}
-        <div
-          className="relative flex w-[80px] sm:w-[100px] shrink-0 items-center justify-center p-3 border-r border-border-soft/60"
-          style={{
-            backgroundColor: program.image
-              ? `color-mix(in srgb, ${program.iconBg} 20%, transparent)`
-              : program.iconBg,
-          }}
-        >
-          {program.image ? (
-            <Image
-              src={program.image}
-              alt={`${program.title} Logo`}
-              width={64}
-              height={64}
-              className="max-h-full max-w-full object-contain mix-blend-multiply"
-            />
-          ) : (
-            <span
-              className="text-[24px]"
-              style={{ color: program.iconColor }}
+      <div className="flex flex-col">
+        {programs.map((program, index) => (
+          <Fragment key={program.title}>
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 16 }}
+              whileInView={{ opacity: 1, scale: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{
+                duration: 0.4,
+                delay: index * 0.1,
+                ease: "easeOut",
+              }}
+              className="flex flex-row rounded-[16px] border bg-white overflow-hidden"
+              style={{ borderColor: program.borderColor }}
             >
-              {program.icon}
-            </span>
-          )}
-        </div>
+              {/* Left Side: Full-height Icon / Image Container */}
+              <div
+                className="relative flex w-[80px] sm:w-[100px] shrink-0 items-center justify-center p-3 border-r border-border-soft/60"
+                style={{
+                  backgroundColor: program.image
+                    ? `color-mix(in srgb, ${program.iconBg} 20%, transparent)`
+                    : program.iconBg,
+                }}
+              >
+                {program.image ? (
+                  <Image
+                    src={program.image}
+                    alt={`${program.title} Logo`}
+                    width={64}
+                    height={64}
+                    className="max-h-full max-w-full object-contain mix-blend-multiply"
+                  />
+                ) : (
+                  <span
+                    className="text-[24px]"
+                    style={{ color: program.iconColor }}
+                  >
+                    {program.icon}
+                  </span>
+                )}
+              </div>
 
-        {/* Right Side: Content */}
-        <div className="flex flex-1 flex-col gap-[10px] p-[18px]">
-          <div className="flex items-center justify-between gap-2">
-            <h3 className="font-mobile-display text-[17px] font-bold text-ink">
-              {program.title}
-            </h3>
-            {program.badge && (
-              <Badge label={program.badge} bg="#fbe3cb" color="#7a4416" />
+              {/* Right Side: Content */}
+              <div className="flex flex-1 flex-col gap-[10px] p-[18px]">
+                <div className="flex items-center justify-between gap-2">
+                  <h3 className="font-mobile-display text-[17px] font-bold text-ink">
+                    {program.title}
+                  </h3>
+                  {program.badge && (
+                    <Badge label={program.badge} bg="#fbe3cb" color="#7a4416" />
+                  )}
+                </div>
+
+                <p className="font-mobile-body text-[13px] text-ink-muted line-clamp-3">
+                  {program.description}
+                </p>
+
+                <div className="flex flex-wrap gap-[6px] mt-auto pt-1">
+                  {program.tags.map((label) => (
+                    <Tag
+                      key={label}
+                      label={label}
+                      bg="#efece3"
+                      color="#6a685f"
+                      border="#e2ded2"
+                    />
+                  ))}
+                </div>
+              </div>
+            </motion.div>
+
+            {index < programs.length - 1 && (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.8 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.3, delay: index * 0.1 + 0.05 }}
+              >
+                <ProgramFlowArrow />
+              </motion.div>
             )}
-          </div>
-
-          <p className="font-mobile-body text-[13px] text-ink-muted line-clamp-3">
-            {program.description}
-          </p>
-
-          <div className="flex flex-wrap gap-[6px] mt-auto pt-1">
-            {program.tags.map((label) => (
-              <Tag
-                key={label}
-                label={label}
-                bg="#efece3"
-                color="#6a685f"
-                border="#e2ded2"
-              />
-            ))}
-          </div>
-        </div>
-      </motion.div>
-
-      {index < programs.length - 1 && (
-        <motion.div
-          initial={{ opacity: 0, scale: 0.8 }}
-          whileInView={{ opacity: 1, scale: 1 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.3, delay: index * 0.1 + 0.05 }}
-        >
-          <ProgramFlowArrow />
-        </motion.div>
-      )}
-    </Fragment>
-  ))}
-</div>
+          </Fragment>
+        ))}
+      </div>
 
       {/* Slogan banner */}
       <div>
@@ -357,6 +360,11 @@ export function MobileApply() {
             {renderClosedSection()}
           </>
         )}
+      </div>
+
+      {/* Footer Wrapper with Margin Cancellation & Bottom Spacing for Fixed Nav */}
+      <div className="-mx-5 mt-8 pt-6">
+        <Footer />
       </div>
 
       <BottomNav />

@@ -7,29 +7,48 @@ export function cn(...classes: Array<string | false | null | undefined>): string
 }
 
 // Formats date and time in a legible, neat format: Mon, Aug. 20 - 6:00PM
-export function formatEventDate(dateString: string, includeDayOfWeek = false) {
+export function formatEventDate(
+  dateString: string,
+  includeDayOfWeek = false,
+  timeZone = "America/Chicago"
+) {
   const date = new Date(dateString);
-  const now = new Date();
-  
-  const diffTime = date.getTime() - now.getTime();
-  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-  const isWithinAWeek = includeDayOfWeek && diffDays >= 0 && diffDays <= 7;
+  if (isNaN(date.getTime())) return "";
 
-  const options: Intl.DateTimeFormatOptions = {
+  // 1. Explicitly format date components using fixed timeZone
+  const monthDayFormatter = new Intl.DateTimeFormat("en-US", {
     month: "short",
     day: "numeric",
-    year: date.getFullYear() !== now.getFullYear() ? "numeric" : undefined,
+    timeZone,
+  });
+
+  const timeFormatter = new Intl.DateTimeFormat("en-US", {
     hour: "numeric",
     minute: "2-digit",
-  };
+    hour12: true,
+    timeZone,
+  });
 
-  if (isWithinAWeek) {
-    const weekday = new Intl.DateTimeFormat("en-US", { weekday: "short" }).format(date);
-    const timeDate = new Intl.DateTimeFormat("en-US", options).format(date);
-    return `${weekday}, ${timeDate}`;
+  const yearFormatter = new Intl.DateTimeFormat("en-US", {
+    year: "numeric",
+    timeZone,
+  });
+
+  const dateFormatted = monthDayFormatter.format(date);
+  const timeFormatted = timeFormatter.format(date);
+
+  // 2. Add Day of Week if requested
+  if (includeDayOfWeek) {
+    const weekdayFormatter = new Intl.DateTimeFormat("en-US", {
+      weekday: "short",
+      timeZone,
+    });
+    const weekday = weekdayFormatter.format(date);
+    return `${weekday}, ${dateFormatted} · ${timeFormatted}`;
   }
 
-  return new Intl.DateTimeFormat("en-US", options).format(date).replace(", ", " · ");
+  // 3. Format as "MMM D · H:MM AM/PM"
+  return `${dateFormatted} · ${timeFormatted}`;
 }
 
 export function getRelativeTimeString(eventStartTime: Date): { 

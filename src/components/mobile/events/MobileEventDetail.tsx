@@ -8,8 +8,10 @@ import { Tag } from "@/components/ui/tag";
 import { normalizeEventTags } from "@/lib/event-tags";
 import { MobileScreen } from "@/components/mobile/ui/MobileScreen";
 import { BottomNav } from "@/components/mobile/ui/BottomNav";
+import { Footer } from "@/components/footer";
 import { EventDetailActions, EventQRCode } from "@/components/events/event-detail-actions";
 import { EventCoverImage } from "@/components/events/event-cover-image";
+import { formatEventDate } from "@/lib/utils";
 
 interface MobileEventDetailProps {
   eventId: string;
@@ -54,14 +56,7 @@ export async function MobileEventDetail({ eventId }: MobileEventDetailProps) {
   const attended = userRsvp && 'attendance' in userRsvp ? !!userRsvp.attendance : false;
 
   const normalizedTags = normalizeEventTags(event.tags);
-  const formattedDate = new Intl.DateTimeFormat("en-US", {
-    timeZone: "America/Chicago",
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-    hour: "numeric",
-    minute: "2-digit",
-  }).format(new Date(event.startTime));
+  const formattedDate = formatEventDate(event.startTime.toString(), true);
 
   const cardStyle = isPast
     ? attended
@@ -92,10 +87,10 @@ export async function MobileEventDetail({ eventId }: MobileEventDetailProps) {
         alt={`${event.title} cover`}
       />
 
-      <div className="flex flex-col gap-4">
-        <div className="flex flex-col gap-1.5">
+      <div className="flex flex-col gap-2 bg-white/50 backdrop-blur-md border-2 border-white/35 shadow-ink/15 shadow-sm px-4 py-5 rounded-xl">
+        <div className="flex flex-col gap-2">
           <div className="flex flex-wrap items-center gap-2">
-            <h1 className="style-mobile-title leading-tight text-ink">
+            <h1 className="style-section-header leading-tight text-ink">
               {event.title}
             </h1>
             {isLive && (
@@ -116,7 +111,7 @@ export async function MobileEventDetail({ eventId }: MobileEventDetailProps) {
           ))}
         </div>
 
-        <p className="style-mobile-body leading-relaxed text-ink-muted">
+        <p className="style-mobile-body whitespace-pre-wrap leading-relaxed text-ink-muted">
           {event.description}
         </p>
       </div>
@@ -166,7 +161,7 @@ export async function MobileEventDetail({ eventId }: MobileEventDetailProps) {
             <EventQRCode value={userRsvp?.qrToken ?? `checkin-${userId}-${event.id}`} />
 
             <p className="text-center style-caption text-ink-faint">
-              This is your ticket to claim food, merch, drinks, etc. If you are late and don&apos;t see the attendance on the big screen, show this QR to an officer to check you in.
+              This is your ticket to claim food, merch, drinks, etc. Check-in will be towards the end. If you have any issues with check-in, show this QR ticket to an officer.
             </p>
 
             <EventDetailActions eventId={event.id} initialRsvpd={isRsvpd} isRsvpOpen={isRsvpOpen} />
@@ -204,6 +199,10 @@ export async function MobileEventDetail({ eventId }: MobileEventDetailProps) {
         )}
       </div>
 
+      {/* Footer Wrapper with Margin Cancellation & Bottom Spacing for Fixed Nav
+      <div className="-mx-5 mt-8 pt-6">
+        <Footer />
+      </div> */}
       <BottomNav />
     </MobileScreen>
   );
