@@ -15,7 +15,7 @@ import { EventActionButtons } from "@/components/admin/admin-event-actions";
 import { utcToChicagoInput } from "@/lib/timezone";
 
 export const metadata: Metadata = {
-  title: "AIS Admin — Edit Event",
+  title: "AIS Admin Edit Event",
   description: "Edit an existing AIS event.",
 };
 
