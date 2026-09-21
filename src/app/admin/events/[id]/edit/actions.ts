@@ -7,6 +7,7 @@ import { prisma } from "@/lib/prisma";
 import { getAuthenticatedUser } from "@/lib/auth";
 import { isAssignableProgram } from "@/lib/roles";
 import { putObjectToR2, deleteObjectFromR2 } from "@/lib/r2";
+import { extractStorageKeyFromUrl } from "@/lib/admin/event-form-parsing";
 import { chicagoInputToUtc } from "@/lib/timezone";
 
 const MAX_FILE_SIZE = 2 * 1024 * 1024; // 2 MB
@@ -22,16 +23,6 @@ const ALLOWED_ROLES = ["EXECUTIVE", "DIRECTOR", "OFFICER"];
 function isImageFile(value: FormDataEntryValue | null): value is File {
   return typeof File !== "undefined" && value instanceof File && value.size > 0;
 }
-
-function extractStorageKeyFromUrl(url: string): string | null {
-  try {
-    const parsed = new URL(url);
-    return parsed.pathname.startsWith("/") ? parsed.pathname.slice(1) : parsed.pathname;
-  } catch {
-    return null;
-  }
-}
-
 
 function parsePrograms(rawValue: FormDataEntryValue | FormDataEntryValue[] | null): MembershipType[] {
   if (!rawValue) return [];
