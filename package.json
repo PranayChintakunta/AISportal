@@ -38,7 +38,8 @@
     "resend": "^6.25.0",
     "svix": "^1.95.2",
     "tzdate": "^1.0.1",
-    "ws": "^8.21.0"
+    "ws": "^8.21.0",
+    "zod": "^4.6.5"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",

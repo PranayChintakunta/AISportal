@@ -1,7 +1,7 @@
 import { cache } from "react";
 import { auth } from "@clerk/nextjs/server";
 import { prisma } from "@/lib/prisma";
-import { isApplicationReviewerOnly } from "@/lib/roles";
+import { isApplicationReviewerOnly, isAcademyParticipant } from "@/lib/roles";
 
 /** What the navbar needs about the signed-in user, resolved on the server. */
 export type NavAccount = {
@@ -9,6 +9,7 @@ export type NavAccount = {
   firstName: string | null;
   role: string | null;
   isReviewerOnly: boolean;
+  isAcademyParticipant: boolean;
 };
 
 export const getNavAccount = cache(async function getNavAccount(): Promise<NavAccount | null> {
@@ -20,10 +21,16 @@ export const getNavAccount = cache(async function getNavAccount(): Promise<NavAc
       where: { clerkId: session.userId },
       select: {
         role: true,
+        team: true,
         profile: { select: { firstName: true, prefName: true } },
         memberships: {
           where: { activeFlag: true },
-          select: { membershipType: true },
+          select: {
+            membershipType: true,
+            activeFlag: true,
+            startDate: true,
+            endDate: true,
+          },
         },
       },
     });
@@ -36,6 +43,11 @@ export const getNavAccount = cache(async function getNavAccount(): Promise<NavAc
       firstName: user.profile ? user.profile.prefName || user.profile.firstName : null,
       role: user.role,
       isReviewerOnly: isApplicationReviewerOnly(user.role, programs),
+      isAcademyParticipant: isAcademyParticipant({
+        role: user.role,
+        team: user.team,
+        memberships: user.memberships,
+      }),
     };
   } catch {
     return null;

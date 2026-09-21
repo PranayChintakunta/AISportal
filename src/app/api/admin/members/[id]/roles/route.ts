@@ -1,12 +1,20 @@
-import type { MembershipType, UserRole } from "@prisma/client";
+import type { MembershipType, TEAM, UserRole } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 import { NextResponse } from "next/server";
 import { createErrorResponse } from "@/lib/api-error";
 import { getAuthenticatedUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { canManageRoles, isAssignableProgram, isAssignableUserRole } from "@/lib/roles";
+import {
+  canManageRoles,
+  isAssignableProgram,
+  isAssignableTeam,
+  isAssignableUserRole,
+} from "@/lib/roles";
 
-type Body = { role?: unknown; programs?: unknown };
+type Body = { role?: unknown; team?: unknown; programs?: unknown };
+
+/** Only Officers and Directors carry a team; anyone else is cleared. */
+const TEAM_BEARING_ROLES: readonly UserRole[] = ["OFFICER", "DIRECTOR"];
 
 /**
  * Replaces a member's roles. Executive only.
@@ -50,6 +58,17 @@ export async function PATCH(
   }
   const role: UserRole = body.role;
 
+  // Team is optional, but a value that is present must be real. Roles that
+  // don't carry a team are cleared rather than silently keeping a stale one.
+  if (body.team !== undefined && body.team !== null && !isAssignableTeam(body.team)) {
+    return createErrorResponse("Unknown team.", "BAD_REQUEST", 400, {
+      team: body.team,
+    });
+  }
+  const team: TEAM | null = TEAM_BEARING_ROLES.includes(role)
+    ? ((body.team ?? null) as TEAM | null)
+    : null;
+
   if (!Array.isArray(body.programs) || !body.programs.every(isAssignableProgram)) {
     return createErrorResponse("Unknown program.", "BAD_REQUEST", 400, {
       programs: body.programs,
@@ -63,6 +82,7 @@ export async function PATCH(
     select: {
       id: true,
       role: true,
+      team: true,
       memberships: {
         where: { activeFlag: true },
         select: { id: true, membershipType: true },
@@ -93,7 +113,7 @@ export async function PATCH(
   const toStart = programs.filter((program) => !active.has(program));
 
   await prisma.$transaction([
-    prisma.user.update({ where: { id }, data: { role } }),
+    prisma.user.update({ where: { id }, data: { role, team } }),
 
     ...toEnd.map((membership) =>
       prisma.membership.update({
@@ -115,8 +135,8 @@ export async function PATCH(
         entityType: "User",
         entityId: id,
         metadataJson: {
-          from: { role: target.role, programs: [...active] },
-          to: { role, programs },
+          from: { role: target.role, team: target.team, programs: [...active] },
+          to: { role, team, programs },
         },
       },
     }),
@@ -127,5 +147,5 @@ export async function PATCH(
   revalidatePath("/dashboard");
   revalidatePath("/profile");
 
-  return NextResponse.json({ success: true, role, programs });
+  return NextResponse.json({ success: true, role, team, programs });
 }
