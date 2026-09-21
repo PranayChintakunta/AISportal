@@ -24,7 +24,7 @@ const placard = localFont({
 
 export const metadata: Metadata = {
   title: "AIS Portal",
-  description: "AI Society at UT Dallas — member portal",
+  description: "For AI Society at UT Dallas",
 };
 
 export default async function RootLayout({
