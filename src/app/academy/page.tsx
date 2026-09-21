@@ -5,15 +5,25 @@ import { ScrollReveal } from "@/components/ui/scroll-reveal";
 import { TopographyBackground } from "@/components/academy/topography-background";
 import { AcademyGradientBackground } from "@/components/academy/gradient-background";
 import { CourseSequence } from "@/components/academy/course-sequence";
-import { VideoNotesPanel } from "@/components/academy/video-notes-panel";
-import { workshops, resources, featuredLesson } from "@/lib/academy-data";
+import { FeaturedWorkshop } from "@/components/academy/featured-workshop";
+import {
+  getFeaturedWorkshop,
+  listAcademyResources,
+  listAcademyWorkshops,
+} from "@/lib/academy-content";
+import { getAuthenticatedUser } from "@/lib/auth";
 
-// TODO(academy backend): once Quiz/Resource models exist, replace the
-// `workshops`/`resources` mock imports with real queries filtered by
-// Event.programs containing AI_ACADEMY, and gate an inline-edit affordance
-// here for the Academy director instead of routing them through /admin.
+export const dynamic = "force-dynamic";
 
-export default function AcademyPage() {
+export default async function AcademyPage() {
+  const viewer = await getAuthenticatedUser();
+
+  const [workshops, resources, featured] = await Promise.all([
+    listAcademyWorkshops(viewer?.id ?? null),
+    listAcademyResources(),
+    getFeaturedWorkshop(viewer?.id ?? null),
+  ]);
+
   return (
     <div className="relative flex min-h-screen w-full flex-col overflow-x-hidden">
       <AcademyGradientBackground />
@@ -61,11 +71,13 @@ export default function AcademyPage() {
               View all
             </span>
           </div>
-          <VideoNotesPanel
-            title={featuredLesson.title}
-            videoUrl={featuredLesson.videoUrl}
-            notesKey="featured-lesson-3"
-          />
+          {featured ? (
+            <FeaturedWorkshop workshop={featured} />
+          ) : (
+            <p className="rounded-[20px] border border-dashed border-white/20 p-[24px] text-center style-body-text text-white/60">
+              No workshops have been published yet.
+            </p>
+          )}
         </section>
 
         {/* Course Sequence */}
@@ -85,30 +97,37 @@ export default function AcademyPage() {
               learning outside of workshops.
             </p>
           </div>
-          <div className="flex snap-x snap-mandatory gap-[20px] overflow-x-auto pb-[8px] scrollbar-none">
-            {resources.map((resource) => (
-              <a
-                key={resource.id}
-                href={resource.href}
-                className="flex w-[260px] shrink-0 snap-start flex-col gap-[16px] rounded-[20px] border border-[#2a2f3a] bg-[#181c25] p-[16px] transition-all duration-200 hover:-translate-y-[2px] hover:border-[#2563eb]/60"
-              >
-                <div className="flex flex-col gap-[8px]">
-                  <span className="style-card-title text-white">{resource.title}</span>
-                  <span className="style-caption text-white/70">{resource.description}</span>
-                </div>
-                <div className="mt-auto flex flex-wrap gap-[8px]">
-                  {resource.tags.map((tag) => (
-                    <span
-                      key={tag}
-                      className="rounded-full bg-[#2563eb]/15 px-[12px] py-[6px] style-badge-text text-[#9db8ff]"
-                    >
-                      {tag}
-                    </span>
-                  ))}
-                </div>
-              </a>
-            ))}
-          </div>
+          {resources.length === 0 ? (
+            <p className="rounded-[20px] border border-dashed border-white/20 p-[24px] text-center style-body-text text-white/60">
+              No resources have been published yet.
+            </p>
+          ) : (
+            <div className="flex snap-x snap-mandatory gap-[20px] overflow-x-auto pb-[8px] scrollbar-none">
+              {resources.map((resource) => (
+                <a
+                  key={resource.id}
+                  href={resource.href}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="flex w-[260px] shrink-0 snap-start flex-col gap-[16px] rounded-[20px] border border-[#2a2f3a] bg-[#181c25] p-[16px] transition-all duration-200 hover:-translate-y-[2px] hover:border-[#2563eb]/60"
+                >
+                  <div className="flex flex-col gap-[8px]">
+                    <span className="style-card-title text-white">{resource.title}</span>
+                    {resource.description && (
+                      <span className="style-caption text-white/70">{resource.description}</span>
+                    )}
+                  </div>
+                  {resource.category && (
+                    <div className="mt-auto flex flex-wrap gap-[8px]">
+                      <span className="rounded-full bg-[#2563eb]/15 px-[12px] py-[6px] style-badge-text text-[#9db8ff]">
+                        {resource.category}
+                      </span>
+                    </div>
+                  )}
+                </a>
+              ))}
+            </div>
+          )}
         </section>
 
       </main>

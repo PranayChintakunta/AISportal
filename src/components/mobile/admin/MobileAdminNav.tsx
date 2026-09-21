@@ -1,19 +1,29 @@
 import Link from "next/link";
 import { cn } from "@/lib/utils";
-import { adminRoleLabel, getAdminViewer } from "@/lib/admin-access";
+import { type AdminViewer, adminRoleLabel, getAdminViewer } from "@/lib/admin-access";
 
-const NAV_ITEMS = [
-  { label: "Applications", href: "/admin/applications" },
-  { label: "Events", href: "/admin/events" },
-  { label: "Members", href: "/admin/members" },
-  { label: "Exit Admin", href: "/dashboard" },
-] as const;
+type MobileAdminNavLabel =
+  | "Applications"
+  | "Events"
+  | "Academy"
+  | "Members"
+  | "Exit Admin";
 
-/** Sections an application reviewer may reach. Everything else is officer-only. */
-const REVIEWER_NAV_LABELS: readonly string[] = ["Applications", "Exit Admin"];
+/** Mirrors the desktop sidebar: each section declares who may see it. */
+const NAV_ITEMS: readonly {
+  label: MobileAdminNavLabel;
+  href: string;
+  visible: (viewer: AdminViewer | null) => boolean;
+}[] = [
+  { label: "Applications", href: "/admin/applications", visible: (v) => !!v?.canReview },
+  { label: "Events", href: "/admin/events", visible: (v) => !!v?.isAdmin },
+  { label: "Academy", href: "/admin/academy", visible: (v) => !!v?.canManageAcademy },
+  { label: "Members", href: "/admin/members", visible: (v) => !!v?.isAdmin },
+  { label: "Exit Admin", href: "/dashboard", visible: () => true },
+];
 
 type MobileAdminNavProps = {
-  active?: (typeof NAV_ITEMS)[number]["label"];
+  active?: MobileAdminNavLabel;
 };
 
 /** Compact top nav replacing the desktop admin sidebar on narrow screens. */
@@ -23,9 +33,7 @@ export async function MobileAdminNav({ active = "Events" }: MobileAdminNavProps)
   // Reviewers see their program, not "Member" — the role they hold is not the
   // reason they are here.
   const role = adminRoleLabel(viewer);
-  const navItems = viewer?.isReviewerOnly
-    ? NAV_ITEMS.filter((item) => REVIEWER_NAV_LABELS.includes(item.label))
-    : NAV_ITEMS;
+  const navItems = NAV_ITEMS.filter((item) => item.visible(viewer));
 
   return (
     <div className="flex flex-col gap-3">

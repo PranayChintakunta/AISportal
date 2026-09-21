@@ -19,6 +19,12 @@ export const ROLE_MANAGER_ROLES = ["EXECUTIVE", "DIRECTOR"] as const satisfies r
 /** Roles permitted to create, edit or publish program applications. */
 export const APPLICATION_MANAGER_ROLES = ["EXECUTIVE", "DIRECTOR"] as const satisfies readonly UserRole[];
 
+/** Roles that reach Academy admin on role alone, without needing a team. */
+export const ACADEMY_MANAGER_ROLES = ["EXECUTIVE", "DIRECTOR"] as const satisfies readonly UserRole[];
+
+/** The team whose Officers run AI Academy. */
+export const ACADEMY_TEAM = "AI_ACADEMY" as const satisfies TEAM;
+
 /** All valid permission roles. */
 export const ALL_USER_ROLES = ["MEMBER", "OFFICER", "DIRECTOR", "EXECUTIVE"] as const satisfies readonly UserRole[];
 
@@ -92,6 +98,30 @@ export function canManageRoles(role: string | null | undefined): boolean {
 /** Create, edit or publish program applications. Reviewing is a separate axis. */
 export function canManageApplications(role: string | null | undefined): boolean {
   return !!role && (APPLICATION_MANAGER_ROLES as readonly string[]).includes(role);
+}
+
+/**
+ * Whether someone may reach Academy admin.
+ *
+ * Executives and Directors qualify by role. Officers qualify only when their
+ * team affiliation is AI Academy — this is the one place team is load-bearing
+ * rather than decorative, so callers must pass the real User.team value.
+ */
+export function canManageAcademy(
+  role: string | null | undefined,
+  team: TEAM | null | undefined
+): boolean {
+  if (!!role && (ACADEMY_MANAGER_ROLES as readonly string[]).includes(role)) return true;
+  return role === "OFFICER" && team === ACADEMY_TEAM;
+}
+
+/**
+ * Whether someone may publish Academy workshops.
+ *
+ * Mirrors events: Officers draft, Directors and Executives publish.
+ */
+export function canPublishAcademy(role: string | null | undefined): boolean {
+  return !!role && (ACADEMY_MANAGER_ROLES as readonly string[]).includes(role);
 }
 
 export function isAssignableUserRole(value: unknown): value is UserRole {

@@ -59,6 +59,8 @@ enum RSVPStatus {
 enum AttendanceMethod {
   QR_SCAN
   MANUAL
+  /// Earned by passing an Academy workshop's make-up quiz.
+  QUIZ
 }
 
 enum ItemType {
@@ -123,6 +125,9 @@ model User {
   createdApps   ProgramApplication[]
   rsvps         RSVP[]
   attendances   Attendance[]
+  quizAttempts            QuizAttempt[]
+  createdWorkshopContent  WorkshopContent[]  @relation("WorkshopContentCreator")
+  createdAcademyResources AcademyResource[]  @relation("AcademyResourceCreator")
 }
 
 model Profile {
@@ -161,6 +166,7 @@ model File {
   pdfs         ApplicationSubmission[]
   uploadedBy   User?                   @relation(fields: [uploadedById], references: [id])
   resumes      Profile[]
+  academyResources AcademyResource[]
 }
 
 model Event {
@@ -197,6 +203,9 @@ model Event {
   rsvps            RSVP[]
 
   isRsvpOpen       Boolean     @default(true)
+
+  /// Academy-specific extras. Present only on events tagged AI_ACADEMY.
+  workshopContent  WorkshopContent?
 }
 
 model RSVP {
@@ -349,4 +358,88 @@ model AuditLog {
   metadataJson Json?
   createdAt    DateTime @default(now())
   actor        User?    @relation("AuditActor", fields: [actorUserId], references: [id])
+}
+
+// -----------------------------------------------------------------------------
+// AI ACADEMY
+//
+// A workshop is an Event whose `programs` include AI_ACADEMY — that is what
+// carries scheduling, RSVPs, QR check-in and attendance. The models below hold
+// only what is specific to Academy: the recording, the quiz, and resources.
+// -----------------------------------------------------------------------------
+
+model WorkshopContent {
+  id      String @id @default(cuid())
+  eventId String @unique
+  event   Event  @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  /// External link (YouTube, Vimeo, Drive) or an R2 public URL.
+  recordingUrl        String?
+  /// Set only when the video was uploaded directly rather than linked.
+  recordingStorageKey String?
+
+  /// Shown beneath the video on the workshop page.
+  summary   String?
+  quizDueAt DateTime?
+
+  quiz        Quiz?
+  createdById String
+  createdBy   User     @relation("WorkshopContentCreator", fields: [createdById], references: [id])
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Quiz {
+  id                String          @id @default(cuid())
+  workshopContentId String          @unique
+  workshopContent   WorkshopContent @relation(fields: [workshopContentId], references: [id], onDelete: Cascade)
+
+  /// QuizQuestion[] — see src/lib/academy-quiz.ts for the validated shape.
+  questionsJson Json
+  /// Percent required to pass.
+  passingScore  Int     @default(100)
+  isPublished   Boolean @default(false)
+
+  attempts  QuizAttempt[]
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+}
+
+model QuizAttempt {
+  id     String @id @default(cuid())
+  quizId String
+  quiz   Quiz   @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  /// { [questionId]: selectedOptionIndex }
+  answersJson Json
+  /// Percent correct.
+  score       Int
+  passed      Boolean
+  submittedAt DateTime @default(now())
+
+  // Deliberately not unique: retakes are allowed, and "has passed" is a
+  // question about any attempt rather than the latest one.
+  @@index([quizId, userId])
+}
+
+model AcademyResource {
+  id          String  @id @default(cuid())
+  title       String
+  description String?
+  category    String?
+
+  /// Exactly one of href or fileId is set; enforced in the API, not the schema.
+  href   String?
+  fileId String?
+  file   File?   @relation(fields: [fileId], references: [id])
+
+  sortOrder   Int     @default(0)
+  isPublished Boolean @default(false)
+
+  createdById String
+  createdBy   User     @relation("AcademyResourceCreator", fields: [createdById], references: [id])
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }

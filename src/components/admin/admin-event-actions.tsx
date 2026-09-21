@@ -6,14 +6,23 @@ import { Button } from "@/components/ui/button";
 interface EventActionButtonsProps {
   isPublished: boolean;
   userRole?: string;
+  /** Where Cancel returns to. Academy reuses this form on its own route. */
+  cancelHref?: string;
+  /** Noun used in the confirm prompts, e.g. "workshop". */
+  noun?: string;
 }
 
-export function EventActionButtons({ isPublished, userRole }: EventActionButtonsProps) {
+export function EventActionButtons({
+  isPublished,
+  userRole,
+  cancelHref = "/admin/events",
+  noun = "event",
+}: EventActionButtonsProps) {
   const isExecutive = userRole === "EXECUTIVE" || userRole === "DIRECTOR";
 
   const handlePublishClick = (e: React.MouseEvent<HTMLButtonElement>) => {
     const confirmed = window.confirm(
-      "Are you sure you want to publish? This will be visible to all users if so."
+      `Are you sure you want to publish this ${noun}? This will be visible to all users if so.`
     );
     if (!confirmed) {
       e.preventDefault();
@@ -22,7 +31,7 @@ export function EventActionButtons({ isPublished, userRole }: EventActionButtons
 
   const handleUnpublishClick = (e: React.MouseEvent<HTMLButtonElement>) => {
     const confirmed = window.confirm(
-      "Are you sure you want to unpublish? This will stop being visible to all users if so."
+      `Are you sure you want to unpublish this ${noun}? This will stop being visible to all users if so.`
     );
     if (!confirmed) {
       e.preventDefault();
@@ -72,7 +81,7 @@ export function EventActionButtons({ isPublished, userRole }: EventActionButtons
         )}
       </div>
 
-      <Link href="/admin/events" className="w-full">
+      <Link href={cancelHref} className="w-full">
         <Button type="button" variant="ghost" size="md" className="w-full text-ink-faint">
           Cancel
         </Button>

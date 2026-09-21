@@ -1,33 +1,66 @@
-"use client";
-
 import Link from "next/link";
 import { Play } from "lucide-react";
-import { getUpNextWorkshop, isWorkshopPast, type Workshop } from "@/lib/academy-data";
+import {
+  isWorkshopInProgress,
+  isWorkshopPast,
+  type AcademyWorkshopSummary,
+} from "@/lib/academy-content";
 
-type LessonStatus = "completed" | "now-playing" | "coming-up";
-
-function getStatus(workshop: Workshop, nowPlayingId: string): LessonStatus {
-  if (workshop.id === nowPlayingId) return "now-playing";
-  return isWorkshopPast(workshop) ? "completed" : "coming-up";
-}
+type LessonStatus =
+  | "completed"
+  | "make-up-available"
+  | "missed"
+  | "happening-now"
+  | "up-next"
+  | "coming-up";
 
 const STATUS: Record<LessonStatus, { label: string; className: string }> = {
   completed: { label: "Completed", className: "bg-emerald-600 text-white" },
-  "now-playing": { label: "Now Playing", className: "bg-[#2563eb] text-white" },
-  "coming-up": { label: "Coming Up", className: "bg-[#d4af37] text-ink" },
+  "make-up-available": { label: "Watch to Make Up", className: "bg-[#d4af37] text-ink" },
+  missed: { label: "Missed", className: "bg-[#6b7280] text-white" },
+  "happening-now": { label: "Happening Now", className: "bg-[#dc2626] text-white" },
+  "up-next": { label: "Up Next", className: "bg-[#2563eb] text-white" },
+  "coming-up": { label: "Coming Up", className: "bg-[#434655] text-white" },
 };
 
-export function CourseSequence({ workshops }: { workshops: Workshop[] }) {
-  const nowPlaying = getUpNextWorkshop();
+/**
+ * Status reflects the viewer's own standing, not just the calendar — a
+ * workshop is "Completed" because they have attendance credit for it, never
+ * merely because its date has passed.
+ */
+function getStatus(workshop: AcademyWorkshopSummary, upNextId: string | undefined): LessonStatus {
+  if (workshop.hasAttended) return "completed";
+  if (isWorkshopInProgress(workshop)) return "happening-now";
+
+  if (isWorkshopPast(workshop)) {
+    return workshop.hasRecording ? "make-up-available" : "missed";
+  }
+
+  return workshop.id === upNextId ? "up-next" : "coming-up";
+}
+
+export function CourseSequence({ workshops }: { workshops: AcademyWorkshopSummary[] }) {
   const sequence = [...workshops].sort(
     (a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime()
   );
 
+  const upNextId = sequence.find(
+    (w) => !isWorkshopPast(w) && !isWorkshopInProgress(w)
+  )?.id;
+
+  if (sequence.length === 0) {
+    return (
+      <p className="rounded-[20px] border border-dashed border-[#2a2f3a] bg-[#181c25] p-[24px] text-center style-body-text text-white/60">
+        No workshops have been published yet — check back soon.
+      </p>
+    );
+  }
+
   return (
     <div className="flex snap-x snap-mandatory gap-[20px] overflow-x-auto pb-[8px] scrollbar-none">
       {sequence.map((workshop, idx) => {
-        const status = getStatus(workshop, nowPlaying.id);
-        const { label, className } = STATUS[status];
+        const { label, className } = STATUS[getStatus(workshop, upNextId)];
+
         return (
           <Link
             key={workshop.id}
