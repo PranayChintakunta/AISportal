@@ -63,7 +63,7 @@ export default async function WorkshopDetailPage({ params }: WorkshopDetailPageP
             {stage.label}
           </span>
           <h1 className="style-page-title leading-tight text-white">{workshop.title}</h1>
-          <p className="style-body-text mt-[8px] max-w-2xl text-white/75">
+          <p className="style-body-text mt-[8px] max-w-2xl text-white/75 whitespace-pre-wrap">
             {workshop.description}
           </p>
           <div className="mt-[16px] flex flex-wrap items-center gap-x-[24px] gap-y-[8px] style-caption text-white/60">

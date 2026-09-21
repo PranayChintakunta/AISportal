@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { EventCoverImage } from "../events/event-cover-image";
 import { Play } from "lucide-react";
 import {
   isWorkshopInProgress,
@@ -39,7 +40,11 @@ function getStatus(workshop: AcademyWorkshopSummary, upNextId: string | undefine
   return workshop.id === upNextId ? "up-next" : "coming-up";
 }
 
-export function CourseSequence({ workshops }: { workshops: AcademyWorkshopSummary[] }) {
+export function CourseSequence({
+  workshops,
+}: {
+  workshops: (AcademyWorkshopSummary & { imageUrl?: string | null })[];
+}) {
   const sequence = [...workshops].sort(
     (a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime()
   );
@@ -67,20 +72,49 @@ export function CourseSequence({ workshops }: { workshops: AcademyWorkshopSummar
             href={`/academy/workshops/${workshop.id}`}
             className="w-[280px] shrink-0 snap-start"
           >
-            <div className="flex h-full flex-col gap-[12px] rounded-[20px] border border-[#2a2f3a] bg-[#181c25] p-[14px] transition-all duration-200 hover:-translate-y-[2px] hover:border-[#2563eb]/60">
+            <div className="group flex h-full max-h-80 flex-col gap-[12px] rounded-[20px] border border-[#2a2f3a] bg-[#181c25] p-[14px] transition-all duration-200 hover:-translate-y-[2px] hover:border-[#2563eb]/60">
+              
+              {/* Media Container */}
               <div className="relative flex aspect-video items-center justify-center overflow-hidden rounded-[14px] border-[3px] border-[#d4af37] bg-[linear-gradient(135deg,#2f5fe8_0%,#434655_100%)]">
-                <span className="flex size-[52px] items-center justify-center rounded-full bg-white shadow-md">
-                  <Play className="h-5 w-5 fill-[#2563eb] text-[#2563eb]" />
-                </span>
+                {/* Workshop Image */}
+                {(workshop.imageUrl ? 
+                  <EventCoverImage
+                    imageUrl={workshop.imageUrl}
+                    alt={workshop.title}
+                    className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                    fallbackText="WORKSHOP"
+                  /> :
+                  <EventCoverImage
+                    imageUrl={`/images/ais_logo_black-bg.jpg`}
+                    alt={workshop.title}
+                    className="h-full w-full object-cover bg-black transition-transform duration-300 group-hover:scale-105"
+                    fallbackText="WORKSHOP"
+                  />
+                )}
+                {/* Bottom-left Play Button Badge (Only shown when recording is available) */}
+                {workshop.hasRecording && (
+                  <div className="absolute bottom-3 left-3 flex items-center gap-1.5 rounded-full bg-black/70 px-2.5 py-1 backdrop-blur-md transition-transform group-hover:scale-105">
+                    <span className="flex size-6 items-center justify-center rounded-full bg-[#2563eb]">
+                      <Play className="ml-0.5 h-3 w-3 fill-white text-white" />
+                    </span>
+                    <span className="text-[11px] font-semibold text-white tracking-wide">
+                      Watch
+                    </span>
+                  </div>
+                )}
               </div>
 
+              {/* Text Info */}
               <div className="flex flex-col gap-[6px]">
-                <h3 className="style-card-title text-white">
+                <h3 className="style-card-title text-white line-clamp-1">
                   Lesson {idx + 1}: {workshop.title}
                 </h3>
-                <p className="style-caption text-white/70">{workshop.description}</p>
+                <p className="style-caption text-white/70 line-clamp-2">
+                  {workshop.description}
+                </p>
               </div>
 
+              {/* Status Badge */}
               <span className={`w-fit rounded-full px-[12px] py-[6px] style-badge-text ${className}`}>
                 {label}
               </span>

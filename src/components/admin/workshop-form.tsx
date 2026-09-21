@@ -22,8 +22,8 @@ type WorkshopFormProps = {
     endTime?: string;
     capacity?: string;
     status?: string;
-    tags?: string[];
-    items?: WorkshopItemInput[];
+    //tags?: string[];
+    //items?: WorkshopItemInput[];
     summary?: string;
     quizDueAt?: string;
   };
@@ -35,36 +35,36 @@ type WorkshopFormProps = {
  * server sets that rather than offering it as a choice.
  */
 export function WorkshopForm({ tags, defaultValues }: WorkshopFormProps) {
-  const [selectedTags, setSelectedTags] = useState<string[]>(defaultValues?.tags ?? []);
-  const [items, setItems] = useState<WorkshopItemInput[]>(defaultValues?.items ?? []);
+  //const [selectedTags, setSelectedTags] = useState<string[]>(defaultValues?.tags ?? []);
+  //const [items, setItems] = useState<WorkshopItemInput[]>(defaultValues?.items ?? []);
 
-  const toggleTag = (tag: string) => {
-    setSelectedTags((current) =>
-      current.includes(tag) ? current.filter((item) => item !== tag) : [...current, tag]
-    );
-  };
+  // const toggleTag = (tag: string) => {
+  //   setSelectedTags((current) =>
+  //     current.includes(tag) ? current.filter((item) => item !== tag) : [...current, tag]
+  //   );
+  // };
 
-  const addItem = () => {
-    setItems((current) => [...current, { name: "", type: "MEAL" }]);
-  };
+  // const addItem = () => {
+  //   setItems((current) => [...current, { name: "", type: "MEAL" }]);
+  // };
 
-  const removeItem = (index: number) => {
-    setItems((current) => current.filter((_, i) => i !== index));
-  };
+  // const removeItem = (index: number) => {
+  //   setItems((current) => current.filter((_, i) => i !== index));
+  // };
 
-  const updateItem = (index: number, field: keyof WorkshopItemInput, value: string) => {
-    setItems((current) => {
-      const updated = [...current];
-      updated[index] = { ...updated[index], [field]: value };
-      return updated;
-    });
-  };
+  // const updateItem = (index: number, field: keyof WorkshopItemInput, value: string) => {
+  //   setItems((current) => {
+  //     const updated = [...current];
+  //     updated[index] = { ...updated[index], [field]: value };
+  //     return updated;
+  //   });
+  // };
 
   return (
     <div className="flex min-w-px flex-1 flex-col gap-[24px] rounded-[16px] border border-border-soft bg-white p-[31px]">
-      <input type="hidden" name="tags" value={selectedTags.join(",")} />
+      {/* <input type="hidden" name="tags" value={selectedTags.join(",")} /> */}
       <input type="hidden" name="status" value={defaultValues?.status ?? "UPCOMING"} />
-      <input type="hidden" name="eventItems" value={JSON.stringify(items)} />
+      {/* <input type="hidden" name="eventItems" value={JSON.stringify(items)} /> */}
 
       <FormField
         label="Workshop title"
@@ -118,7 +118,7 @@ export function WorkshopForm({ tags, defaultValues }: WorkshopFormProps) {
       </div>
 
       {/* Workshop Items / Perks Section */}
-      <div className="flex flex-col gap-3 border-t border-border-soft pt-5">
+      {/* <div className="flex flex-col gap-3 border-t border-border-soft pt-5">
         <div className="flex items-center justify-between">
           <div>
             <span className="style-body-text leading-[20.3px] text-ink">
@@ -173,10 +173,10 @@ export function WorkshopForm({ tags, defaultValues }: WorkshopFormProps) {
             ))}
           </div>
         )}
-      </div>
+      </div> */}
 
       {/* Tags Section */}
-      <div className="flex w-full flex-col gap-[7px] border-t border-border-soft pt-5">
+      {/* <div className="flex w-full flex-col gap-[7px] border-t border-border-soft pt-5">
         <span className="style-body-text leading-[20.3px] text-ink-muted">Tags</span>
         <div className="flex flex-wrap gap-[8px]">
           {tags.map((t) => {
@@ -199,7 +199,7 @@ export function WorkshopForm({ tags, defaultValues }: WorkshopFormProps) {
             );
           })}
         </div>
-      </div>
+      </div> */}
     </div>
   );
 }

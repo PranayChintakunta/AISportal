@@ -78,6 +78,13 @@ export const TEAM_LABELS: Record<TEAM, string> = {
   EXECUTIVE: "Executive",
 };
 
+export type MembershipItem = {
+  membershipType: MembershipType;
+  activeFlag?: boolean;
+  startDate?: Date | string | null;
+  endDate?: Date | string | null;
+};
+
 /**
  * Whether a value is a valid role recognized by the current schema.
  * Checked against ALL_USER_ROLES so DIRECTORS are recognized as valid.
@@ -98,6 +105,27 @@ export function canManageRoles(role: string | null | undefined): boolean {
 /** Create, edit or publish program applications. Reviewing is a separate axis. */
 export function canManageApplications(role: string | null | undefined): boolean {
   return !!role && (APPLICATION_MANAGER_ROLES as readonly string[]).includes(role);
+}
+
+/**
+ * Checks whether a single membership record is active right now.
+ * Validates activeFlag = true and checks if today falls within startDate and endDate (if set).
+ */
+export function isMembershipActive(m: MembershipItem): boolean {
+  if (m.membershipType !== "AI_ACADEMY") return false;
+  if (m.activeFlag === false) return false;
+
+  const now = new Date();
+
+  if (m.startDate && new Date(m.startDate) > now) {
+    return false;
+  }
+
+  if (m.endDate && new Date(m.endDate) < now) {
+    return false;
+  }
+
+  return true;
 }
 
 /**
@@ -204,4 +232,67 @@ export function canReviewProgramType(
 ): boolean {
   if (allowed === null) return true;
   return !!programType && allowed.includes(programType);
+}
+
+/**
+ * Checks whether a user holds an active AI_ACADEMY membership.
+ *
+ * Accepts either:
+ * 1. An array of Prisma `Membership` objects (e.g. from user.memberships)
+ * 2. An array of simple `MembershipType` strings (assumes active if passed)
+ * 3. A single `Membership` object
+ */
+export function hasActiveAcademyMembership(
+  input:
+    | readonly MembershipItem[]
+    | readonly MembershipType[]
+    | MembershipItem
+    | null
+    | undefined
+): boolean {
+  if (!input) return false;
+
+  // Single Membership Object
+  if (!Array.isArray(input)) {
+    return isMembershipActive(input as MembershipItem);
+  }
+
+  // Array of items
+  return input.some((item) => {
+    if (typeof item === "string") {
+      return item === "AI_ACADEMY";
+    }
+    if (typeof item === "object" && item !== null) {
+      return isMembershipActive(item);
+    }
+    return false;
+  });
+}
+
+/**
+ * Determines whether a user should see and access Academy participant resources.
+ * Granted to:
+ * - Directors & Executives (by role)
+ * - Officers affiliated with the AI_ACADEMY team
+ * - Members with an active AI_ACADEMY membership
+ */
+export function isAcademyParticipant(params: {
+  role: string | null | undefined;
+  team?: TEAM | null | undefined;
+  memberships?: Parameters<typeof hasActiveAcademyMembership>[0];
+}): boolean {
+  const { role, team, memberships } = params;
+
+  // 1. All Directors and Executives
+  if (role === "DIRECTOR" || role === "EXECUTIVE") {
+    return true;
+  }
+
+  // 2. Officers on the AI Academy team
+  if (role === "OFFICER" && team === ACADEMY_TEAM) {
+    return true;
+  }
+
+  // 3. Active AI_ACADEMY membership holders
+  return hasActiveAcademyMembership(memberships);
 }

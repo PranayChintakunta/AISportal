@@ -42,13 +42,13 @@ export default async function EditWorkshopPage({
     redirect("/admin/academy/workshops");
   }
 
-  // const defaultValues = {
-  //   title: workshop.title,
-  //   description: workshop.description ?? "",
-  //   location: workshop.location,
-  //   startTime: utcToChicagoInput(workshop.startTime),
-  //   endTime: utcToChicagoInput(workshop.endTime),
-  // };
+  const defaultValues = {
+    title: workshop.title,
+    description: workshop.description ?? "",
+    location: workshop.location ?? "TBD",
+    startTime: utcToChicagoInput(workshop.startTime),
+    endTime: utcToChicagoInput(workshop.endTime),
+  };
 
   const quiz = workshop.quiz;
   const quizStatus = !quiz
@@ -88,7 +88,7 @@ export default async function EditWorkshopPage({
         >
           <input type="hidden" name="id" value={workshop.id} />
 
-          <WorkshopForm tags={eventTags} />
+          <WorkshopForm tags={eventTags} defaultValues={defaultValues}/>
 
           <div className="flex w-full flex-col gap-5 lg:w-[382px] lg:shrink-0">
             <CoverPhotoCard defaultImageUrl={workshop.imageUrl} />

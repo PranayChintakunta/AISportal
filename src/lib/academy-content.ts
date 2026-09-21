@@ -30,6 +30,7 @@ export type AcademyWorkshopSummary = {
   hasRecording: boolean;
   /** Whether the viewer has attendance credit. False when signed out. */
   hasAttended: boolean;
+  imageUrl: string | null;
 };
 
 export type AcademyQuizAttempt = {
@@ -79,6 +80,7 @@ export async function listAcademyWorkshops(
       startTime: true,
       endTime: true,
       recordingUrl: true,
+      imageUrl: true,
     },
   });
 
@@ -108,6 +110,7 @@ export async function listAcademyWorkshops(
     endTime: w.endTime.toISOString(),
     hasRecording: Boolean(w.recordingUrl),
     hasAttended: attendedIds.has(w.id),
+    imageUrl: w.imageUrl,
   }));
 }
 
@@ -128,6 +131,7 @@ export async function getAcademyWorkshop(
       summary: true,
       quizDueAt: true,
       quiz: { select: { id: true, questionsJson: true, isPublished: true } },
+      imageUrl: true,
     },
   });
 
@@ -184,6 +188,7 @@ export async function getAcademyWorkshop(
     hasRecording: Boolean(workshop.recordingUrl),
     hasAttended: Boolean(attendance),
     recordingUrl: workshop.recordingUrl ?? null,
+    imageUrl: workshop.imageUrl ?? null,
     summary: workshop.summary ?? null,
     quizDueAt: workshop.quizDueAt?.toISOString() ?? null,
     questions: toMemberQuestions(questions),

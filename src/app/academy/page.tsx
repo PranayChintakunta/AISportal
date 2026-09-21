@@ -1,4 +1,5 @@
 import Image from "next/image";
+import { redirect } from "next/navigation";
 import { Navbar } from "@/components/navbar";
 import { Footer } from "@/components/footer";
 import { ScrollReveal } from "@/components/ui/scroll-reveal";
@@ -13,16 +14,34 @@ import {
 } from "@/lib/academy-content";
 import { getAuthenticatedUser } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
+import { canManageRoles, isAdminRole } from "@/lib/roles";
 
 export const dynamic = "force-dynamic";
 
 export default async function AcademyPage() {
   const viewer = await getAuthenticatedUser();
 
+  // 1. Unauthenticated users -> Redirect to login
+  if (!viewer) {
+    redirect("/onboarding?mode=login");
+  }
+
+  const hasActiveAcademyMembership = viewer.memberships.some(
+    (m) => m.membershipType === "AI_ACADEMY" && m.activeFlag
+  );
+
+  const isAcademyMember =
+    hasActiveAcademyMembership ||
+    (viewer.team === "AI_ACADEMY" && viewer.role === "OFFICER" || canManageRoles(viewer.role));
+
+  if (!isAcademyMember) {
+    redirect("/dashboard?error=academy_access_required");
+  }
+
   const [workshops, resources, featured] = await Promise.all([
-    listAcademyWorkshops(viewer?.id ?? null),
+    listAcademyWorkshops(viewer.id),
     listAcademyResources(),
-    getFeaturedWorkshop(viewer?.id ?? null),
+    getFeaturedWorkshop(viewer.id),
   ]);
 
   return (
@@ -54,7 +73,8 @@ export default async function AcademyPage() {
             <Button 
               className="rounded-full border border-[#d4af37] bg-[#d4af37] px-[22px] py-[14px] style-button-text text-ink transition-colors hover:bg-[#c19d2e]"
               variant="accent"
-              href="/id">
+              href="/id"
+            >
               Academy ID
             </Button>
           </div>
@@ -133,7 +153,6 @@ export default async function AcademyPage() {
             </div>
           )}
         </section>
-
       </main>
 
       <Footer />
