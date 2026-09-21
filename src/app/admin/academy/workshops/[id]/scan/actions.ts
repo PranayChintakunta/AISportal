@@ -8,7 +8,6 @@ export async function processWorkshopScan(
   workshopId: string, 
   qrToken: string, // User's ticketToken
   // scanType: "attendance" | "item" = "attendance", 
-  _eventItemId?: string
 ) {
   try {
     // 1. Get the authenticated admin performing the scan
@@ -33,7 +32,6 @@ export async function processWorkshopScan(
       where: {
         OR: [
           { ticketToken: qrToken },
-          { profile: { ticketToken: qrToken } }
         ]
       },
       include: { profile: true },

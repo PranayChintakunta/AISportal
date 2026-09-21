@@ -75,12 +75,6 @@ export default async function WorkshopDetailPage({ params }: WorkshopDetailPageP
               <MapPin className="h-3.5 w-3.5" />
               {workshop.location}
             </span>
-            {!hasStarted && workshop.seatsTotal !== null && (
-              <span className="flex items-center gap-1.5">
-                <Users className="h-3.5 w-3.5" />
-                {workshop.seatsAvailable} / {workshop.seatsTotal} seats available
-              </span>
-            )}
           </div>
         </section>
 

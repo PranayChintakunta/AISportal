@@ -12,7 +12,7 @@ export type AcademyMemberAttendance = {
   membershipStatus: string;
   hasAttended: boolean;
   checkedInAt: Date | null;
-  method: "QUIZ" | "MANUAL" | "QR" | null;
+  method: "QUIZ" | "MANUAL" | "QR_SCAN" | "OFFICER_TICKET_SCAN" | null;
   quizAttempt?: {
     score: number;
     passed: boolean;
@@ -48,12 +48,12 @@ export function WorkshopAttendanceClient({
     if (!matchesSearch) return false;
 
     if (activeTab === "QUIZ") return m.method === "QUIZ";
-    if (activeTab === "LIVE") return m.method === "MANUAL" || m.method === "QR";
+    if (activeTab === "LIVE") return m.method === "MANUAL" || m.method === "QR_SCAN";
     if (activeTab === "ABSENT") return !m.hasAttended;
     return true;
   });
 
-  const liveCount = members.filter((m) => m.method === "MANUAL" || m.method === "QR").length;
+  const liveCount = members.filter((m) => m.method === "MANUAL" || m.method === "QR_SCAN").length;
   const quizCount = members.filter((m) => m.method === "QUIZ").length;
   const totalAttended = liveCount + quizCount;
 
@@ -198,7 +198,7 @@ export function WorkshopAttendanceClient({
                             Quiz Passed (Click to view)
                         </span>
                       )}
-                      {(member.method === "MANUAL" || member.method === "QR") && (
+                      {(member.method === "MANUAL" || member.method === "QR_SCAN") && (
                         <span className="inline-flex items-center gap-1 text-xs font-semibold text-blue-700 bg-blue-50 border border-blue-200 rounded-md px-2 py-0.5">
                             Live Check-In
                         </span>

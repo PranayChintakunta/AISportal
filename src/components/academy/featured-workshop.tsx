@@ -51,12 +51,6 @@ export function FeaturedWorkshop({ workshop }: { workshop: AcademyWorkshopDetail
             <MapPin className="h-3.5 w-3.5" />
             {workshop.location}
           </span>
-          {!started && workshop.seatsTotal !== null && (
-            <span className="flex items-center gap-1.5">
-              <Users className="h-3.5 w-3.5" />
-              {workshop.seatsAvailable} / {workshop.seatsTotal} seats available
-            </span>
-          )}
         </div>
 
         <p className="style-caption mt-[4px] text-white/50">

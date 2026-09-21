@@ -42,14 +42,13 @@ export default async function EditWorkshopPage({
     redirect("/admin/academy/workshops");
   }
 
-  const defaultValues = {
-    title: workshop.title,
-    description: workshop.description ?? "",
-    location: workshop.location,
-    startTime: utcToChicagoInput(workshop.startTime),
-    endTime: utcToChicagoInput(workshop.endTime),
-    capacity: workshop.capacity?.toString() ?? "",
-  };
+  // const defaultValues = {
+  //   title: workshop.title,
+  //   description: workshop.description ?? "",
+  //   location: workshop.location,
+  //   startTime: utcToChicagoInput(workshop.startTime),
+  //   endTime: utcToChicagoInput(workshop.endTime),
+  // };
 
   const quiz = workshop.quiz;
   const quizStatus = !quiz
@@ -59,12 +58,6 @@ export default async function EditWorkshopPage({
       : "Saved, but not yet visible to members.";
 
   const settings: SettingRow[] = [
-    {
-      label: "Allow RSVPs",
-      type: "toggle",
-      name: "isRsvpOpen",
-      defaultOn: workshop.isRsvpOpen ?? true,
-    },
     {
       label: "Workshop Visibility",
       type: "badge",
@@ -95,7 +88,7 @@ export default async function EditWorkshopPage({
         >
           <input type="hidden" name="id" value={workshop.id} />
 
-          <WorkshopForm tags={eventTags} defaultValues={defaultValues} />
+          <WorkshopForm tags={eventTags} />
 
           <div className="flex w-full flex-col gap-5 lg:w-[382px] lg:shrink-0">
             <CoverPhotoCard defaultImageUrl={workshop.imageUrl} />

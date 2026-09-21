@@ -23,12 +23,10 @@ export default async function WorkshopScanPage({
 
   if (!workshop) return notFound();
 
-  const items: { id: string; name: string; type: string }[] = [];
-
   return (
     <>
       <div className="md:hidden">
-        <MobileAdminScan eventTitle={workshop.title} eventId={workshop.id} items={items} />
+        <MobileAdminScan eventTitle={workshop.title} eventId={workshop.id} items={[]} />
       </div>
 
       <div className="hidden md:block">
@@ -43,7 +41,7 @@ export default async function WorkshopScanPage({
           </div>
 
           <div className="mt-4 flex flex-col items-center justify-center">
-            <QRScannerClient eventId={workshop.id} items={items} />
+            <QRScannerClient eventId={workshop.id} items={[]} />
           </div>
         </div>
       </div>
