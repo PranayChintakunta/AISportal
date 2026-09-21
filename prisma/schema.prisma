@@ -110,7 +110,7 @@ model User {
   role                    UserRole                @default(MEMBER)
   team                    TEAM?
   /// Long-standing unique ticket per user used to check in to Academy events
-  ticketToken             String?                 @unique @default(uuid())
+  ticketToken             String                  @unique @default(uuid())
   verifiedAt              DateTime?
   lastLoginAt             DateTime?
   createdAt               DateTime                @default(now())
@@ -182,6 +182,9 @@ model Event {
   status               EventStatus
   capacity             Int?
   visibility           String?
+  visibilityRoles      UserRole[]       @default([MEMBER])
+  visibilityMembership MembershipType[] @default([])
+  visibilityTeams      TEAM[]           @default([])
   imageUrl             String?
   eligibilityRules     Json?
   isPublished          Boolean          @default(false)
