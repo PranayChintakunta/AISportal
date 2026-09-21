@@ -56,7 +56,7 @@ export function FeaturedWorkshop({ workshop }: { workshop: AcademyWorkshopDetail
         <p className="style-caption mt-[4px] text-white/50">
           {isLive
             ? "The recording will appear here once the session wraps up."
-            : "Save your seat now — the recording and make-up quiz land here afterward."}
+            : "Save your seat now. The recording and make-up quiz land here afterward."}
         </p>
       </div>
 

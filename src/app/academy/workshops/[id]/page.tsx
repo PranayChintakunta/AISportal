@@ -80,11 +80,7 @@ export default async function WorkshopDetailPage({ params }: WorkshopDetailPageP
 
         {!showContent ? (
           <div className="rounded-[20px] border border-dashed border-[#2a2f3a] bg-[#181c25] p-[24px] text-center style-body-text text-white/70">
-            This workshop hasn&apos;t started yet. You can{" "}
-            <Link href="/events" className="text-[#7aa2ff] underline">
-              RSVP on the events page
-            </Link>
-            ; the recording and quiz appear here once it begins.
+            This workshop hasn&apos;t started yet. The recording and quiz will appear here post workshop.
           </div>
         ) : !viewer ? (
           <div className="rounded-[20px] border border-dashed border-[#2a2f3a] bg-[#181c25] p-[24px] text-center style-body-text text-white/70">
