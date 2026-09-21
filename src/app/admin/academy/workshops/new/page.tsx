@@ -20,12 +20,6 @@ export default async function CreateWorkshopPage() {
 
   const settings: SettingRow[] = [
     {
-      label: "Allow RSVPs",
-      type: "toggle",
-      name: "isRsvpOpen",
-      defaultOn: true,
-    },
-    {
       label: "Workshop Visibility",
       type: "badge",
       badge: "draft",

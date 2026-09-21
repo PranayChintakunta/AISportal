@@ -12,6 +12,7 @@ import {
   listAcademyWorkshops,
 } from "@/lib/academy-content";
 import { getAuthenticatedUser } from "@/lib/auth";
+import { Button } from "@/components/ui/button";
 
 export const dynamic = "force-dynamic";
 
@@ -50,9 +51,12 @@ export default async function AcademyPage() {
             <button className="rounded-full bg-[#2563eb] px-[22px] py-[14px] style-button-text text-white shadow-[0_5px_14px_rgba(0,0,0,0.5)] transition-colors hover:bg-[#1e4fc7]">
               Browse Courses
             </button>
-            <button className="rounded-full border border-[#d4af37] bg-[#d4af37] px-[22px] py-[14px] style-button-text text-ink transition-colors hover:bg-[#c19d2e]">
-              Get Started
-            </button>
+            <Button 
+              className="rounded-full border border-[#d4af37] bg-[#d4af37] px-[22px] py-[14px] style-button-text text-ink transition-colors hover:bg-[#c19d2e]"
+              variant="accent"
+              href="/id">
+              Academy ID
+            </Button>
           </div>
         </section>
 

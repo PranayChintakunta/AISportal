@@ -59,6 +59,7 @@ enum RSVPStatus {
 enum AttendanceMethod {
   QR_SCAN
   MANUAL
+  OFFICER_TICKET_SCAN
   /// Earned by passing an Academy workshop's make-up quiz.
   QUIZ
 }
@@ -103,31 +104,33 @@ enum MembershipType {
 // -----------------------------------------------------------------------------
 
 model User {
-  id            String                  @id @default(cuid())
-  clerkId       String                  @unique
-  email         String                  @unique
-  role          UserRole                @default(MEMBER)
-  team          TEAM?
-  verifiedAt    DateTime?
-  lastLoginAt   DateTime?
-  createdAt     DateTime                @default(now())
-  updatedAt     DateTime                @updatedAt
-  drafts        ApplicationDraft[]
-  reviews       ApplicationReview[]
-  submissions   ApplicationSubmission[]
-  auditLogs     AuditLog[]              @relation("AuditActor")
-  createdEvents Event[]                 @relation("EventCreator")
-  sentEventReminders    Event[]         @relation("EventReminderSender")
-  uploadedFiles File[]
-  itemScans     ItemScan[]              @relation("ItemScanner")
-  memberships   Membership[]
-  profile       Profile?
-  createdApps   ProgramApplication[]
-  rsvps         RSVP[]
-  attendances   Attendance[]
+  id                      String                  @id @default(cuid())
+  clerkId                 String                  @unique
+  email                   String                  @unique
+  role                    UserRole                @default(MEMBER)
+  team                    TEAM?
+  /// Long-standing unique ticket per user used to check in to Academy events
+  ticketToken             String?                 @unique @default(uuid())
+  verifiedAt              DateTime?
+  lastLoginAt             DateTime?
+  createdAt               DateTime                @default(now())
+  updatedAt               DateTime                @updatedAt
+  drafts                  ApplicationDraft[]
+  reviews                 ApplicationReview[]
+  submissions             ApplicationSubmission[]
+  auditLogs               AuditLog[]              @relation("AuditActor")
+  createdEvents           Event[]                 @relation("EventCreator")
+  createdWorkshops        Workshop[]              @relation("WorkshopCreator")
+  sentEventReminders      Event[]                 @relation("EventReminderSender")
+  uploadedFiles           File[]
+  itemScans               ItemScan[]              @relation("ItemScanner")
+  memberships             Membership[]
+  profile                 Profile?
+  createdApps             ProgramApplication[]
+  rsvps                   RSVP[]
+  attendances             Attendance[]
   quizAttempts            QuizAttempt[]
-  createdWorkshopContent  WorkshopContent[]  @relation("WorkshopContentCreator")
-  createdAcademyResources AcademyResource[]  @relation("AcademyResourceCreator")
+  createdAcademyResources AcademyResource[]       @relation("AcademyResourceCreator")
 }
 
 model Profile {
@@ -156,56 +159,46 @@ model Profile {
 }
 
 model File {
-  id           String                  @id @default(cuid())
-  uploadedById String?
-  fileName     String
-  mimeType     String
-  fileSize     Int
-  storageKey   String
-  createdAt    DateTime                @default(now())
-  pdfs         ApplicationSubmission[]
-  uploadedBy   User?                   @relation(fields: [uploadedById], references: [id])
-  resumes      Profile[]
+  id               String                  @id @default(cuid())
+  uploadedById     String?
+  fileName         String
+  mimeType         String
+  fileSize         Int
+  storageKey       String
+  createdAt        DateTime                @default(now())
+  pdfs             ApplicationSubmission[]
+  uploadedBy       User?                   @relation(fields: [uploadedById], references: [id])
+  resumes          Profile[]
   academyResources AcademyResource[]
 }
 
 model Event {
-  id               String      @id @default(cuid())
-  title            String
-  description      String
-  location         String
-  startTime        DateTime
-  endTime          DateTime
-  status           EventStatus
-  capacity         Int?
-  visibility       String?
-  imageUrl         String?
-  eligibilityRules Json?
-  isPublished      Boolean    @default(false)
-  checkInToken     String     @unique @default(uuid())
-  attendances      Attendance[]
-
-  tags             EventTag[]
-
-  /// Which programs this event counts toward for member status. Empty means a
-  /// general event that counts for everyone.
-  programs         MembershipType[]
-
+  id                   String           @id @default(cuid())
+  title                String
+  description          String
+  location             String
+  startTime            DateTime
+  endTime              DateTime
+  status               EventStatus
+  capacity             Int?
+  visibility           String?
+  imageUrl             String?
+  eligibilityRules     Json?
+  isPublished          Boolean          @default(false)
+  checkInToken         String           @unique @default(uuid())
+  attendances          Attendance[]
+  tags                 EventTag[]
+  programs             MembershipType[]
   lastReminderSentAt   DateTime?
   lastReminderSentById String?
-  lastReminderSentBy   User?   @relation("EventReminderSender", fields: [lastReminderSentById], references: [id])
-
-  createdById      String
-  createdAt        DateTime    @default(now())
-  updatedAt        DateTime    @updatedAt
-  createdBy        User        @relation("EventCreator", fields: [createdById], references: [id])
-  items            EventItem[]
-  rsvps            RSVP[]
-
-  isRsvpOpen       Boolean     @default(true)
-
-  /// Academy-specific extras. Present only on events tagged AI_ACADEMY.
-  workshopContent  WorkshopContent?
+  lastReminderSentBy   User?            @relation("EventReminderSender", fields: [lastReminderSentById], references: [id])
+  createdById          String
+  createdAt            DateTime         @default(now())
+  updatedAt            DateTime         @updatedAt
+  createdBy            User             @relation("EventCreator", fields: [createdById], references: [id])
+  items                EventItem[]
+  rsvps                RSVP[]
+  isRsvpOpen           Boolean          @default(true)
 }
 
 model RSVP {
@@ -226,25 +219,63 @@ model RSVP {
   @@unique([userId, eventId])
 }
 
+// -----------------------------------------------------------------------------
+// AI ACADEMY WORKSHOP (Independent from Event, No RSVPs)
+// -----------------------------------------------------------------------------
+
+model Workshop {
+  id          String      @id @default(cuid())
+  title       String
+  description String
+  location    String?
+  startTime   DateTime
+  endTime     DateTime
+  status      EventStatus @default(UPCOMING)
+  imageUrl    String?
+  isPublished Boolean     @default(false)
+
+  /// Screen check-in token for live sessions
+  checkInToken String @unique @default(uuid())
+
+  /// Media & Content
+  recordingUrl        String?
+  recordingStorageKey String?
+  summary             String?
+  quizDueAt           DateTime?
+
+  /// Relations
+  quiz        Quiz?
+  attendances Attendance[]
+  resources   AcademyResource[]
+
+  createdById String
+  createdBy   User     @relation("WorkshopCreator", fields: [createdById], references: [id])
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
 model Attendance {
-  id          String           @id @default(cuid())
-  checkedInAt DateTime         @default(now())
+  id          String            @id @default(cuid())
+  checkedInAt DateTime          @default(now())
   method      AttendanceMethod?
   qrTokenUsed String?
-  
-  rsvpId      String?          @unique
-  rsvp        RSVP?            @relation(fields: [rsvpId], references: [id], onDelete: SetNull)
-  
-  eventId     String
-  event       Event            @relation(fields: [eventId], references: [id], onDelete: Cascade)
-  
-  userId      String
-  user        User             @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
-  scans       ItemScan[]
 
-  // Ensures a user can only check into a specific event once
+  rsvpId String? @unique
+  rsvp   RSVP?   @relation(fields: [rsvpId], references: [id], onDelete: SetNull)
+
+  eventId String?
+  event   Event?  @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  workshopId String?
+  workshop   Workshop? @relation(fields: [workshopId], references: [id], onDelete: Cascade)
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  scans ItemScan[]
+
   @@unique([userId, eventId])
+  @@unique([userId, workshopId])
 }
 
 model EventItem {
@@ -272,26 +303,26 @@ model ItemScan {
 }
 
 model ProgramApplication {
-  id             String                  @id @default(cuid())
-  title          String
-  description    String
-  roles          String[]                @default([])
-  eligibility    String[]                @default([])
-  questionsJson  Json?
+  id                    String                  @id @default(cuid())
+  title                 String
+  description           String
+  roles                 String[]                @default([])
+  eligibility           String[]                @default([])
+  questionsJson         Json?
   requiredProfileFields Json?
-  programType    ProgramType
-  link           String[]                @default([])
-  openAt         DateTime
-  closeAt        DateTime
-  decisionDate   DateTime?
-  visibleToUsers Boolean                 @default(true)
-  retentionUntil DateTime?
-  createdById    String
-  createdAt      DateTime                @default(now())
-  updatedAt      DateTime                @updatedAt
-  drafts         ApplicationDraft[]
-  submissions    ApplicationSubmission[]
-  createdBy      User                    @relation(fields: [createdById], references: [id])
+  programType           ProgramType
+  link                  String[]                @default([])
+  openAt                DateTime
+  closeAt               DateTime
+  decisionDate          DateTime?
+  visibleToUsers        Boolean                 @default(true)
+  retentionUntil        DateTime?
+  createdById           String
+  createdAt             DateTime                @default(now())
+  updatedAt             DateTime                @updatedAt
+  drafts                ApplicationDraft[]
+  submissions           ApplicationSubmission[]
+  createdBy             User                    @relation(fields: [createdById], references: [id])
 }
 
 model ApplicationDraft {
@@ -361,42 +392,15 @@ model AuditLog {
 }
 
 // -----------------------------------------------------------------------------
-// AI ACADEMY
-//
-// A workshop is an Event whose `programs` include AI_ACADEMY — that is what
-// carries scheduling, RSVPs, QR check-in and attendance. The models below hold
-// only what is specific to Academy: the recording, the quiz, and resources.
+// QUIZ & RESOURCES
 // -----------------------------------------------------------------------------
 
-model WorkshopContent {
-  id      String @id @default(cuid())
-  eventId String @unique
-  event   Event  @relation(fields: [eventId], references: [id], onDelete: Cascade)
-
-  /// External link (YouTube, Vimeo, Drive) or an R2 public URL.
-  recordingUrl        String?
-  /// Set only when the video was uploaded directly rather than linked.
-  recordingStorageKey String?
-
-  /// Shown beneath the video on the workshop page.
-  summary   String?
-  quizDueAt DateTime?
-
-  quiz        Quiz?
-  createdById String
-  createdBy   User     @relation("WorkshopContentCreator", fields: [createdById], references: [id])
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-}
-
 model Quiz {
-  id                String          @id @default(cuid())
-  workshopContentId String          @unique
-  workshopContent   WorkshopContent @relation(fields: [workshopContentId], references: [id], onDelete: Cascade)
+  id         String   @id @default(cuid())
+  workshopId String   @unique
+  workshop   Workshop @relation(fields: [workshopId], references: [id], onDelete: Cascade)
 
-  /// QuizQuestion[] — see src/lib/academy-quiz.ts for the validated shape.
   questionsJson Json
-  /// Percent required to pass.
   passingScore  Int     @default(100)
   isPublished   Boolean @default(false)
 
@@ -412,25 +416,23 @@ model QuizAttempt {
   userId String
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  /// { [questionId]: selectedOptionIndex }
   answersJson Json
-  /// Percent correct.
   score       Int
   passed      Boolean
   submittedAt DateTime @default(now())
 
-  // Deliberately not unique: retakes are allowed, and "has passed" is a
-  // question about any attempt rather than the latest one.
   @@index([quizId, userId])
 }
 
 model AcademyResource {
-  id          String  @id @default(cuid())
+  id         String    @id @default(cuid())
+  workshopId String?
+  workshop   Workshop? @relation(fields: [workshopId], references: [id], onDelete: Cascade)
+
   title       String
   description String?
   category    String?
 
-  /// Exactly one of href or fileId is set; enforced in the API, not the schema.
   href   String?
   fileId String?
   file   File?   @relation(fields: [fileId], references: [id])

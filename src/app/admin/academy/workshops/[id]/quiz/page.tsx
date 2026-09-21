@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { notFound, redirect } from "next/navigation";
+import { notFound } from "next/navigation";
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { AdminSidebar } from "@/components/admin/admin-sidebar";
@@ -19,25 +19,21 @@ export default async function WorkshopQuizPage({
 }) {
   const { id } = await params;
 
-  const workshop = await prisma.event.findUnique({
+  // 1. Query the standalone Workshop model
+  const workshop = await prisma.workshop.findUnique({
     where: { id },
     select: {
       id: true,
       title: true,
-      programs: true,
-      workshopContent: { select: { quiz: true } },
+      quiz: true,
     },
   });
 
   if (!workshop) return notFound();
 
-  if (!workshop.programs.includes("AI_ACADEMY")) {
-    redirect("/admin/academy/workshops");
-  }
+  const quiz = workshop.quiz;
 
-  const quiz = workshop.workshopContent?.quiz;
-
-  // The builder speaks `label`; quizzes store `prompt`. Translate at the edge
+  // 2. The builder speaks `label`; quizzes store `prompt`. Translate at the edge
   // so the shared component doesn't need to know about either domain.
   const initialQuestions: BuilderQuestion[] = parseQuizQuestions(quiz?.questionsJson).map(
     (q) => ({

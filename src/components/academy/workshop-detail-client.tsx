@@ -14,7 +14,7 @@ export function WorkshopDetailClient({ workshop }: { workshop: AcademyWorkshopDe
       {workshop.hasAttended && (
         <div className="flex items-center gap-2 rounded-[14px] border border-emerald-200 bg-[#d2ecd9] px-[16px] py-[12px] style-body-text text-emerald-900">
           <CheckCircle2 className="h-4 w-4 shrink-0" />
-          You already have attendance for this workshop — enjoy the replay.
+          You already have attendance for this workshop! Enjoy the replay.
         </div>
       )}
 

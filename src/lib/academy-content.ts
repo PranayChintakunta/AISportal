@@ -27,8 +27,6 @@ export type AcademyWorkshopSummary = {
   startTime: string;
   /** ISO string. */
   endTime: string;
-  seatsTotal: number | null;
-  seatsAvailable: number | null;
   hasRecording: boolean;
   /** Whether the viewer has attendance credit. False when signed out. */
   hasAttended: boolean;
@@ -65,17 +63,12 @@ export type AcademyResource = {
   href: string;
 };
 
-const WORKSHOP_WHERE = { isPublished: true, programs: { has: "AI_ACADEMY" as const } };
-
-function seatsAvailable(capacity: number | null, taken: number): number | null {
-  if (capacity === null) return null;
-  return Math.max(0, capacity - taken);
-}
+const WORKSHOP_WHERE = { isPublished: true };
 
 export async function listAcademyWorkshops(
   viewerId: string | null
 ): Promise<AcademyWorkshopSummary[]> {
-  const workshops = await prisma.event.findMany({
+  const workshops = await prisma.workshop.findMany({
     where: WORKSHOP_WHERE,
     orderBy: { startTime: "asc" },
     select: {
@@ -85,22 +78,24 @@ export async function listAcademyWorkshops(
       location: true,
       startTime: true,
       endTime: true,
-      capacity: true,
-      workshopContent: { select: { recordingUrl: true } },
-      _count: { select: { rsvps: { where: { status: { not: "CANCELED" } } } } },
+      recordingUrl: true,
     },
   });
 
-  // One query for every workshop the viewer has credit for, rather than a
-  // lookup per card.
+  // Query all workshop attendance credits for the user in a single request
   const attendedIds = viewerId
     ? new Set(
         (
           await prisma.attendance.findMany({
-            where: { userId: viewerId, eventId: { in: workshops.map((w) => w.id) } },
-            select: { eventId: true },
+            where: {
+              userId: viewerId,
+              workshopId: { in: workshops.map((w) => w.id) },
+            },
+            select: { workshopId: true },
           })
-        ).map((a) => a.eventId)
+        )
+          .map((a) => a.workshopId)
+          .filter((id): id is string => id !== null)
       )
     : new Set<string>();
 
@@ -111,9 +106,7 @@ export async function listAcademyWorkshops(
     location: w.location,
     startTime: w.startTime.toISOString(),
     endTime: w.endTime.toISOString(),
-    seatsTotal: w.capacity,
-    seatsAvailable: seatsAvailable(w.capacity, w._count.rsvps),
-    hasRecording: Boolean(w.workshopContent?.recordingUrl),
+    hasRecording: Boolean(w.recordingUrl),
     hasAttended: attendedIds.has(w.id),
   }));
 }
@@ -122,7 +115,7 @@ export async function getAcademyWorkshop(
   id: string,
   viewerId: string | null
 ): Promise<AcademyWorkshopDetail | null> {
-  const workshop = await prisma.event.findFirst({
+  const workshop = await prisma.workshop.findFirst({
     where: { id, ...WORKSHOP_WHERE },
     select: {
       id: true,
@@ -131,31 +124,23 @@ export async function getAcademyWorkshop(
       location: true,
       startTime: true,
       endTime: true,
-      capacity: true,
-      workshopContent: {
-        select: {
-          recordingUrl: true,
-          summary: true,
-          quizDueAt: true,
-          quiz: { select: { id: true, questionsJson: true, isPublished: true } },
-        },
-      },
-      _count: { select: { rsvps: { where: { status: { not: "CANCELED" } } } } },
+      recordingUrl: true,
+      summary: true,
+      quizDueAt: true,
+      quiz: { select: { id: true, questionsJson: true, isPublished: true } },
     },
   });
 
   if (!workshop) return null;
 
-  const content = workshop.workshopContent;
-  const quiz = content?.quiz?.isPublished ? content.quiz : null;
+  const quiz = workshop.quiz?.isPublished ? workshop.quiz : null;
   const questions = quiz ? parseQuizQuestions(quiz.questionsJson) : [];
 
-  // Viewer-specific, so skip these entirely for signed-out visitors rather
-  // than querying with a null user.
+  // Fetch attendance record & latest quiz attempt for signed-in viewer
   const [attendance, attempt] = viewerId
     ? await Promise.all([
-        prisma.attendance.findUnique({
-          where: { userId_eventId: { userId: viewerId, eventId: workshop.id } },
+        prisma.attendance.findFirst({
+          where: { userId: viewerId, workshopId: workshop.id },
           select: { id: true },
         }),
         quiz
@@ -168,13 +153,14 @@ export async function getAcademyWorkshop(
       ])
     : [null, null];
 
-  // Re-grade the stored answers rather than persisting per-question results:
-  // the attempt row keeps what the member picked, and the answer key lives in
-  // exactly one place.
   const latestAttempt: AcademyQuizAttempt | null = attempt
     ? (() => {
         const answers = quizAnswersSchema.safeParse(attempt.answersJson);
-        const graded = gradeQuiz(questions, answers.success ? answers.data : {}, 100);
+        const graded = gradeQuiz(
+          questions,
+          answers.success ? answers.data : {},
+          100
+        );
 
         return {
           score: graded.score,
@@ -195,13 +181,11 @@ export async function getAcademyWorkshop(
     location: workshop.location,
     startTime: workshop.startTime.toISOString(),
     endTime: workshop.endTime.toISOString(),
-    seatsTotal: workshop.capacity,
-    seatsAvailable: seatsAvailable(workshop.capacity, workshop._count.rsvps),
-    hasRecording: Boolean(content?.recordingUrl),
+    hasRecording: Boolean(workshop.recordingUrl),
     hasAttended: Boolean(attendance),
-    recordingUrl: content?.recordingUrl ?? null,
-    summary: content?.summary ?? null,
-    quizDueAt: content?.quizDueAt?.toISOString() ?? null,
+    recordingUrl: workshop.recordingUrl ?? null,
+    summary: workshop.summary ?? null,
+    quizDueAt: workshop.quizDueAt?.toISOString() ?? null,
     questions: toMemberQuestions(questions),
     latestAttempt,
   };
@@ -226,15 +210,14 @@ export async function listAcademyResources(): Promise<AcademyResource[]> {
 /**
  * Picks what to headline on the Academy hub, in order of what a member most
  * needs right now: a session in progress, then the newest replay they can
- * watch, then whatever is scheduled next. Only the middle case has a video,
- * so callers must handle a featured workshop with no recording.
+ * watch, then whatever is scheduled next.
  */
 export async function getFeaturedWorkshop(
   viewerId: string | null
 ): Promise<AcademyWorkshopDetail | null> {
   const now = new Date();
 
-  const happeningNow = await prisma.event.findFirst({
+  const happeningNow = await prisma.workshop.findFirst({
     where: { ...WORKSHOP_WHERE, startTime: { lte: now }, endTime: { gte: now } },
     orderBy: { startTime: "asc" },
     select: { id: true },
@@ -242,11 +225,11 @@ export async function getFeaturedWorkshop(
 
   if (happeningNow) return getAcademyWorkshop(happeningNow.id, viewerId);
 
-  const latestReplay = await prisma.event.findFirst({
+  const latestReplay = await prisma.workshop.findFirst({
     where: {
       ...WORKSHOP_WHERE,
       endTime: { lt: now },
-      workshopContent: { recordingUrl: { not: null } },
+      recordingUrl: { not: null },
     },
     orderBy: { startTime: "desc" },
     select: { id: true },
@@ -254,7 +237,7 @@ export async function getFeaturedWorkshop(
 
   if (latestReplay) return getAcademyWorkshop(latestReplay.id, viewerId);
 
-  const nextUp = await prisma.event.findFirst({
+  const nextUp = await prisma.workshop.findFirst({
     where: { ...WORKSHOP_WHERE, startTime: { gt: now } },
     orderBy: { startTime: "asc" },
     select: { id: true },

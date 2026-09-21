@@ -52,32 +52,19 @@ export async function PUT(
 
   const { questions, passingScore, isPublished } = parsed.data;
 
-  const workshop = await prisma.event.findUnique({
+  const workshop = await prisma.workshop.findUnique({
     where: { id },
-    select: { id: true, programs: true, workshopContent: { select: { id: true } } },
+    select: { id: true },
   });
 
   if (!workshop) {
     return createErrorResponse("Workshop not found.", "NOT_FOUND", 404);
   }
 
-  if (!workshop.programs.includes("AI_ACADEMY")) {
-    return createErrorResponse("This event is not an Academy workshop.", "BAD_REQUEST", 400);
-  }
-
-  // The quiz hangs off WorkshopContent, which may not exist yet if the
-  // workshop predates it or was created without recording details.
-  const content = workshop.workshopContent
-    ? workshop.workshopContent
-    : await prisma.workshopContent.create({
-        data: { eventId: id, createdById: actor.id },
-        select: { id: true },
-      });
-
   const quiz = await prisma.quiz.upsert({
-    where: { workshopContentId: content.id },
+    where: { workshopId: id },
     create: {
-      workshopContentId: content.id,
+      workshopId: id,
       questionsJson: questions,
       passingScore,
       isPublished,

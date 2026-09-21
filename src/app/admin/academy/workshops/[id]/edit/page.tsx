@@ -28,21 +28,14 @@ export default async function EditWorkshopPage({
   const viewer = await getAdminViewer();
   const { id } = await params;
 
-  const workshop = await prisma.event.findUnique({
+  const workshop = await prisma.workshop.findUnique({
     where: { id },
     include: {
-      items: true,
-      workshopContent: { include: { quiz: { select: { isPublished: true } } } },
+      quiz: { select: { isPublished: true } },
     },
   });
 
   if (!workshop) return notFound();
-
-  // Reached by id, so confirm this really is an Academy workshop rather than
-  // an ordinary event the URL happens to point at.
-  if (!workshop.programs.includes("AI_ACADEMY")) {
-    redirect("/admin/academy/workshops");
-  }
 
   // Matches events: officers draft, but cannot revise something already live.
   if (workshop.isPublished && viewer?.role === "OFFICER") {
@@ -56,15 +49,9 @@ export default async function EditWorkshopPage({
     startTime: utcToChicagoInput(workshop.startTime),
     endTime: utcToChicagoInput(workshop.endTime),
     capacity: workshop.capacity?.toString() ?? "",
-    status: workshop.status as string,
-    tags: workshop.tags as string[],
-    items: workshop.items.map((i) => ({
-      name: i.name,
-      type: i.type as "MEAL" | "DRINK" | "MERCH" | "OTHER",
-    })),
   };
 
-  const quiz = workshop.workshopContent?.quiz;
+  const quiz = workshop.quiz;
   const quizStatus = !quiz
     ? "Members who missed this can make up attendance."
     : quiz.isPublished
@@ -113,11 +100,11 @@ export default async function EditWorkshopPage({
           <div className="flex w-full flex-col gap-5 lg:w-[382px] lg:shrink-0">
             <CoverPhotoCard defaultImageUrl={workshop.imageUrl} />
             <RecordingCard
-              defaultRecordingUrl={workshop.workshopContent?.recordingUrl}
-              defaultSummary={workshop.workshopContent?.summary}
+              defaultRecordingUrl={workshop.recordingUrl}
+              defaultSummary={workshop.summary}
               defaultQuizDueAt={
-                workshop.workshopContent?.quizDueAt
-                  ? utcToChicagoInput(workshop.workshopContent.quizDueAt)
+                workshop.quizDueAt
+                  ? utcToChicagoInput(workshop.quizDueAt)
                   : ""
               }
             />

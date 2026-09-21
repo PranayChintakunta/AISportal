@@ -3,6 +3,7 @@ import Link from "next/link";
 const TABS = [
   { label: "Workshops", href: "/admin/academy/workshops" },
   { label: "Resources", href: "/admin/academy/resources" },
+  { label: "Members", href: "/admin/academy/members" },
 ] as const;
 
 export type AcademyTab = (typeof TABS)[number]["label"];

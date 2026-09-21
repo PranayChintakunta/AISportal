@@ -2,7 +2,9 @@ import type { Metadata } from "next";
 import { prisma } from "@/lib/prisma";
 import { AdminSidebar } from "@/components/admin/admin-sidebar";
 import { AcademyTabs } from "@/components/admin/academy-tabs";
+import { StatCard } from "@/components/admin/stat-card";
 import { Button } from "@/components/ui/button";
+import { ConfirmForm } from "@/components/admin/confirm-form";
 import {
   createResource,
   deleteResource,
@@ -17,7 +19,7 @@ export const metadata: Metadata = {
 };
 
 const inputClass =
-  "h-[42px] w-full rounded-lg border border-border-soft bg-white px-3.5 style-body-text text-ink outline-none transition-colors focus:border-brand";
+  "h-[42px] w-full rounded-[12px] border border-border-soft bg-white px-3.5 style-body-text text-ink outline-none transition-colors focus:border-brand";
 
 export default async function AcademyResourcesPage() {
   const resources = await prisma.academyResource.findMany({
@@ -32,29 +34,51 @@ export default async function AcademyResourcesPage() {
     },
   });
 
+  const publishedCount = resources.filter((r) => r.isPublished).length;
+  const draftCount = resources.length - publishedCount;
+  const categoriesCount = new Set(
+    resources.map((r) => r.category).filter(Boolean)
+  ).size;
+
+  const stats = [
+    { value: String(resources.length), label: "total resources" },
+    { value: String(publishedCount), label: "published", highlight: true },
+    { value: String(draftCount), label: "drafts" },
+    { value: String(categoriesCount), label: "categories" },
+  ];
+
   return (
     <div className="flex min-h-screen w-full bg-cream">
       <AdminSidebar active="Academy" />
 
-      <div className="flex h-full flex-1 flex-col gap-[20px] p-[46px]">
+      <div className="flex h-full flex-1 flex-col gap-[28px] p-[46px]">
         <AcademyTabs active="Resources" />
 
-        <div>
-          <h2 className="style-section-header leading-[34.56px] tracking-[-0.4px] text-ink [font-variation-settings:'wdth'_100]">
-            Academy Resources
-          </h2>
-          <p className="style-caption mt-1 text-ink-faint">
-            Guides, cheat sheets, and starter kits listed on the Academy hub. Only published
-            resources are visible to members.
-          </p>
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="style-section-header leading-[34.56px] tracking-[-0.4px] text-ink [font-variation-settings:'wdth'_100]">
+              Academy Resources
+            </h2>
+            <p className="style-caption mt-1 text-ink-faint">
+              Guides, cheat sheets, and starter kits listed on the Academy hub. Only published resources are visible to members.
+            </p>
+          </div>
         </div>
 
-        <div className="flex max-w-4xl flex-col gap-6">
+        {/* Stats Row */}
+        <div className="flex w-full gap-[16px]">
+          {stats.map((s) => (
+            <StatCard key={s.label} {...s} />
+          ))}
+        </div>
+
+        <div className="flex flex-col gap-[28px]">
+          {/* Add Resource Form */}
           <form
             action={createResource}
-            className="flex flex-col gap-4 rounded-2xl border border-border-soft bg-white p-6 shadow-sm"
+            className="flex flex-col gap-5 rounded-[16px] border border-border-soft bg-white p-[24px]"
           >
-            <h3 className="style-body-text text-lg font-semibold text-ink">Add a resource</h3>
+            <h3 className="style-section-header text-ink">Add a Resource</h3>
 
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               <div className="flex flex-col gap-[6px]">
@@ -97,10 +121,7 @@ export default async function AcademyResourcesPage() {
               </div>
 
               <div className="flex flex-col gap-[6px] md:col-span-2">
-                <label
-                  htmlFor="new-description"
-                  className="style-caption font-medium text-ink-muted"
-                >
+                <label htmlFor="new-description" className="style-caption font-medium text-ink-muted">
                   Description
                 </label>
                 <textarea
@@ -108,91 +129,110 @@ export default async function AcademyResourcesPage() {
                   name="description"
                   rows={2}
                   placeholder="One or two sentences on what this is and who it's for."
-                  className="rounded-lg border border-border-soft bg-white p-3.5 style-body-text text-ink outline-none transition-colors focus:border-brand"
+                  className="w-full rounded-[12px] border border-border-soft bg-white p-3.5 style-body-text text-ink outline-none transition-colors focus:border-brand"
                 />
               </div>
             </div>
 
-            <div className="flex justify-end">
-              <Button type="submit" variant="primary" className="h-[42px] px-6">
-                Add resource
+            <div className="flex justify-end pt-2">
+              <Button type="submit" variant="primary" size="md">
+                + Add Resource
               </Button>
             </div>
           </form>
 
-          {resources.length === 0 ? (
-            <p className="rounded-2xl border border-border-soft bg-white p-6 style-body-text text-ink-faint">
-              No resources yet. Add one above and it will appear on the Academy hub once published.
-            </p>
-          ) : (
-            <div className="flex flex-col gap-4">
-              {resources.map((resource, index) => (
+          {/* Resources List */}
+          <div className="flex flex-col gap-[12px]">
+            <h3 className="style-section-header text-ink">
+              All Resources ({resources.length})
+            </h3>
+
+            {resources.length === 0 ? (
+              <p className="rounded-xl border border-dashed border-border-soft p-4 text-center style-caption text-ink-faint">
+                No resources yet. Add one above and it will appear on the Academy hub once published.
+              </p>
+            ) : (
+              resources.map((resource, index) => (
                 <div
                   key={resource.id}
-                  className="flex flex-col gap-4 rounded-2xl border border-border-soft bg-white p-6 shadow-sm"
+                  className="flex flex-col gap-4 rounded-[16px] border border-border-soft bg-white p-[20px]"
                 >
                   <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border-soft/60 pb-3">
                     <div className="flex items-center gap-2">
                       <span
-                        className={`style-caption rounded-full px-2.5 py-1 font-semibold ${
+                        className={`style-caption rounded-full px-3 py-0.5 font-semibold ${
                           resource.isPublished
-                            ? "bg-brand/10 text-brand"
-                            : "bg-row-soft text-ink-faint"
+                            ? "bg-emerald-50 text-emerald-800 border border-emerald-200"
+                            : "bg-slate-100 text-slate-500"
                         }`}
                       >
                         {resource.isPublished ? "Published" : "Draft"}
                       </span>
 
-                      <form action={moveResource}>
-                        <input type="hidden" name="id" value={resource.id} />
-                        <input type="hidden" name="direction" value="up" />
-                        <Button
-                          type="submit"
-                          size="sm"
-                          variant="ghost"
-                          disabled={index === 0}
-                          title="Move up"
-                          className="h-8 w-8 p-0 text-ink-muted disabled:opacity-30"
-                        >
-                          ↑
-                        </Button>
-                      </form>
+                      <div className="flex items-center gap-1 pl-2">
+                        <form action={moveResource}>
+                          <input type="hidden" name="id" value={resource.id} />
+                          <input type="hidden" name="direction" value="up" />
+                          <Button
+                            type="submit"
+                            size="sm"
+                            variant="ghost"
+                            disabled={index === 0}
+                            title="Move up"
+                            className="h-8 w-8 p-0 text-ink-muted disabled:opacity-30"
+                          >
+                            ↑
+                          </Button>
+                        </form>
 
-                      <form action={moveResource}>
-                        <input type="hidden" name="id" value={resource.id} />
-                        <input type="hidden" name="direction" value="down" />
-                        <Button
-                          type="submit"
-                          size="sm"
-                          variant="ghost"
-                          disabled={index === resources.length - 1}
-                          title="Move down"
-                          className="h-8 w-8 p-0 text-ink-muted disabled:opacity-30"
-                        >
-                          ↓
-                        </Button>
-                      </form>
+                        <form action={moveResource}>
+                          <input type="hidden" name="id" value={resource.id} />
+                          <input type="hidden" name="direction" value="down" />
+                          <Button
+                            type="submit"
+                            size="sm"
+                            variant="ghost"
+                            disabled={index === resources.length - 1}
+                            title="Move down"
+                            className="h-8 w-8 p-0 text-ink-muted disabled:opacity-30"
+                          >
+                            ↓
+                          </Button>
+                        </form>
+                      </div>
                     </div>
 
                     <div className="flex items-center gap-2">
-                      <form action={toggleResourcePublished}>
+                      {/* Publish / Unpublish Confirmation Form */}
+                      <ConfirmForm
+                        action={toggleResourcePublished}
+                        confirmMessage={
+                          resource.isPublished
+                            ? `Are you sure you want to unpublish "${resource.title}"? Members will no longer be able to view it.`
+                            : `Are you sure you want to publish "${resource.title}"?`
+                        }
+                      >
                         <input type="hidden" name="id" value={resource.id} />
-                        <Button type="submit" size="sm" variant="outline" className="h-8 px-3">
+                        <Button type="submit" size="sm" variant="ghost">
                           {resource.isPublished ? "Unpublish" : "Publish"}
                         </Button>
-                      </form>
+                      </ConfirmForm>
 
-                      <form action={deleteResource}>
+                      {/* Delete Confirmation Form */}
+                      <ConfirmForm
+                        action={deleteResource}
+                        confirmMessage={`Are you sure you want to delete "${resource.title}"? This action cannot be undone.`}
+                      >
                         <input type="hidden" name="id" value={resource.id} />
                         <Button
                           type="submit"
                           size="sm"
                           variant="ghost"
-                          className="h-8 px-3 style-caption font-semibold text-danger-ink hover:bg-danger-border/20"
+                          className="style-caption font-semibold text-danger-ink hover:bg-danger-border/20"
                         >
                           Delete
                         </Button>
-                      </form>
+                      </ConfirmForm>
                     </div>
                   </div>
 
@@ -238,21 +278,21 @@ export default async function AcademyResourcesPage() {
                           name="description"
                           rows={2}
                           defaultValue={resource.description ?? ""}
-                          className="rounded-lg border border-border-soft bg-white p-3.5 style-body-text text-ink outline-none transition-colors focus:border-brand"
+                          className="w-full rounded-[12px] border border-border-soft bg-white p-3.5 style-body-text text-ink outline-none transition-colors focus:border-brand"
                         />
                       </div>
                     </div>
 
-                    <div className="flex justify-end">
-                      <Button type="submit" size="sm" variant="outline" className="h-[38px] px-5">
+                    <div className="flex justify-end pt-1">
+                      <Button type="submit" size="sm" variant="ghost">
                         Save changes
                       </Button>
                     </div>
                   </form>
                 </div>
-              ))}
-            </div>
-          )}
+              ))
+            )}
+          </div>
         </div>
       </div>
     </div>
