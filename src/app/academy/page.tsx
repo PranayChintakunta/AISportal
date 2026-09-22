@@ -6,6 +6,8 @@ import { ScrollReveal } from "@/components/ui/scroll-reveal";
 import { TopographyBackground } from "@/components/academy/topography-background";
 import { AcademyGradientBackground } from "@/components/academy/gradient-background";
 import { CourseSequence } from "@/components/academy/course-sequence";
+import { VideoNotesPanel } from "@/components/academy/video-notes-panel";
+import { MobileAcademy } from "@/components/mobile/academy/MobileAcademy";
 import { FeaturedWorkshop } from "@/components/academy/featured-workshop";
 import {
   getFeaturedWorkshop,
@@ -45,7 +47,15 @@ export default async function AcademyPage() {
   ]);
 
   return (
-    <div className="relative flex min-h-screen w-full flex-col overflow-x-hidden">
+    <>
+      {/* --- MOBILE VIEW --- */}
+      <div className="md:hidden">
+        <MobileAcademy workshops={workshops} resources={resources} featuredLesson={featuredLesson} />
+      </div>
+
+      {/* --- DESKTOP VIEW --- */}
+      <div className="hidden md:block">
+      <div className="relative flex min-h-screen w-full flex-col overflow-x-hidden">
       <AcademyGradientBackground />
       <Navbar active="Academy" />
 
@@ -67,7 +77,7 @@ export default async function AcademyPage() {
             </p>
           </div>
           <div className="flex shrink-0 items-center gap-[12px]">
-            <button className="rounded-full bg-[#2563eb] px-[22px] py-[14px] style-button-text text-white shadow-[0_5px_14px_rgba(0,0,0,0.5)] transition-colors hover:bg-[#1e4fc7]">
+            <a href="#course-sequence-desktop" className="flex-1 rounded-full bg-[#2563eb] px-4 py-3 style-button-text text-white shadow-[0_5px_14px_rgba(0,0,0,0.5)] transition-colors hover:bg-[#1e4fc7] inline-flex items-center justify-center text-center">
               Browse Courses
             </button>
             <Button 
@@ -106,7 +116,7 @@ export default async function AcademyPage() {
 
         {/* Course Sequence */}
         <ScrollReveal>
-          <section className="flex flex-col gap-[20px]">
+          <section id="course-sequence-desktop" className="flex flex-col gap-[20px]">
             <h2 className="style-section-header uppercase text-white">Course Sequence</h2>
             <CourseSequence workshops={workshops} />
           </section>
@@ -156,6 +166,8 @@ export default async function AcademyPage() {
       </main>
 
       <Footer />
-    </div>
+      </div>
+      </div>
+    </>
   );
 }

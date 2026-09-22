@@ -145,8 +145,6 @@ model Profile {
   major                   String?
   utdEmail                String?
   utdNetId                String?
-  phoneNumber             String?
-  personalEmail           String?
   githubUrl               String?
   linkedinUrl             String?
   portfolioUrl            String?
@@ -154,6 +152,8 @@ model Profile {
   resumeFileId            String?
   createdAt               DateTime                @default(now())
   updatedAt               DateTime                @updatedAt
+  personalEmail           String?
+  phoneNumber             String?
   resumeFile              File?                   @relation(fields: [resumeFileId], references: [id])
   user                    User                    @relation(fields: [userId], references: [id])
 }
@@ -209,12 +209,12 @@ model RSVP {
   userId      String
   eventId     String
   status      RSVPStatus
-  isWalkIn    Boolean     @default(false)
   qrToken     String
   qrExpiresAt DateTime?
   createdAt   DateTime    @default(now())
   updatedAt   DateTime    @updatedAt
   qrPayload   String?
+  isWalkIn    Boolean     @default(false)
   attendance  Attendance?
   event       Event       @relation(fields: [eventId], references: [id])
   user        User        @relation(fields: [userId], references: [id])
