@@ -1,8 +1,10 @@
 import { cache } from "react";
 import { auth } from "@clerk/nextjs/server";
-import type { MembershipType, ProgramType, UserRole } from "@prisma/client";
+import type { MembershipType, ProgramType, TEAM, UserRole } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import {
+  canManageAcademy,
+  canPublishAcademy,
   canReviewApplications,
   isAdminRole,
   isApplicationReviewerOnly,
@@ -12,6 +14,8 @@ import {
 export type AdminViewer = {
   id: string;
   role: UserRole;
+  /** Organizational team. Load-bearing for Academy admin, decorative elsewhere. */
+  team: TEAM | null;
   firstName: string | null;
   lastName: string | null;
   programs: MembershipType[];
@@ -23,6 +27,10 @@ export type AdminViewer = {
   isReviewerOnly: boolean;
   /** Postings they may review; null means unrestricted. */
   allowedProgramTypes: ProgramType[] | null;
+  /** May reach Academy admin — Executive, Director, or an AI Academy Officer. */
+  canManageAcademy: boolean;
+  /** May publish workshops rather than only saving drafts. */
+  canPublishAcademy: boolean;
 };
 
 export const getAdminViewer = cache(async function getAdminViewer(): Promise<AdminViewer | null> {
@@ -34,6 +42,7 @@ export const getAdminViewer = cache(async function getAdminViewer(): Promise<Adm
     select: {
       id: true,
       role: true,
+      team: true,
       profile: { select: { firstName: true, lastName: true, prefName: true } },
       memberships: {
         where: { activeFlag: true },
@@ -51,6 +60,7 @@ export const getAdminViewer = cache(async function getAdminViewer(): Promise<Adm
   return {
     id: user.id,
     role: user.role,
+    team: user.team,
     firstName: user.profile ? user.profile.prefName || user.profile.firstName : null,
     lastName: user.profile?.lastName ?? null,
     programs,
@@ -58,6 +68,8 @@ export const getAdminViewer = cache(async function getAdminViewer(): Promise<Adm
     canReview,
     isReviewerOnly: isApplicationReviewerOnly(user.role, programs),
     allowedProgramTypes: reviewableProgramTypes(user.role, programs),
+    canManageAcademy: canManageAcademy(user.role, user.team),
+    canPublishAcademy: canPublishAcademy(user.role),
   };
 });
 

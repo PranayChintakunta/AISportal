@@ -1,4 +1,5 @@
 import Image from "next/image";
+import { redirect } from "next/navigation";
 import { Navbar } from "@/components/navbar";
 import { Footer } from "@/components/footer";
 import { ScrollReveal } from "@/components/ui/scroll-reveal";
@@ -6,15 +7,45 @@ import { TopographyBackground } from "@/components/academy/topography-background
 import { AcademyGradientBackground } from "@/components/academy/gradient-background";
 import { CourseSequence } from "@/components/academy/course-sequence";
 import { VideoNotesPanel } from "@/components/academy/video-notes-panel";
-import { workshops, resources, featuredLesson } from "@/lib/academy-data";
 import { MobileAcademy } from "@/components/mobile/academy/MobileAcademy";
+import { FeaturedWorkshop } from "@/components/academy/featured-workshop";
+import {
+  getFeaturedWorkshop,
+  listAcademyResources,
+  listAcademyWorkshops,
+} from "@/lib/academy-content";
+import { getAuthenticatedUser } from "@/lib/auth";
+import { Button } from "@/components/ui/button";
+import { canManageRoles, isAdminRole } from "@/lib/roles";
 
-// TODO(academy backend): once Quiz/Resource models exist, replace the
-// `workshops`/`resources` mock imports with real queries filtered by
-// Event.programs containing AI_ACADEMY, and gate an inline-edit affordance
-// here for the Academy director instead of routing them through /admin.
+export const dynamic = "force-dynamic";
 
-export default function AcademyPage() {
+export default async function AcademyPage() {
+  const viewer = await getAuthenticatedUser();
+
+  // 1. Unauthenticated users -> Redirect to login
+  if (!viewer) {
+    redirect("/onboarding?mode=login");
+  }
+
+  const hasActiveAcademyMembership = viewer.memberships.some(
+    (m) => m.membershipType === "AI_ACADEMY" && m.activeFlag
+  );
+
+  const isAcademyMember =
+    hasActiveAcademyMembership ||
+    (viewer.team === "AI_ACADEMY" && viewer.role === "OFFICER" || canManageRoles(viewer.role));
+
+  if (!isAcademyMember) {
+    redirect("/dashboard?error=academy_access_required");
+  }
+
+  const [workshops, resources, featured] = await Promise.all([
+    listAcademyWorkshops(viewer.id),
+    listAcademyResources(),
+    getFeaturedWorkshop(viewer.id),
+  ]);
+
   return (
     <>
       {/* --- MOBILE VIEW --- */}
@@ -48,10 +79,14 @@ export default function AcademyPage() {
           <div className="flex shrink-0 items-center gap-[12px]">
             <a href="#course-sequence-desktop" className="flex-1 rounded-full bg-[#2563eb] px-4 py-3 style-button-text text-white shadow-[0_5px_14px_rgba(0,0,0,0.5)] transition-colors hover:bg-[#1e4fc7] inline-flex items-center justify-center text-center">
               Browse Courses
-            </a>
-            <button className="rounded-full border border-[#d4af37] bg-[#d4af37] px-[22px] py-[14px] style-button-text text-ink transition-colors hover:bg-[#c19d2e]">
-              Get Started
             </button>
+            <Button 
+              className="rounded-full border border-[#d4af37] bg-[#d4af37] px-[22px] py-[14px] style-button-text text-ink transition-colors hover:bg-[#c19d2e]"
+              variant="accent"
+              href="/id"
+            >
+              Academy ID
+            </Button>
           </div>
         </section>
 
@@ -70,11 +105,13 @@ export default function AcademyPage() {
               View all
             </span>
           </div>
-          <VideoNotesPanel
-            title={featuredLesson.title}
-            videoUrl={featuredLesson.videoUrl}
-            notesKey="featured-lesson-3"
-          />
+          {featured ? (
+            <FeaturedWorkshop workshop={featured} />
+          ) : (
+            <p className="rounded-[20px] border border-dashed border-white/20 p-[24px] text-center style-body-text text-white/60">
+              No workshops have been published yet.
+            </p>
+          )}
         </section>
 
         {/* Course Sequence */}
@@ -94,33 +131,39 @@ export default function AcademyPage() {
               learning outside of workshops.
             </p>
           </div>
-          <div className="flex snap-x snap-mandatory gap-[20px] overflow-x-auto pb-[8px] scrollbar-none">
-            {resources.map((resource) => (
-              <a
-                key={resource.id}
-                href={resource.href}
-                className="flex w-[260px] shrink-0 snap-start flex-col gap-[16px] rounded-[20px] border border-[#2a2f3a] bg-[#181c25] p-[16px] transition-all duration-200 hover:-translate-y-[2px] hover:border-[#2563eb]/60"
-              >
-                <div className="flex flex-col gap-[8px]">
-                  <span className="style-card-title text-white">{resource.title}</span>
-                  <span className="style-caption text-white/70">{resource.description}</span>
-                </div>
-                <div className="mt-auto flex flex-wrap gap-[8px]">
-                  {resource.tags.map((tag) => (
-                    <span
-                      key={tag}
-                      className="rounded-full bg-[#2563eb]/15 px-[12px] py-[6px] style-badge-text text-[#9db8ff]"
-                    >
-                      {tag}
-                    </span>
-                  ))}
-                </div>
-              </a>
-            ))}
-          </div>
+          {resources.length === 0 ? (
+            <p className="rounded-[20px] border border-dashed border-white/20 p-[24px] text-center style-body-text text-white/60">
+              No resources have been published yet.
+            </p>
+          ) : (
+            <div className="flex snap-x snap-mandatory gap-[20px] overflow-x-auto pb-[8px] scrollbar-none">
+              {resources.map((resource) => (
+                <a
+                  key={resource.id}
+                  href={resource.href}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="flex w-[260px] shrink-0 snap-start flex-col gap-[16px] rounded-[20px] border border-[#2a2f3a] bg-[#181c25] p-[16px] transition-all duration-200 hover:-translate-y-[2px] hover:border-[#2563eb]/60"
+                >
+                  <div className="flex flex-col gap-[8px]">
+                    <span className="style-card-title text-white">{resource.title}</span>
+                    {resource.description && (
+                      <span className="style-caption text-white/70">{resource.description}</span>
+                    )}
+                  </div>
+                  {resource.category && (
+                    <div className="mt-auto flex flex-wrap gap-[8px]">
+                      <span className="rounded-full bg-[#2563eb]/15 px-[12px] py-[6px] style-badge-text text-[#9db8ff]">
+                        {resource.category}
+                      </span>
+                    </div>
+                  )}
+                </a>
+              ))}
+            </div>
+          )}
         </section>
-        
-         </main>
+      </main>
 
       <Footer />
       </div>

@@ -4,18 +4,17 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { chicagoInputToUtc } from "@/lib/timezone";
+import {
+  APPLICATION_TYPE_OPTIONS,
+  QuestionBuilder,
+  cleanQuestions,
+  createEmptyQuestion,
+  type BuilderQuestion,
+  type BuilderQuestionType,
+} from "@/components/admin/question-builder";
 
-export type QuestionType = "TEXT" | "LONG_TEXT" | "DROPDOWN" | "CHECKBOX" | "FILE";
-
-export type Question = {
-  id: string;
-  label: string;
-  description?: string;
-  type: QuestionType;
-  required: boolean;
-  options: string[];
-  placeholder?: string;
-};
+export type QuestionType = BuilderQuestionType;
+export type Question = BuilderQuestion;
 
 export type ProfileFieldRequirements = {
   requirePhoneNumber: boolean;
@@ -44,110 +43,11 @@ export default function CreateApplicationPage({ embedded = true }: { embedded?: 
     requirePersonalEmail: true,
   });
 
-  const [questions, setQuestions] = useState<Question[]>([
-    {
-      id: "q_init_0",
-      label: "",
-      description: "",
-      type: "TEXT",
-      required: true,
-      options: [""],
-    },
-  ]);
+  const [questions, setQuestions] = useState<Question[]>([createEmptyQuestion("TEXT")]);
 
   const [rolesInput, setRolesInput] = useState("");
   const [eligibilityInput, setEligibilityInput] = useState("");
   const [linkInput, setLinkInput] = useState(""); 
-
-  const createQuestionId = () =>
-    typeof crypto !== "undefined" && crypto.randomUUID
-      ? crypto.randomUUID()
-      : `q_${Date.now()}_${Math.random().toString(36).slice(2, 10)}`;
-
-  const handleDuplicateQuestion = (idToDuplicate: string) => {
-    setQuestions((prevQuestions) => {
-      const index = prevQuestions.findIndex((q) => q.id === idToDuplicate);
-      if (index === -1) return prevQuestions;
-
-      const original = prevQuestions[index];
-
-      const duplicatedQuestion: Question = {
-        ...original,
-        id: createQuestionId(),
-        label: `${original.label} (Copy)`,
-        options: original.options ? [...original.options] : [],
-      };
-
-      const updated = [...prevQuestions];
-      updated.splice(index + 1, 0, duplicatedQuestion);
-      return updated;
-    });
-  };
-
-  function addQuestion() {
-    setQuestions((prev) => [
-      ...prev,
-      {
-        id: createQuestionId(),
-        label: "",
-        description: "",
-        type: "TEXT",
-        required: true,
-        options: [""],
-      },
-    ]);
-  }
-
-  function removeQuestion(qIndex: number) {
-    setQuestions((prev) => prev.filter((_, idx) => idx !== qIndex));
-  }
-
-  function moveQuestion(qIndex: number, direction: "UP" | "DOWN") {
-    const targetIndex = direction === "UP" ? qIndex - 1 : qIndex + 1;
-    if (targetIndex < 0 || targetIndex >= questions.length) return;
-
-    setQuestions((prev) => {
-      const updated = [...prev];
-      const temp = updated[qIndex];
-      updated[qIndex] = updated[targetIndex];
-      updated[targetIndex] = temp;
-      return updated;
-    });
-  }
-
-  function updateQuestion(qIndex: number, fields: Partial<Question>) {
-    setQuestions((prev) =>
-      prev.map((q, idx) => (idx === qIndex ? { ...q, ...fields } : q))
-    );
-  }
-
-  function addOption(qIndex: number) {
-    setQuestions((prev) =>
-      prev.map((q, idx) =>
-        idx === qIndex ? { ...q, options: [...q.options, ""] } : q
-      )
-    );
-  }
-
-  function updateOption(qIndex: number, oIndex: number, value: string) {
-    setQuestions((prev) =>
-      prev.map((q, idx) => {
-        if (idx !== qIndex) return q;
-        const newOptions = [...q.options];
-        newOptions[oIndex] = value;
-        return { ...q, options: newOptions };
-      })
-    );
-  }
-
-  function removeOption(qIndex: number, oIndex: number) {
-    setQuestions((prev) =>
-      prev.map((q, idx) => {
-        if (idx !== qIndex) return q;
-        return { ...q, options: q.options.filter((_, i) => i !== oIndex) };
-      })
-    );
-  }
 
   function handleFormSubmitIntent(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -161,14 +61,7 @@ export default function CreateApplicationPage({ embedded = true }: { embedded?: 
     setSaving(true);
     setError(null);
 
-    const cleanedQuestions = questions.map((q) => ({
-      ...q,
-      description: q.description?.trim() || undefined,
-      options:
-        q.type === "DROPDOWN" || q.type === "CHECKBOX"
-          ? q.options.filter((opt) => opt.trim() !== "")
-          : [],
-    }));
+    const cleanedQuestions = cleanQuestions(questions);
 
     const openAtRaw = pendingFormData.get("openAt") as string;
     const closeAtRaw = pendingFormData.get("closeAt") as string;
@@ -508,178 +401,11 @@ export default function CreateApplicationPage({ embedded = true }: { embedded?: 
               </div>
             </div>
 
-            <div className="flex flex-col gap-4">
-              {questions.map((q, qIndex) => (
-                <div
-                  key={q.id}
-                  className="flex flex-col gap-4 rounded-xl border border-border-soft bg-row-soft p-5 transition-colors"
-                >
-                  <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border-soft/60 pb-3">
-                    <div className="flex items-center gap-1">
-                      <span className="style-caption font-semibold text-ink-muted mr-2">
-                        #{qIndex + 1}
-                      </span>
-                      <Button
-                        type="button"
-                        size="sm"
-                        variant="ghost"
-                        disabled={qIndex === 0}
-                        onClick={() => moveQuestion(qIndex, "UP")}
-                        className="h-8 w-8 p-0 text-ink-muted disabled:opacity-30"
-                        title="Move Up"
-                      >
-                        ↑
-                      </Button>
-                      <Button
-                        type="button"
-                        size="sm"
-                        variant="ghost"
-                        disabled={qIndex === questions.length - 1}
-                        onClick={() => moveQuestion(qIndex, "DOWN")}
-                        className="h-8 w-8 p-0 text-ink-muted disabled:opacity-30"
-                        title="Move Down"
-                      >
-                        ↓
-                      </Button>
-                    </div>
-
-                    <div className="flex items-center gap-3">
-                      <label
-                        htmlFor={`req_${q.id}`}
-                        className="flex items-center gap-2 cursor-pointer select-none"
-                      >
-                        <input
-                          id={`req_${q.id}`}
-                          type="checkbox"
-                          checked={q.required}
-                          onChange={(e) => updateQuestion(qIndex, { required: e.target.checked })}
-                          className="h-4 w-4 rounded accent-brand cursor-pointer"
-                        />
-                        <span className="style-caption font-medium text-ink">Required</span>
-                      </label>
-
-                      <div className="h-4 w-[1px] bg-border-soft" />
-
-                      <Button
-                        type="button"
-                        size="sm"
-                        variant="ghost"
-                        onClick={() => handleDuplicateQuestion(q.id)}
-                        className="h-8 px-2.5 style-caption font-semibold text-ink hover:bg-white"
-                        title="Duplicate Question"
-                      >
-                        Duplicate
-                      </Button>
-
-                      <Button
-                        type="button"
-                        size="sm"
-                        variant="ghost"
-                        disabled={questions.length === 1}
-                        onClick={() => removeQuestion(qIndex)}
-                        className="h-8 px-2.5 style-caption font-semibold text-danger-ink hover:bg-danger-border/20 disabled:opacity-40"
-                      >
-                        Remove
-                      </Button>
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-                    <div className="md:col-span-2 flex flex-col gap-3">
-                      <div className="flex flex-col gap-[6px]">
-                        <label className="style-caption font-medium text-ink-muted">
-                          Question Label
-                        </label>
-                        <input
-                          required
-                          value={q.label}
-                          onChange={(e) => updateQuestion(qIndex, { label: e.target.value })}
-                          placeholder="e.g. What is your academic standing?"
-                          className="h-[42px] w-full rounded-lg border border-border-soft bg-white px-3.5 style-body-text text-ink outline-none transition-colors focus:border-brand"
-                        />
-                      </div>
-
-                      <div className="flex flex-col gap-[6px]">
-                        <label className="style-caption font-medium text-ink-muted">
-                          Subtext / Helper Description (Optional)
-                        </label>
-                        <input
-                          value={q.description ?? ""}
-                          onChange={(e) => updateQuestion(qIndex, { description: e.target.value })}
-                          placeholder="Provide context or guidelines for answering this question..."
-                          className="h-[38px] w-full rounded-lg border border-border-soft bg-white px-3 style-caption text-ink outline-none transition-colors focus:border-brand"
-                        />
-                      </div>
-                    </div>
-
-                    <div className="flex flex-col gap-[6px]">
-                      <label className="style-caption font-medium text-ink-muted">
-                        Input Type
-                      </label>
-                      <select
-                        value={q.type}
-                        onChange={(e) =>
-                          updateQuestion(qIndex, { type: e.target.value as QuestionType })
-                        }
-                        className="h-[42px] w-full rounded-lg border border-border-soft bg-white px-3.5 style-body-text text-ink outline-none transition-colors focus:border-brand"
-                      >
-                        <option value="TEXT">Short Text</option>
-                        <option value="LONG_TEXT">Paragraph Text</option>
-                        <option value="DROPDOWN">Dropdown Menu</option>
-                        <option value="CHECKBOX">Checkboxes</option>
-                        <option value="FILE">File Upload</option>
-                      </select>
-                    </div>
-                  </div>
-
-                  {(q.type === "DROPDOWN" || q.type === "CHECKBOX") && (
-                    <div className="ml-1 border-l-2 border-border-soft pl-4 pt-2 flex flex-col gap-3">
-                      <span className="style-caption font-medium text-ink-muted">
-                        Configured Options
-                      </span>
-                      <div className="flex flex-col gap-2">
-                        {(q.options ?? []).map((option, oIndex) => (
-                          <div key={oIndex} className="flex items-center gap-2">
-                            <input
-                              required
-                              value={option}
-                              onChange={(e) => updateOption(qIndex, oIndex, e.target.value)}
-                              placeholder={`Option ${oIndex + 1}`}
-                              className="h-[38px] flex-1 rounded-lg border border-border-soft bg-white px-3 style-body-text text-ink outline-none transition-colors focus:border-brand"
-                            />
-                            <Button
-                              type="button"
-                              size="sm"
-                              variant="ghost"
-                              disabled={q.options.length === 1}
-                              onClick={() => removeOption(qIndex, oIndex)}
-                              className="h-[38px] w-[38px] p-0 text-ink-muted hover:text-danger-ink disabled:opacity-30"
-                            >
-                              ✕
-                            </Button>
-                          </div>
-                        ))}
-                      </div>
-                      <Button
-                        type="button"
-                        size="sm"
-                        variant="outline"
-                        onClick={() => addOption(qIndex)}
-                        className="w-fit h-[34px] rounded-lg border-border-soft style-caption text-ink"
-                      >
-                        + Add Option
-                      </Button>
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
-
-            <div className="flex justify-center pt-2">
-              <Button type="button" size="sm" variant="outline" onClick={addQuestion}>
-                + Add Question
-              </Button>
-            </div>
+            <QuestionBuilder
+              questions={questions}
+              onChange={setQuestions}
+              typeOptions={APPLICATION_TYPE_OPTIONS}
+            />
           </div>
 
           <div className="flex items-center justify-end gap-3 pt-2">

@@ -1,22 +1,28 @@
 import Link from "next/link";
 import { cn } from "@/lib/utils";
-import { adminRoleLabel, getAdminViewer } from "@/lib/admin-access";
+import { type AdminViewer, adminRoleLabel, getAdminViewer } from "@/lib/admin-access";
 import { Button } from "../ui/button";
 
-const NAV_ITEMS = ["Applications", "Events", "Members", "Exit"] as const;
+export type AdminNavLabel = "Applications" | "Events" | "Academy" | "Members" | "Exit";
 
-/** Sections an application reviewer may reach. Everything else is officer-only. */
-const REVIEWER_NAV_ITEMS: readonly (typeof NAV_ITEMS)[number][] = ["Applications", "Exit"];
-
-const NAV_ROUTES: Record<(typeof NAV_ITEMS)[number], string> = {
-  Applications: "/admin/applications",
-  Events: "/admin/events",
-  Members: "/admin/members",
-  Exit: "/dashboard",
-};
+/**
+ * Each section declares who may see it, so adding a capability-gated section
+ * is a one-line change rather than another parallel allow-list.
+ */
+const NAV_ITEMS: readonly {
+  label: AdminNavLabel;
+  href: string;
+  visible: (viewer: AdminViewer | null) => boolean;
+}[] = [
+  { label: "Applications", href: "/admin/applications", visible: (v) => !!v?.canReview },
+  { label: "Events", href: "/admin/events", visible: (v) => !!v?.isAdmin },
+  { label: "Academy", href: "/admin/academy", visible: (v) => !!v?.canManageAcademy },
+  { label: "Members", href: "/admin/members", visible: (v) => !!v?.isAdmin },
+  { label: "Exit", href: "/dashboard", visible: () => true },
+];
 
 type AdminSidebarProps = {
-  active?: (typeof NAV_ITEMS)[number];
+  active?: AdminNavLabel;
   role?: string;
 };
 
@@ -33,7 +39,7 @@ export async function AdminSidebar({
   // Reviewers see their program, not "Member" — the role they hold is not the
   // reason they are here.
   const displayRole = adminRoleLabel(viewer);
-  const navItems = viewer?.isReviewerOnly ? REVIEWER_NAV_ITEMS : NAV_ITEMS;
+  const navItems = NAV_ITEMS.filter((item) => item.visible(viewer));
 
   const fname = viewer?.firstName;
   const lname = viewer?.lastName;
@@ -49,12 +55,12 @@ export async function AdminSidebar({
       </div>
 
       <nav className="mt-[18px] flex flex-col gap-[6px]">
-        {navItems.map((label) => {
+        {navItems.map(({ label, href }) => {
           const isActive = label === active;
           return (
             <Link
               key={label}
-              href={NAV_ROUTES[label]}
+              href={href}
               className={cn(
                 "rounded-[10px] px-[14px] py-[10px] style-body-text",
                 isActive

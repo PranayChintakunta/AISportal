@@ -9,25 +9,33 @@ import { useAccount } from "@/components/account-provider";
 import Image from "next/image";
 import { isAdminRole } from "@/lib/roles";
 
-const NAV_ITEMS = ["Dashboard", "Events", "Academy", "Apply"] as const;
-const ADMIN_LABEL = "Admin" as const;
-/** Entry point for AIM mentors — reviews applications, nothing else in /admin. */
-const REVIEW_LABEL = "Review" as const;
+const BASE_NAV_ITEMS = ["Dashboard", "Events", "Apply"] as const;
 
-const NAV_ROUTES: Record<(typeof NAV_ITEMS)[number] | typeof ADMIN_LABEL | typeof REVIEW_LABEL, string> = {
+const ADMIN_LABEL = "Admin" as const;
+const REVIEW_LABEL = "Review" as const;
+const ACADEMY_LABEL = "Academy" as const;
+
+const NAV_ROUTES = {
+  Dashboard: "/dashboard",
   Events: "/events",
   Academy: "/academy",
   Apply: "/applications",
-  Dashboard: "/dashboard",
   Admin: "/admin/events",
   Review: "/admin/applications",
-};
+} as const;
 
 const ACTIVE_PILL_GRADIENT = "linear-gradient(135deg, #f2a968 0%, #7d64c4 100%)";
 
+type NavLabel = 
+  | (typeof BASE_NAV_ITEMS)[number]
+  | typeof ACADEMY_LABEL
+  | typeof ADMIN_LABEL
+  | typeof REVIEW_LABEL
+  | "Profile";
+
 type NavbarProps = {
-  /** Which primary link is highlighted. Defaults to the dashboard. */
-  active?: (typeof NAV_ITEMS)[number] | "Profile" | typeof ADMIN_LABEL | typeof REVIEW_LABEL;
+  /** Which primary link is highlighted. Defaults to Dashboard. */
+  active?: NavLabel;
 };
 
 function ActivePill() {
@@ -44,8 +52,6 @@ function ActivePill() {
 export function Navbar({ active = "Dashboard" }: NavbarProps) {
   const { isSignedIn } = useAuth();
   const { user } = useUser();
-  // Resolved on the server by the root layout, so the name is already in the
-  // initial HTML — no post-mount fetch, no "Profile" flash.
   const account = useAccount();
 
   const role =
@@ -54,9 +60,8 @@ export function Navbar({ active = "Dashboard" }: NavbarProps) {
     null;
 
   const showAdminLink = role ? isAdminRole(role) : false;
-  // Only the server-resolved account can know this — it comes from an active
-  // Membership row, which Clerk's session metadata has no concept of.
   const showReviewLink = account?.isReviewerOnly ?? false;
+  const showAcademy = account?.isAcademyParticipant ?? false;
   const accountLabel = account?.firstName?.trim() || user?.firstName?.trim() || "Profile";
 
   const [isScrolled, setIsScrolled] = useState(false);
@@ -83,17 +88,16 @@ export function Navbar({ active = "Dashboard" }: NavbarProps) {
           <Image
             src="/ais_logo_black.png"
             alt="AIS Logo"
-            width={150}               // Explicit width prevents layout shifts
-            height={44}              // Matches your h-[44px] height constraint
+            width={150}
+            height={44}
             className="h-[44px] w-auto object-contain"
-            priority                 // Loads the logo immediately to improve LCP
+            priority
           />
         </Link>
 
-
-        {/* Primary links */}
+        {/* Primary Links */}
         <ul className="flex items-center gap-[8px]">
-          {NAV_ITEMS.map((label) => {
+          {BASE_NAV_ITEMS.map((label) => {
             const isActive = label === active;
             return (
               <li key={label}>
@@ -115,6 +119,23 @@ export function Navbar({ active = "Dashboard" }: NavbarProps) {
             );
           })}
 
+          {/* Conditional Academy Link */}
+          {showAcademy ? (
+            <li>
+              <Link
+                href={NAV_ROUTES.Academy}
+                className={cn(
+                  "relative style-nav-link tracking-[0.5px] px-[24px] py-[10px] rounded-full transition-all duration-200 flex items-center justify-center",
+                  active === ACADEMY_LABEL ? "text-white" : "text-ink hover:bg-gray-100 hover:scale-105"
+                )}
+              >
+                {active === ACADEMY_LABEL && <ActivePill />}
+                Academy
+              </Link>
+            </li>
+          ) : null}
+
+          {/* Conditional Admin Link */}
           {showAdminLink ? (
             <li>
               <Link
@@ -130,8 +151,7 @@ export function Navbar({ active = "Dashboard" }: NavbarProps) {
             </li>
           ) : null}
 
-          {/* AIM mentors: role stays MEMBER, so they never get the Admin pill above —
-              this is their only way into /admin/applications without typing the URL. */}
+          {/* Conditional Review Link */}
           {showReviewLink ? (
             <li>
               <Link
@@ -148,13 +168,10 @@ export function Navbar({ active = "Dashboard" }: NavbarProps) {
           ) : null}
         </ul>
 
-        {/* Account */}
+        {/* Account Section */}
         <div className="flex shrink-0 items-center gap-[11px] self-stretch border-l border-border-soft pl-[25px]">
           <Show when="signed-out">
-            <Link
-              href="/onboarding?mode=login"
-              className="style-nav-link  text-ink-muted"
-            >
+            <Link href="/onboarding?mode=login" className="style-nav-link text-ink-muted">
               Sign In
             </Link>
             <Link

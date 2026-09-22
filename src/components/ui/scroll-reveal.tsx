@@ -17,11 +17,15 @@ export function ScrollReveal({ children, className, delay = 0 }: ScrollRevealPro
   const ref = useRef<HTMLDivElement>(null);
   // Lazy initializer (not an effect) so reduced-motion users skip the
   // hidden->visible transition entirely instead of flashing hidden first.
-  const [visible, setVisible] = useState(
-    () => typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches
-  );
+  const [visible, setVisible] = useState(false);
 
   useEffect(() => {
+    const mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
+    if (mediaQuery.matches) {
+      setVisible(true);
+      return;
+    }
+
     const el = ref.current;
     if (!el || visible) return;
 

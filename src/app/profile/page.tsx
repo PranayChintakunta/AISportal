@@ -23,7 +23,11 @@ export default async function ProfilePage() {
   const user = await prisma.user.findUnique({
     where: { clerkId: clerkUser.id },
     include: {
-      memberships: true,
+      memberships: {
+        where: {
+          activeFlag: true,
+        },
+      },
       profile: {
         include: { resumeFile: true },
       },
