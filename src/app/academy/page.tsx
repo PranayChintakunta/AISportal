@@ -7,6 +7,7 @@ import { AcademyGradientBackground } from "@/components/academy/gradient-backgro
 import { CourseSequence } from "@/components/academy/course-sequence";
 import { VideoNotesPanel } from "@/components/academy/video-notes-panel";
 import { workshops, resources, featuredLesson } from "@/lib/academy-data";
+import { MobileAcademy } from "@/components/mobile/academy/MobileAcademy";
 
 // TODO(academy backend): once Quiz/Resource models exist, replace the
 // `workshops`/`resources` mock imports with real queries filtered by
@@ -15,7 +16,15 @@ import { workshops, resources, featuredLesson } from "@/lib/academy-data";
 
 export default function AcademyPage() {
   return (
-    <div className="relative flex min-h-screen w-full flex-col overflow-x-hidden">
+    <>
+      {/* --- MOBILE VIEW --- */}
+      <div className="md:hidden">
+        <MobileAcademy workshops={workshops} resources={resources} featuredLesson={featuredLesson} />
+      </div>
+
+      {/* --- DESKTOP VIEW --- */}
+      <div className="hidden md:block">
+      <div className="relative flex min-h-screen w-full flex-col overflow-x-hidden">
       <AcademyGradientBackground />
       <Navbar active="Academy" />
 
@@ -37,9 +46,9 @@ export default function AcademyPage() {
             </p>
           </div>
           <div className="flex shrink-0 items-center gap-[12px]">
-            <button className="rounded-full bg-[#2563eb] px-[22px] py-[14px] style-button-text text-white shadow-[0_5px_14px_rgba(0,0,0,0.5)] transition-colors hover:bg-[#1e4fc7]">
+            <a href="#course-sequence-desktop" className="flex-1 rounded-full bg-[#2563eb] px-4 py-3 style-button-text text-white shadow-[0_5px_14px_rgba(0,0,0,0.5)] transition-colors hover:bg-[#1e4fc7] inline-flex items-center justify-center text-center">
               Browse Courses
-            </button>
+            </a>
             <button className="rounded-full border border-[#d4af37] bg-[#d4af37] px-[22px] py-[14px] style-button-text text-ink transition-colors hover:bg-[#c19d2e]">
               Get Started
             </button>
@@ -70,7 +79,7 @@ export default function AcademyPage() {
 
         {/* Course Sequence */}
         <ScrollReveal>
-          <section className="flex flex-col gap-[20px]">
+          <section id="course-sequence-desktop" className="flex flex-col gap-[20px]">
             <h2 className="style-section-header uppercase text-white">Course Sequence</h2>
             <CourseSequence workshops={workshops} />
           </section>
@@ -110,10 +119,12 @@ export default function AcademyPage() {
             ))}
           </div>
         </section>
-
-      </main>
+        
+         </main>
 
       <Footer />
-    </div>
+      </div>
+      </div>
+    </>
   );
 }
