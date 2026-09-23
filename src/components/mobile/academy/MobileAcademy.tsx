@@ -6,6 +6,7 @@ import { VideoNotesPanel } from "@/components/academy/video-notes-panel";
 import { CourseSequence } from "@/components/academy/course-sequence";
 import type { AcademyWorkshopSummary, AcademyResource } from "@/lib/academy-content";
 import { AcademyGradientBackground } from "@/components/academy/gradient-background";
+import { Button } from "@/components/ui/button";
 
 type MobileAcademyProps = {
   workshops: AcademyWorkshopSummary[];
@@ -39,13 +40,13 @@ export function MobileAcademy({ workshops, resources, featuredLesson }: MobileAc
           Weekly workshops to provide resources and teach you everything you need
           to know to start your first AI project.
         </p>
-        <div className="flex w-full items-center gap-3">
-         <a href="#course-sequence-mobile" className="flex-1 rounded-full bg-[#2563eb] px-4 py-3 style-button-text text-white shadow-[0_5px_14px_rgba(0,0,0,0.5)] transition-colors hover:bg-[#1e4fc7] inline-flex items-center justify-center text-center">
+        <div className="flex w-full justify-between gap-3">
+         <Button href="#course-sequence-mobile" variant="primary">
               Browse Courses
-            </a>
-          <button className="flex-1 rounded-full border border-[#d4af37] bg-[#d4af37] px-4 py-3 style-button-text text-ink transition-colors hover:bg-[#c19d2e]">
-            Get Started
-          </button>
+            </Button>
+          <Button variant="accent">
+            Academy ID
+          </Button>
         </div>
       </div>
 
