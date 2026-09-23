@@ -4,15 +4,23 @@ import { BottomNav } from "@/components/mobile/ui/BottomNav";
 import { Footer } from "@/components/footer";
 import { VideoNotesPanel } from "@/components/academy/video-notes-panel";
 import { CourseSequence } from "@/components/academy/course-sequence";
-import type { Workshop, Resource } from "@/lib/academy-data";
+import type { AcademyWorkshopSummary, AcademyResource } from "@/lib/academy-content";
 
 type MobileAcademyProps = {
-  workshops: Workshop[];
-  resources: Resource[];
-  featuredLesson: { title: string; videoUrl: string };
+  workshops: AcademyWorkshopSummary[];
+  resources: AcademyResource[];
+  featuredLesson?: {
+    title: string;
+    videoUrl: string | null;
+    workshopId?: string;
+    userId?: string;
+    completed?: boolean;
+  };
 };
 
 export function MobileAcademy({ workshops, resources, featuredLesson }: MobileAcademyProps) {
+  const safeFeaturedLesson = featuredLesson ?? { title: "Featured workshop", videoUrl: null };
+
   return (
     <MobileScreen backgroundColor="bg-[#0f1117]">
       {/* Intro */}
@@ -51,9 +59,13 @@ export function MobileAcademy({ workshops, resources, featuredLesson }: MobileAc
           </p>
         </div>
         <VideoNotesPanel
-          title={featuredLesson.title}
-          videoUrl={featuredLesson.videoUrl}
+          key={safeFeaturedLesson.workshopId ?? "featured-lesson-3"}
+          title={safeFeaturedLesson.title}
+          videoUrl={safeFeaturedLesson.videoUrl}
           notesKey="featured-lesson-3"
+          workshopId={safeFeaturedLesson.workshopId}
+          userId={safeFeaturedLesson.userId}
+          initiallyCompleted={safeFeaturedLesson.completed}
         />
       </section>
 
@@ -87,16 +99,13 @@ export function MobileAcademy({ workshops, resources, featuredLesson }: MobileAc
                 <span className="style-card-title text-white text-sm">{resource.title}</span>
                 <span className="style-caption text-white/70">{resource.description}</span>
               </div>
-              <div className="mt-auto flex flex-wrap gap-2">
-                {resource.tags.map((tag) => (
-                  <span
-                    key={tag}
-                    className="rounded-full bg-[#2563eb]/15 px-3 py-1.5 style-badge-text text-[#9db8ff] text-xs"
-                  >
-                    {tag}
+              {resource.category && (
+                <div className="mt-auto flex flex-wrap gap-2">
+                  <span className="rounded-full bg-[#2563eb]/15 px-3 py-1.5 style-badge-text text-[#9db8ff] text-xs">
+                    {resource.category}
                   </span>
-                ))}
-              </div>
+                </div>
+              )}
             </a>
           ))}
         </div>

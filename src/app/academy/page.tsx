@@ -50,7 +50,21 @@ export default async function AcademyPage() {
     <>
       {/* --- MOBILE VIEW --- */}
       <div className="md:hidden">
-        <MobileAcademy workshops={workshops} resources={resources} featuredLesson={featuredLesson} />
+        <MobileAcademy
+          workshops={workshops}
+          resources={resources}
+          featuredLesson={
+            featured
+              ? {
+                  title: featured.title,
+                  videoUrl: featured.recordingUrl ?? null,
+                  workshopId: featured.id,
+                  userId: viewer.id,
+                  completed: featured.progressCompleted,
+                }
+              : undefined
+          }
+        />
       </div>
 
       {/* --- DESKTOP VIEW --- */}
@@ -77,10 +91,13 @@ export default async function AcademyPage() {
             </p>
           </div>
           <div className="flex shrink-0 items-center gap-[12px]">
-            <a href="#course-sequence-desktop" className="flex-1 rounded-full bg-[#2563eb] px-4 py-3 style-button-text text-white shadow-[0_5px_14px_rgba(0,0,0,0.5)] transition-colors hover:bg-[#1e4fc7] inline-flex items-center justify-center text-center">
+            <a
+              href="#course-sequence-desktop"
+              className="flex-1 rounded-full bg-[#2563eb] px-4 py-3 style-button-text text-white shadow-[0_5px_14px_rgba(0,0,0,0.5)] transition-colors hover:bg-[#1e4fc7] inline-flex items-center justify-center text-center"
+            >
               Browse Courses
-            </button>
-            <Button 
+            </a>
+            <Button
               className="rounded-full border border-[#d4af37] bg-[#d4af37] px-[22px] py-[14px] style-button-text text-ink transition-colors hover:bg-[#c19d2e]"
               variant="accent"
               href="/id"
