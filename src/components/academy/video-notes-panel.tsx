@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ExternalLink } from "lucide-react";
 import { resolveVideoEmbed } from "@/lib/video-embed";
 
@@ -9,13 +9,140 @@ type VideoNotesPanelProps = {
   videoUrl: string | null;
   /** Distinct key per video so notes don't bleed between lessons. */
   notesKey: string;
+  workshopId?: string;
+  userId?: string;
+  initiallyCompleted?: boolean;
 };
 
-export function VideoNotesPanel({ title, videoUrl, notesKey }: VideoNotesPanelProps) {
+type YouTubePlayer = {
+  getCurrentTime(): number;
+  getDuration(): number;
+  getPlaybackRate(): number;
+  destroy(): void;
+};
+type YouTubeApi = {
+  Player: new (
+    element: HTMLIFrameElement,
+    options: {
+      events: {
+        onReady: (event: { target: YouTubePlayer }) => void;
+        onStateChange: (event: { data: number; target: YouTubePlayer }) => void;
+        onPlaybackRateChange: (event: { target: YouTubePlayer }) => void;
+      };
+    }
+  ) => YouTubePlayer;
+};
+declare global {
+  interface Window {
+    YT?: YouTubeApi;
+    onYouTubeIframeAPIReady?: () => void;
+    academyYouTubeApiPromise?: Promise<void>;
+  }
+}
+
+function loadYouTubeApi(): Promise<void> {
+  if (window.YT?.Player) return Promise.resolve();
+  if (window.academyYouTubeApiPromise) return window.academyYouTubeApiPromise;
+
+  window.academyYouTubeApiPromise = new Promise((resolve) => {
+    const previousCallback = window.onYouTubeIframeAPIReady;
+    window.onYouTubeIframeAPIReady = () => {
+      previousCallback?.();
+      resolve();
+    };
+    if (!document.querySelector('script[src="https://www.youtube.com/iframe_api"]')) {
+      const script = document.createElement("script");
+      script.src = "https://www.youtube.com/iframe_api";
+      document.head.appendChild(script);
+    }
+  });
+  return window.academyYouTubeApiPromise;
+}
+
+export function VideoNotesPanel({
+  title,
+  videoUrl,
+  notesKey,
+  workshopId,
+  userId,
+  initiallyCompleted = false,
+}: VideoNotesPanelProps) {
   const storageKey = `academy-notes:${notesKey}`;
   const [notes, setNotes] = useState("");
+  const [completed, setCompleted] = useState(initiallyCompleted);
+  const iframeRef = useRef<HTMLIFrameElement>(null);
 
   const embed = resolveVideoEmbed(videoUrl);
+  const isYouTube = embed?.kind === "iframe" && embed.src.includes("youtube-nocookie.com/embed/");
+
+  useEffect(() => {
+    setCompleted(initiallyCompleted);
+  }, [initiallyCompleted, workshopId]);
+
+  useEffect(() => {
+    if (!isYouTube || !workshopId || !userId || !iframeRef.current) return;
+    let player: YouTubePlayer | null = null;
+    let heartbeat: ReturnType<typeof setInterval> | null = null;
+    let disposed = false;
+    let lastSentAt = 0;
+
+    const saveProgress = async (target: YouTubePlayer) => {
+      const playbackRate = target.getPlaybackRate();
+      const currentTime = target.getCurrentTime();
+      const duration = target.getDuration();
+      if (!Number.isFinite(playbackRate) || playbackRate <= 0 || duration <= 0) return;
+
+      const watchedSeconds = Math.floor(currentTime);
+      const durationSeconds = Math.floor(duration);
+      if (watchedSeconds >= durationSeconds * 0.5) setCompleted(true);
+      lastSentAt = Date.now();
+      try {
+        await fetch("/api/academy/progress", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ userId, workshopId, watchedSeconds, duration: durationSeconds }),
+          keepalive: true,
+        });
+      } catch {
+        // Playback and the local completion indicator continue if the network is unavailable.
+      }
+    };
+
+    void loadYouTubeApi().then(() => {
+      if (disposed || !iframeRef.current || !window.YT?.Player) return;
+      player = new window.YT.Player(iframeRef.current, {
+        events: {
+          onReady: ({ target }) => {
+            player = target;
+          },
+          onStateChange: ({ data, target }) => {
+            // YT.PlayerState.PLAYING is 1. Save every 10 seconds while playing,
+            // and flush the latest position on pause/end.
+            if (data === 1) {
+              if (heartbeat) clearInterval(heartbeat);
+              heartbeat = setInterval(() => void saveProgress(target), 10_000);
+            } else {
+              if (heartbeat) clearInterval(heartbeat);
+              heartbeat = null;
+              if (data === 2 || data === 0) void saveProgress(target);
+            }
+          },
+          onPlaybackRateChange: ({ target }) => void saveProgress(target),
+        },
+      });
+    });
+
+    const flushOnExit = () => {
+      if (player && Date.now() - lastSentAt > 1_000) void saveProgress(player);
+    };
+    window.addEventListener("pagehide", flushOnExit);
+    return () => {
+      disposed = true;
+      if (heartbeat) clearInterval(heartbeat);
+      window.removeEventListener("pagehide", flushOnExit);
+      player?.destroy();
+    };
+  }, [isYouTube, userId, workshopId]);
 
   // Personal scratch notes only — not admin content, so localStorage is fine
   // here rather than a database round-trip.
@@ -52,7 +179,8 @@ export function VideoNotesPanel({ title, videoUrl, notesKey }: VideoNotesPanelPr
 
           {embed?.kind === "iframe" && (
             <iframe
-              src={embed.src}
+              ref={isYouTube ? iframeRef : undefined}
+              src={isYouTube ? `${embed.src}?enablejsapi=1` : embed.src}
               title={title}
               className="aspect-video w-full bg-black"
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
@@ -82,6 +210,11 @@ export function VideoNotesPanel({ title, videoUrl, notesKey }: VideoNotesPanelPr
           )}
         </div>
         <h3 className="style-card-title uppercase text-white">{title}</h3>
+        {workshopId && (
+          <p aria-live="polite" className="style-caption text-white/60">
+            {completed ? "Video complete" : "Watch at least half of the video to mark it complete."}
+          </p>
+        )}
       </div>
 
       <div className="flex w-full flex-col gap-[8px] rounded-[20px] border-[5px] border-[#d4af37] bg-[#181c25] p-[16px] lg:w-[320px] lg:shrink-0">

@@ -55,7 +55,13 @@ export default async function AcademyPage() {
           resources={resources}
           featuredLesson={
             featured
-              ? { title: featured.title, videoUrl: featured.recordingUrl ?? null }
+              ? {
+                  title: featured.title,
+                  videoUrl: featured.recordingUrl ?? null,
+                  workshopId: featured.id,
+                  userId: viewer.id,
+                  completed: featured.progressCompleted,
+                }
               : undefined
           }
         />

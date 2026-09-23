@@ -21,6 +21,9 @@ export function FeaturedWorkshop({ workshop }: { workshop: AcademyWorkshopDetail
         title={workshop.title}
         videoUrl={workshop.recordingUrl}
         notesKey={workshop.id}
+        workshopId={workshop.id}
+        userId={workshop.viewerId ?? undefined}
+        initiallyCompleted={workshop.progressCompleted}
       />
     );
   }

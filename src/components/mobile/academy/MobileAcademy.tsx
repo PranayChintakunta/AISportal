@@ -9,7 +9,13 @@ import type { AcademyWorkshopSummary, AcademyResource } from "@/lib/academy-cont
 type MobileAcademyProps = {
   workshops: AcademyWorkshopSummary[];
   resources: AcademyResource[];
-  featuredLesson?: { title: string; videoUrl: string | null };
+  featuredLesson?: {
+    title: string;
+    videoUrl: string | null;
+    workshopId?: string;
+    userId?: string;
+    completed?: boolean;
+  };
 };
 
 export function MobileAcademy({ workshops, resources, featuredLesson }: MobileAcademyProps) {
@@ -56,6 +62,9 @@ export function MobileAcademy({ workshops, resources, featuredLesson }: MobileAc
           title={safeFeaturedLesson.title}
           videoUrl={safeFeaturedLesson.videoUrl}
           notesKey="featured-lesson-3"
+          workshopId={safeFeaturedLesson.workshopId}
+          userId={safeFeaturedLesson.userId}
+          initiallyCompleted={safeFeaturedLesson.completed}
         />
       </section>
 

@@ -22,6 +22,9 @@ export function WorkshopDetailClient({ workshop }: { workshop: AcademyWorkshopDe
         title={workshop.title}
         videoUrl={workshop.recordingUrl}
         notesKey={workshop.id}
+        workshopId={workshop.id}
+        userId={workshop.viewerId ?? undefined}
+        initiallyCompleted={workshop.progressCompleted}
       />
 
       {workshop.summary && (
