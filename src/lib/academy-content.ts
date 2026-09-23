@@ -47,7 +47,9 @@ export type AcademyQuizAttempt = {
 };
 
 export type AcademyWorkshopDetail = AcademyWorkshopSummary & {
+  viewerId: string | null;
   recordingUrl: string | null;
+  progressCompleted: boolean;
   summary: string | null;
   /** ISO string. */
   quizDueAt: string | null;
@@ -141,7 +143,7 @@ export async function getAcademyWorkshop(
   const questions = quiz ? parseQuizQuestions(quiz.questionsJson) : [];
 
   // Fetch attendance record & latest quiz attempt for signed-in viewer
-  const [attendance, attempt] = viewerId
+  const [attendance, attempt, videoProgress] = viewerId
     ? await Promise.all([
         prisma.attendance.findFirst({
           where: { userId: viewerId, workshopId: workshop.id },
@@ -154,8 +156,12 @@ export async function getAcademyWorkshop(
               select: { answersJson: true, submittedAt: true, passed: true },
             })
           : null,
+        prisma.videoProgress.findUnique({
+          where: { userId_workshopId: { userId: viewerId, workshopId: workshop.id } },
+          select: { completed: true },
+        }),
       ])
-    : [null, null];
+    : [null, null, null];
 
   const latestAttempt: AcademyQuizAttempt | null = attempt
     ? (() => {
@@ -179,6 +185,7 @@ export async function getAcademyWorkshop(
     : null;
 
   return {
+    viewerId,
     id: workshop.id,
     title: workshop.title,
     description: workshop.description,
@@ -188,6 +195,7 @@ export async function getAcademyWorkshop(
     hasRecording: Boolean(workshop.recordingUrl),
     hasAttended: Boolean(attendance),
     recordingUrl: workshop.recordingUrl ?? null,
+    progressCompleted: videoProgress?.completed ?? false,
     imageUrl: workshop.imageUrl ?? null,
     summary: workshop.summary ?? null,
     quizDueAt: workshop.quizDueAt?.toISOString() ?? null,
