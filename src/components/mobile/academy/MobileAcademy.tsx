@@ -5,6 +5,7 @@ import { Footer } from "@/components/footer";
 import { VideoNotesPanel } from "@/components/academy/video-notes-panel";
 import { CourseSequence } from "@/components/academy/course-sequence";
 import type { AcademyWorkshopSummary, AcademyResource } from "@/lib/academy-content";
+import { AcademyGradientBackground } from "@/components/academy/gradient-background";
 
 type MobileAcademyProps = {
   workshops: AcademyWorkshopSummary[];
@@ -22,7 +23,8 @@ export function MobileAcademy({ workshops, resources, featuredLesson }: MobileAc
   const safeFeaturedLesson = featuredLesson ?? { title: "Featured workshop", videoUrl: null };
 
   return (
-    <MobileScreen backgroundColor="bg-[#0f1117]">
+    <MobileScreen>
+      <AcademyGradientBackground/>
       {/* Intro */}
       <div className="flex flex-col items-start gap-4">
         <Image
