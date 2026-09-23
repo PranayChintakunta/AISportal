@@ -44,7 +44,7 @@ export function MobileAcademy({ workshops, resources, featuredLesson }: MobileAc
          <Button href="#course-sequence-mobile" variant="primary">
               Browse Courses
             </Button>
-          <Button variant="accent">
+          <Button variant="accent" href="/id">
             Academy ID
           </Button>
         </div>
