@@ -19,6 +19,7 @@ export function WorkshopDetailClient({ workshop }: { workshop: AcademyWorkshopDe
       )}
 
       <VideoNotesPanel
+        key={workshop.id}
         title={workshop.title}
         videoUrl={workshop.recordingUrl}
         notesKey={workshop.id}

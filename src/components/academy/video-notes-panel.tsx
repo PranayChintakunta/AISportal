@@ -76,10 +76,6 @@ export function VideoNotesPanel({
   const isYouTube = embed?.kind === "iframe" && embed.src.includes("youtube-nocookie.com/embed/");
 
   useEffect(() => {
-    setCompleted(initiallyCompleted);
-  }, [initiallyCompleted, workshopId]);
-
-  useEffect(() => {
     if (!isYouTube || !workshopId || !userId || !iframeRef.current) return;
     let player: YouTubePlayer | null = null;
     let heartbeat: ReturnType<typeof setInterval> | null = null;

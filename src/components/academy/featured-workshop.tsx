@@ -18,6 +18,7 @@ export function FeaturedWorkshop({ workshop }: { workshop: AcademyWorkshopDetail
   if (workshop.recordingUrl) {
     return (
       <VideoNotesPanel
+        key={workshop.id}
         title={workshop.title}
         videoUrl={workshop.recordingUrl}
         notesKey={workshop.id}

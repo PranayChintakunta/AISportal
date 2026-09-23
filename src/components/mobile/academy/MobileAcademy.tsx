@@ -59,6 +59,7 @@ export function MobileAcademy({ workshops, resources, featuredLesson }: MobileAc
           </p>
         </div>
         <VideoNotesPanel
+          key={safeFeaturedLesson.workshopId ?? "featured-lesson-3"}
           title={safeFeaturedLesson.title}
           videoUrl={safeFeaturedLesson.videoUrl}
           notesKey="featured-lesson-3"
