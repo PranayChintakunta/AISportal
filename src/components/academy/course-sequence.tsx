@@ -107,7 +107,7 @@ export function CourseSequence({
               {/* Text Info */}
               <div className="flex flex-col gap-[6px]">
                 <h3 className="style-card-title text-white line-clamp-1">
-                  Lesson {idx + 1}: {workshop.title}
+                  {idx + 1} - {workshop.title}
                 </h3>
                 <p className="style-caption text-white/70 line-clamp-2">
                   {workshop.description}
