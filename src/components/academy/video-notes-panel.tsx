@@ -205,12 +205,35 @@ export function VideoNotesPanel({
             </div>
           )}
         </div>
-        <h3 className="style-card-title uppercase text-white">{title}</h3>
-        {workshopId && (
-          <p aria-live="polite" className="style-caption text-white/60">
-            {completed ? "Video complete" : "Watch at least half of the video to mark it complete."}
-          </p>
-        )}
+        <div className="mt-1 flex flex-wrap justify-between items-end gap-2 rounded-2xl bg-[#181c25] p-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex flex-col gap-0.5">
+            <span className="text-[10px] font-semibold tracking-wider text-[#d4af37] uppercase">
+              Workshop
+            </span>
+            <h3 className="style-card-title tracking-widest pt-1 uppercase text-white">{title}</h3>
+          </div>
+
+          {workshopId && (
+            <div
+              aria-live="polite"
+              className={`inline-flex w-fit h-fit shrink-0 items-center gap-2 rounded-full px-3.5 py-1.5 text-xs font-medium border transition-colors ${
+                completed
+                  ? "bg-green-500/10 text-checked border-green-500/30"
+                  : "bg-zinc-800/80 text-zinc-400 border-zinc-700/50"
+              }`}
+            >
+              {completed ? (
+                <>
+                 <span>Quiz Available</span>
+                </>
+              ) : (
+                <>
+                  <span>Watch 50% to unlock quiz.</span>
+                </>
+              )}
+            </div>
+          )}
+        </div>
       </div>
 
       <div className="flex w-full flex-col gap-[8px] rounded-[20px] border-[5px] border-[#d4af37] bg-[#181c25] p-[16px] lg:w-[320px] lg:shrink-0">

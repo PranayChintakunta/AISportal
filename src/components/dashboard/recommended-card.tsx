@@ -157,7 +157,7 @@ export function RecommendedCard({ items }: { items: RecommendedItem[] }) {
 
       <div className="flex flex-col gap-[14px] h-auto w-full">
         {displayItems.length === 0 ? (
-          <div className="flex h-[120px] w-full flex-col items-center justify-center gap-[12px] rounded-[8px] border border-dashed border-[#e2ded2] bg-[#f9f8f6]">
+          <div className="flex h-[120px] w-full flex-col items-center justify-center gap-[12px] rounded-[8px] border border-dashed border-ink/15">
             <span className="style-body-text text-ink-faint">
               No upcoming events.
             </span>
