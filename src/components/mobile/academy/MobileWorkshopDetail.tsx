@@ -26,7 +26,7 @@ export function MobileWorkshopDetail({
   isSignedIn,
 }: MobileWorkshopDetailProps) {
   return (
-    <MobileScreen>
+    <MobileScreen withBottomNavPadding={true}>
       <AcademyGradientBackground />
 
       <Link

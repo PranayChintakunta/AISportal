@@ -224,11 +224,11 @@ export function VideoNotesPanel({
             >
               {completed ? (
                 <>
-                 <span>Quiz Available</span>
+                 <span>Watched</span>
                 </>
               ) : (
                 <>
-                  <span>Watch 50% to unlock quiz.</span>
+                  <span>Watch 50% to unlock quiz</span>
                 </>
               )}
             </div>
