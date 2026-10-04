@@ -14,6 +14,7 @@ import {
 } from "@/lib/academy-content";
 import { getAuthenticatedUser } from "@/lib/auth";
 import { formatEventDate } from "@/lib/utils";
+import { prisma } from "@/lib/prisma";
 
 export const dynamic = "force-dynamic";
 
@@ -27,6 +28,21 @@ export default async function WorkshopDetailPage({ params }: WorkshopDetailPageP
   const viewer = await getAuthenticatedUser();
   const workshop = await getAcademyWorkshop(id, viewer?.id ?? null);
   if (!workshop) notFound();
+
+  // Fetch initial video progress if user is signed in
+  let initiallyCompleted = false;
+  if (viewer?.id) {
+    const progress = await prisma.videoProgress.findUnique({
+      where: {
+        userId_workshopId: {
+          userId: viewer.id,
+          workshopId: workshop.id,
+        },
+      },
+      select: { completed: true },
+    });
+    initiallyCompleted = progress?.completed ?? false;
+  }
 
   // Content unlocks as soon as the workshop starts — waiting for its end time
   // hid the recording for the whole session and beyond. A recording posted
@@ -50,6 +66,7 @@ export default async function WorkshopDetailPage({ params }: WorkshopDetailPageP
           stage={stage}
           showContent={showContent}
           isSignedIn={Boolean(viewer)}
+          initiallyWatched={initiallyCompleted}
         />
       </div>
 

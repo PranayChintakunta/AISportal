@@ -12,6 +12,7 @@ type MobileWorkshopDetailProps = {
   stage: { label: string; className: string };
   showContent: boolean;
   isSignedIn: boolean;
+  initiallyWatched: boolean;
 };
 
 /**
@@ -24,6 +25,7 @@ export function MobileWorkshopDetail({
   stage,
   showContent,
   isSignedIn,
+  initiallyWatched,
 }: MobileWorkshopDetailProps) {
   return (
     <MobileScreen withBottomNavPadding={true}>

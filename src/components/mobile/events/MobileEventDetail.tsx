@@ -73,7 +73,7 @@ export async function MobileEventDetail({ eventId }: MobileEventDetailProps) {
     : "bg-white/50 backdrop-blur-md border-white/35 border-2 shadow-sm shadow-ink/15"
 
   return (
-    <MobileScreen>
+    <MobileScreen withBottomNavPadding>
       <Link 
         href="/events" 
         className="inline-flex items-center py-1 style-caption font-bold text-brand transition-opacity hover:opacity-80"
@@ -83,7 +83,7 @@ export async function MobileEventDetail({ eventId }: MobileEventDetailProps) {
 
       <EventCoverImage
         imageUrl={event.imageUrl}
-        className="min-h-55 w-full shrink-0 shadow-sm"
+        className="min-h-20 w-full shrink-0 shadow-sm"
         alt={`${event.title} cover`}
       />
 
@@ -199,10 +199,9 @@ export async function MobileEventDetail({ eventId }: MobileEventDetailProps) {
         )}
       </div>
 
-      {/* Footer Wrapper with Margin Cancellation & Bottom Spacing for Fixed Nav
-      <div className="-mx-5 mt-8 pt-6">
+      <div className="-mx-5 pt-6">
         <Footer />
-      </div> */}
+      </div>
       <BottomNav />
     </MobileScreen>
   );
