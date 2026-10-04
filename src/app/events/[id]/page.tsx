@@ -12,6 +12,7 @@ import { MobileEventDetail } from "@/components/mobile/events/MobileEventDetail"
 import { EventDetailActions, EventQRCode } from "@/components/events/event-detail-actions";
 import { EventCoverImage } from "@/components/events/event-cover-image";
 import { formatEventDate } from "@/lib/utils";
+import { Footer } from "@/components/footer"
 
 export async function generateMetadata({
   params,
@@ -103,7 +104,7 @@ export default async function EventDetailPage({ params }: EventDetailPageProps) 
                   alt={`${event.title} cover`}
                 />
                 
-                <div className="flex flex-col rounded-2xl bg-white/50 backdrop-blur-md border-white/35 border-2 shadow-sm shadow-ink/15 px-6 py-6">
+                <div className="flex flex-col rounded-2xl bg-white/65 backdrop-blur-md ring-white/65 ring-1 shadow-sm shadow-ink/15 px-6 py-6">
                   <div className="flex items-center gap-3">
                     <h1 className="style-section-header leading-[41px] tracking-[-0.4px] text-ink [font-variation-settings:'wdth'_100]">
                       {event.title}
@@ -143,14 +144,14 @@ export default async function EventDetailPage({ params }: EventDetailPageProps) 
                       ? "bg-checked/55 border-2 border-green/35 backdrop-blur-md shadow-sm shadow-ink/15"
                       : isRsvpd
                       ? "bg-danger-ink/20 border-2 border-danger-ink/35 backdrop-blur-md shadow-sm shadow-ink/15"
-                      : "bg-white/50 backdrop-blur-md border-white/35 border-2 shadow-sm shadow-ink/15"
+                      : "bg-white/50 backdrop-blur-md ring-white/65 ring-2 shadow-sm shadow-ink/15"
                     : attended
                     ? "bg-checked/55 border-2 border-green/35 backdrop-blur-md shadow-sm shadow-ink/15"
                     : isRsvpd
                     ? "bg-checked/55 border-2 border-green/35 backdrop-blur-md shadow-sm shadow-ink/15"
                     : !isRsvpOpen
                     ? "bg-amber-50/50 border-2 border-amber-200/35 backdrop-blur-md shadow-sm shadow-ink/15"
-                    : "bg-white/50 backdrop-blur-md border-white/35 border-2 shadow-sm shadow-ink/15"
+                    : "bg-white/50 backdrop-blur-md ring-white/65 ring-2 shadow-sm shadow-ink/15"
                 }`}
               >
                 {isPast ? (
@@ -239,6 +240,7 @@ export default async function EventDetailPage({ params }: EventDetailPageProps) 
           </div>
         </div>
       </div>
+      <Footer />
     </>
   );
 }
