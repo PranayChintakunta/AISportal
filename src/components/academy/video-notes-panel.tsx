@@ -239,7 +239,7 @@ export function VideoNotesPanel({
 
             {/* --- QUIZ BUTTON ADDED HERE --- */}
             <Button
-              variant="accent" // Use your accent variant which handles the gold style cleanly
+              variant="accent"
               disabled={!completed}
               href={quizUrl}
               title={completed ? "Take the quiz" : "Watch at least 50% of the video to unlock the quiz"}
