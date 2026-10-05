@@ -238,7 +238,7 @@ export function VideoNotesPanel({
             )}
 
             {/* --- QUIZ BUTTON ADDED HERE --- */}
-            <Button
+            {/*<Button
               variant="accent"
               disabled={!completed}
               href={quizUrl}
@@ -246,7 +246,7 @@ export function VideoNotesPanel({
             >
               <HelpCircle className="h-4 w-4" />
               <span>Take Quiz</span>
-            </Button>
+            </Button> */}
           </div>
         </div>
       </div>
