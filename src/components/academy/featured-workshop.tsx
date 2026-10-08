@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { Calendar, MapPin, Users } from "lucide-react";
+import { Calendar, MapPin } from "lucide-react";
+import { WorkshopQuizPanel } from "@/components/academy/workshop-quiz-panel";
 import { VideoNotesPanel } from "@/components/academy/video-notes-panel";
 import {
   hasWorkshopStarted,
@@ -17,15 +18,18 @@ import { formatEventDate } from "@/lib/utils";
 export function FeaturedWorkshop({ workshop }: { workshop: AcademyWorkshopDetail }) {
   if (workshop.recordingUrl) {
     return (
-      <VideoNotesPanel
-        key={workshop.id}
-        title={workshop.title}
-        videoUrl={workshop.recordingUrl}
-        notesKey={workshop.id}
-        workshopId={workshop.id}
-        userId={workshop.viewerId ?? undefined}
-        quizUrl={`/academy/workshops/${workshop.id}/quiz`}
-      />
+      <div className="flex flex-col gap-[24px]">
+        <VideoNotesPanel
+          key={workshop.id}
+          title={workshop.title}
+          videoUrl={workshop.recordingUrl}
+          notesKey={workshop.id}
+          workshopId={workshop.id}
+          userId={workshop.viewerId ?? undefined}
+          quizUrl={`/academy/workshops/${workshop.id}/quiz`}
+        />
+        <WorkshopQuizPanel workshop={workshop} />
+      </div>
     );
   }
 
