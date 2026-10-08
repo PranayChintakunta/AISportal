@@ -62,7 +62,7 @@ export function FeaturedWorkshop({ workshop }: { workshop: AcademyWorkshopDetail
         <p className="style-caption mt-[4px] text-white/50">
           {isLive
             ? "The recording will appear here after the workshop!"
-            : "The quiz and recording will show up soon! Look out for the announcement on Discord."}
+            : "The recording will show up soon! Look out for the announcement on Discord."}
         </p>
       </div>
 
