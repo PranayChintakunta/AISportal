@@ -3,6 +3,7 @@ import { MobileScreen } from "@/components/mobile/ui/MobileScreen";
 import { BottomNav } from "@/components/mobile/ui/BottomNav";
 import { Footer } from "@/components/footer";
 import { VideoNotesPanel } from "@/components/academy/video-notes-panel";
+import { WorkshopQuizPanel } from "@/components/academy/workshop-quiz-panel";
 import { CourseSequence } from "@/components/academy/course-sequence";
 import type { AcademyWorkshopSummary, AcademyResource } from "@/lib/academy-content";
 import { AcademyGradientBackground } from "@/components/academy/gradient-background";
