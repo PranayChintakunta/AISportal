@@ -5,6 +5,84 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { checkInUserLive } from "@/app/admin/academy/workshops/[id]/attendance/actions";
 
+// ─── CSV Export ───────────────────────────────────────────────────────────────
+
+const EXPORT_FIELDS = [
+  { id: "name",            label: "Full Name" },
+  { id: "email",           label: "Email" },
+  { id: "personalEmail",   label: "Personal Email" },
+  { id: "utdNetId",        label: "UTD NetID" },
+  { id: "attended",        label: "Attended" },
+  { id: "method",          label: "Attendance Method" },
+  { id: "checkedInAt",     label: "Check-in Time" },
+  { id: "quizPassed",      label: "Quiz Passed" },
+  { id: "quizScore",       label: "Quiz Score" },
+  { id: "quizCompletedAt", label: "Quiz Completed At" },
+];
+
+const DEFAULT_EXPORT_FIELDS = [
+  "name", "email", "personalEmail", "utdNetId",
+  "attended", "method", "checkedInAt",
+  "quizPassed", "quizScore", "quizCompletedAt",
+];
+
+const CDT_FMT = new Intl.DateTimeFormat("en-US", {
+  timeZone: "America/Chicago",
+  month: "short", day: "numeric", year: "numeric",
+  hour: "numeric", minute: "2-digit", timeZoneName: "short",
+});
+
+function formatMethod(method: string | null) {
+  if (!method) return "";
+  const map: Record<string, string> = {
+    QUIZ: "Quiz",
+    MANUAL: "Manual / Live",
+    QR_SCAN: "QR Scan",
+    OFFICER_TICKET_SCAN: "Officer Ticket Scan",
+  };
+  return map[method] ?? method;
+}
+
+function buildCsv(
+  members: AcademyMemberAttendance[],
+  selectedFields: string[],
+  workshopTitle: string,
+) {
+  const headers = selectedFields
+    .map((id) => EXPORT_FIELDS.find((f) => f.id === id)?.label ?? id)
+    .map((h) => `"${h.replace(/"/g, '""')}"`)
+    .join(",");
+
+  const rows = members.map((m) => {
+    return selectedFields.map((id) => {
+      let val = "";
+      if (id === "name")            val = m.name;
+      else if (id === "email")           val = m.email;
+      else if (id === "personalEmail")   val = (m as AcademyMemberAttendanceExt).personalEmail ?? "";
+      else if (id === "utdNetId")        val = (m as AcademyMemberAttendanceExt).utdNetId ?? "";
+      else if (id === "attended")        val = m.hasAttended ? "Yes" : "No";
+      else if (id === "method")          val = formatMethod(m.method);
+      else if (id === "checkedInAt")     val = m.checkedInAt ? CDT_FMT.format(new Date(m.checkedInAt)) : "";
+      else if (id === "quizPassed")      val = m.quizAttempt ? (m.quizAttempt.passed ? "Yes" : "No") : "";
+      else if (id === "quizScore")       val = m.quizAttempt ? String(m.quizAttempt.score) : "";
+      else if (id === "quizCompletedAt") val = m.quizAttempt ? CDT_FMT.format(new Date(m.quizAttempt.completedAt)) : "";
+      return `"${val.replace(/"/g, '""')}"`;
+    }).join(",");
+  });
+
+  return [headers, ...rows].join("\n");
+}
+
+function downloadCsv(content: string, filename: string) {
+  const blob = new Blob([content], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
 export type AcademyMemberAttendance = {
   userId: string;
   name: string;
@@ -19,6 +97,12 @@ export type AcademyMemberAttendance = {
     completedAt: Date;
     answersCount: number;
   } | null;
+};
+
+// Extended with optional profile fields passed from the server
+type AcademyMemberAttendanceExt = AcademyMemberAttendance & {
+  personalEmail?: string | null;
+  utdNetId?: string | null;
 };
 
 type Props = {
@@ -37,6 +121,7 @@ export function WorkshopAttendanceClient({
   const [search, setSearch] = useState("");
   const [activeTab, setActiveTab] = useState<"ALL" | "QUIZ" | "LIVE" | "ABSENT">("ALL");
   const [selectedMember, setSelectedMember] = useState<AcademyMemberAttendance | null>(null);
+  const [showExportModal, setShowExportModal] = useState(false);
   const [isPending, startTransition] = useTransition();
 
   // Filter members by Search & Tab
@@ -83,13 +168,23 @@ export function WorkshopAttendanceClient({
           </h1>
         </div>
 
-        {canCheckIn && (
-          <Link href={`/admin/academy/workshops/${workshopId}/scan`}>
-            <Button variant="primary" size="sm" className="rounded-lg">
-              Scanner
-            </Button>
-          </Link>
-        )}
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => setShowExportModal(true)}
+            className="inline-flex items-center gap-1.5 rounded-lg border border-border-soft bg-white px-3 py-1.5 text-xs font-semibold text-ink shadow-2xs hover:bg-slate-50 transition-colors"
+          >
+            ↓ Export CSV
+          </button>
+
+          {canCheckIn && (
+            <Link href={`/admin/academy/workshops/${workshopId}/scan`}>
+              <Button variant="primary" size="sm" className="rounded-lg">
+                Scanner
+              </Button>
+            </Link>
+          )}
+        </div>
       </div>
 
       {/* Metrics Cards */}
@@ -288,6 +383,114 @@ export function WorkshopAttendanceClient({
           </div>
         </div>
       )}
+      {/* Export CSV Modal */}
+      {showExportModal && (
+        <WorkshopExportModal
+          members={members}
+          workshopTitle={workshopTitle}
+          onClose={() => setShowExportModal(false)}
+        />
+      )}
+    </div>
+  );
+}
+
+// ─── Export Modal ─────────────────────────────────────────────────────────────
+
+function WorkshopExportModal({
+  members,
+  workshopTitle,
+  onClose,
+}: {
+  members: AcademyMemberAttendance[];
+  workshopTitle: string;
+  onClose: () => void;
+}) {
+  const [selectedFields, setSelectedFields] = useState<string[]>(DEFAULT_EXPORT_FIELDS);
+
+  const toggleAll = () => {
+    setSelectedFields(
+      selectedFields.length === EXPORT_FIELDS.length
+        ? []
+        : EXPORT_FIELDS.map((f) => f.id)
+    );
+  };
+
+  const handleDownload = () => {
+    if (selectedFields.length === 0) {
+      alert("Please select at least one field.");
+      return;
+    }
+    const csv = buildCsv(members, selectedFields, workshopTitle);
+    const safeName = workshopTitle.replace(/[^a-z0-9]/gi, "_");
+    downloadCsv(csv, `${safeName}_attendance.csv`);
+    onClose();
+  };
+
+  const GROUPS = [
+    { label: "Member Info",  ids: ["name", "email", "personalEmail", "utdNetId"] },
+    { label: "Attendance",   ids: ["attended", "method", "checkedInAt"] },
+    { label: "Quiz",         ids: ["quizPassed", "quizScore", "quizCompletedAt"] },
+  ];
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+      <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl space-y-4">
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <h3 className="text-base font-bold text-ink">Export Attendance CSV</h3>
+            <p className="text-xs text-ink-faint mt-0.5 truncate max-w-[260px]">{workshopTitle}</p>
+          </div>
+          <button
+            type="button"
+            onClick={toggleAll}
+            className="text-xs font-medium text-blue-600 hover:underline shrink-0 mt-0.5"
+          >
+            {selectedFields.length === EXPORT_FIELDS.length ? "Deselect All" : "Select All"}
+          </button>
+        </div>
+
+        <div className="max-h-72 overflow-y-auto border border-border-soft rounded-xl divide-y divide-border-soft/50">
+          {GROUPS.map((group) => (
+            <div key={group.label} className="px-3 py-2">
+              <p className="text-[10px] font-semibold uppercase tracking-wider text-ink-faint mb-1.5">
+                {group.label}
+              </p>
+              <div className="space-y-0.5">
+                {group.ids.map((id) => {
+                  const field = EXPORT_FIELDS.find((f) => f.id === id);
+                  if (!field) return null;
+                  return (
+                    <label key={id} className="flex items-center gap-2 text-xs py-1 cursor-pointer rounded hover:bg-slate-50 px-1 -mx-1">
+                      <input
+                        type="checkbox"
+                        className="accent-brand"
+                        checked={selectedFields.includes(id)}
+                        onChange={(e) =>
+                          setSelectedFields((prev) =>
+                            e.target.checked ? [...prev, id] : prev.filter((f) => f !== id)
+                          )
+                        }
+                      />
+                      <span className="text-ink">{field.label}</span>
+                    </label>
+                  );
+                })}
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <div className="flex items-center justify-between pt-2 border-t border-border-soft">
+          <span className="text-xs text-ink-faint">
+            {selectedFields.length} field{selectedFields.length !== 1 ? "s" : ""} · {members.length} row{members.length !== 1 ? "s" : ""}
+          </span>
+          <div className="flex gap-2">
+            <Button variant="ghost" size="sm" onClick={onClose}>Cancel</Button>
+            <Button size="sm" onClick={handleDownload}>Download CSV</Button>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

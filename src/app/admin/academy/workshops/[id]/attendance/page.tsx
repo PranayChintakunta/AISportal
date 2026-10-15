@@ -32,59 +32,61 @@ export default async function WorkshopAttendancePage({
 
   // 2. Fetch Users with active AI Academy Membership
   // 2. Fetch Users with active AI Academy Membership
-const activeAcademyUsers = await prisma.user.findMany({
-  where: {
-    memberships: {
-      some: {
-        membershipType: "AI_ACADEMY",
-        activeFlag: true, // Updated from status: "ACTIVE"
+  const activeAcademyUsers = await prisma.user.findMany({
+    where: {
+      memberships: {
+        some: {
+          //membershipType: "AI_ACADEMY",
+          activeFlag: true, // Updated from status: "ACTIVE"
+        },
       },
     },
-  },
-  include: {
-    profile: true,
-    attendances: {
-      where: { workshopId },
-    },
-    quizAttempts: workshop.quiz
-      ? {
+    include: {
+      profile: true,
+      attendances: {
+        where: { workshopId },
+      },
+      quizAttempts: workshop.quiz
+        ? {
           where: { quizId: workshop.quiz.id, passed: true },
           take: 1,
           orderBy: { submittedAt: "desc" }, // Updated from createdAt to submittedAt
         }
-      : false,
-  },
-  orderBy: { email: "asc" },
-});
+        : false,
+    },
+    orderBy: { email: "asc" },
+  });
 
   // 3. Map Data for Client
   // 3. Map Data for Client
-const membersData: AcademyMemberAttendance[] = activeAcademyUsers.map((user) => {
-  const name = user.profile
-    ? `${user.profile.firstName} ${user.profile.lastName}`.trim()
-    : user.email;
+  const membersData: AcademyMemberAttendance[] = activeAcademyUsers.map((user) => {
+    const name = user.profile
+      ? `${user.profile.firstName} ${user.profile.lastName}`.trim()
+      : user.email;
 
-  const attendance = user.attendances[0];
-  const quizAttempt = user.quizAttempts?.[0];
+    const attendance = user.attendances[0];
+    const quizAttempt = user.quizAttempts?.[0];
 
-  return {
-    userId: user.id,
-    name,
-    email: user.email,
-    membershipStatus: "ACTIVE",
-    hasAttended: !!attendance,
-    checkedInAt: attendance?.checkedInAt ?? null,
-    method: attendance?.method ?? null,
-    quizAttempt: quizAttempt
-      ? {
+    return {
+      userId: user.id,
+      name,
+      email: user.email,
+      membershipStatus: "ACTIVE",
+      hasAttended: !!attendance,
+      checkedInAt: attendance?.checkedInAt ?? null,
+      method: attendance?.method ?? null,
+      personalEmail: user.profile?.personalEmail ?? null,
+      utdNetId: user.profile?.utdNetId ?? null,
+      quizAttempt: quizAttempt
+        ? {
           score: quizAttempt.score,
           passed: quizAttempt.passed,
-          completedAt: quizAttempt.submittedAt, // Updated from quizAttempt.createdAt
+          completedAt: quizAttempt.submittedAt,
           answersCount: 0,
         }
-      : null,
-  };
-});
+        : null,
+    };
+  });
 
   return (
     <WorkshopAttendanceClient
