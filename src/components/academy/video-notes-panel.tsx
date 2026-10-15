@@ -74,17 +74,12 @@ export function VideoNotesPanel({
 }: VideoNotesPanelProps) {
   const storageKey = `academy-notes:${notesKey}`;
   const [notes, setNotes] = useState("");
-  const [completed, setCompleted] = useState(initiallyCompleted);
+  const [watched, setWatched] = useState(false);
+  const completed = initiallyCompleted || watched;
   const iframeRef = useRef<HTMLIFrameElement>(null);
 
   const embed = resolveVideoEmbed(videoUrl);
   const isYouTube = embed?.kind === "iframe" && embed.src.includes("youtube-nocookie.com/embed/");
-
-  useEffect(() => {
-    if (initiallyCompleted) {
-      setCompleted(true);
-    }
-  }, [initiallyCompleted]);
 
   useEffect(() => {
     if (!isYouTube || !workshopId || !userId || !iframeRef.current) return;
@@ -101,7 +96,7 @@ export function VideoNotesPanel({
 
       const watchedSeconds = Math.floor(currentTime);
       const durationSeconds = Math.floor(duration);
-      if (watchedSeconds >= durationSeconds * 0.5) setCompleted(true);
+      if (watchedSeconds >= durationSeconds * 0.5) setWatched(true);
       lastSentAt = Date.now();
       try {
         await fetch("/api/academy/progress", {
@@ -150,11 +145,19 @@ export function VideoNotesPanel({
   }, [isYouTube, userId, workshopId]);
 
   useEffect(() => {
-    try {
-      setNotes(localStorage.getItem(storageKey) ?? "");
-    } catch {
-      // Private browsing / blocked storage
-    }
+    let active = true;
+    queueMicrotask(() => {
+      if (!active) return;
+      try {
+        setNotes(localStorage.getItem(storageKey) ?? "");
+      } catch {
+        // Private browsing / blocked storage
+      }
+    });
+
+    return () => {
+      active = false;
+    };
   }, [storageKey]);
 
   function handleChange(value: string) {
