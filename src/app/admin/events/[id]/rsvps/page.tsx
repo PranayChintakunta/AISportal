@@ -6,6 +6,7 @@ import { AdminSidebar } from "@/components/admin/admin-sidebar";
 import { MobileScreen } from "@/components/mobile/ui/MobileScreen";
 import { MobileAdminNav } from "@/components/mobile/admin/MobileAdminNav";
 import { SendReminderButton } from "@/components/admin/send-reminder-button";
+import { RsvpExportButton } from "@/components/admin/rsvp-export-button";
 import type { Prisma } from "@prisma/client";
 import { getAuthenticatedUser } from "@/lib/auth";
 
@@ -168,15 +169,16 @@ export default async function EventRsvpsPage({ params }: { params: Promise<{ id:
               </div>
             </div>
 
-            {canSendReminder && (
-              <div className="shrink-0">
+            <div className="flex items-center gap-[8px] shrink-0">
+              <RsvpExportButton eventId={event.id} eventTitle={event.title} />
+              {canSendReminder && (
                 <SendReminderButton
                   eventId={event.id}
                   eventTitle={event.title}
                   rsvpCount={stats.totalRsvps}
                 />
-              </div>
-            )}
+              )}
+            </div>
           </div>
 
           <div className="flex flex-col gap-[16px] pb-[40px]">
@@ -286,11 +288,14 @@ export default async function EventRsvpsPage({ params }: { params: Promise<{ id:
                 {event.title} <span className="text-ink-faint font-normal">— RSVPs</span>
               </h2>
             </div>
-            <SendReminderButton
-              eventId={event.id}
-              eventTitle={event.title}
-              rsvpCount={stats.totalRsvps}
-            />
+            <div className="flex items-center gap-[10px]">
+              <RsvpExportButton eventId={event.id} eventTitle={event.title} />
+              <SendReminderButton
+                eventId={event.id}
+                eventTitle={event.title}
+                rsvpCount={stats.totalRsvps}
+              />
+            </div>
           </div>
 
           <div className="grid grid-cols-[1fr_2.5fr] gap-[24px] items-start">
