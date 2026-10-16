@@ -185,11 +185,22 @@ export async function GET(req: NextRequest) {
     ...csvRows.map((r) => r.join(",")),
   ].join("\n");
 
+  const now = new Date();
+  const dateStr = now.toISOString().split("T")[0]; // YYYY-MM-DD
+  const timeStr = now
+    .toLocaleTimeString("en-US", {
+      timeZone: "America/Chicago",
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: true,
+    })
+    .replace(/[: ]/g, "-"); // Replaces colons and spaces with hyphens
+
   return new NextResponse(csvContent, {
     status: 200,
     headers: {
       "Content-Type": "text/csv; charset=utf-8",
-      "Content-Disposition": `attachment; filename="all_members_complete_export.csv"`,
+      "Content-Disposition": `attachment; filename="ais_members_export_${dateStr}_${timeStr}.csv"`,
     },
-  });
-}
+  })
+};
