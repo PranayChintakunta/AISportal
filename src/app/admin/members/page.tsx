@@ -11,6 +11,7 @@ import { getAdminViewer } from "@/lib/admin-access";
 import { parseMembersQuery } from "@/lib/members/query-params";
 import { getMembersViewModel } from "@/lib/members/view-model";
 import { canManageRoles } from "@/lib/roles";
+import { MemberExportButton } from "@/components/admin/member-export-button";
 
 export const metadata: Metadata = {
   title: "AIS Admin — Members",
@@ -48,14 +49,12 @@ export default async function AdminMembersPage({
           <h2 className="style-section-header leading-[34.56px] tracking-[-0.4px] text-ink [font-variation-settings:'wdth'_100]">
             Members
           </h2>
-          {/* TODO <div className="flex gap-[10px]">
-            <Button variant="ghost" size="md">
-              Export CSV
-            </Button>
-            <Button variant="primary" size="md">
+          <div className="flex gap-[10px]">
+            <MemberExportButton />
+            {/* <Button variant="primary" size="md">
               + Invite
-            </Button>
-          </div> */}
+            </Button> */}
+          </div>
         </div>
 
         {/* Stat cards */}

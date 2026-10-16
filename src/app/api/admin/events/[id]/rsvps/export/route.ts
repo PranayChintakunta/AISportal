@@ -10,8 +10,7 @@ export async function GET(
   if (
     !user ||
     (user.role !== "EXECUTIVE" &&
-      user.role !== "DIRECTOR" &&
-      user.role !== "OFFICER")
+      user.role !== "DIRECTOR")
   ) {
     return new NextResponse("Unauthorized", { status: 401 });
   }
