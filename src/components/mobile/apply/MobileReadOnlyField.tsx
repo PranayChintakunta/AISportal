@@ -42,9 +42,26 @@ export function MobileReadOnlyField({
       value.includes("r2.dev") ||
       value.includes("storage"));
 
+  // Check if value is a JSON string payload from a file upload
+  let isJsonFilePayload = false;
+  try {
+    if (value && typeof value === "string" && value.trim().startsWith("{")) {
+      const parsed = JSON.parse(value);
+      if (parsed.fileName || parsed.name || parsed.url || parsed.key) {
+        isJsonFilePayload = true;
+      }
+    }
+  } catch {
+    isJsonFilePayload = false;
+  }
+
   let displayFileName = "";
   let fileUrl = "";
-  const isFileField = rawType === "FILE" || cleanLabel === "Resume" || isCloudflareStorage;
+  const isFileField =
+    rawType === "FILE" ||
+    cleanLabel === "Resume" ||
+    isCloudflareStorage ||
+    isJsonFilePayload;
 
   if (isFileField && value) {
     try {
@@ -69,6 +86,7 @@ export function MobileReadOnlyField({
     fileUrl = "/api/profile/resume/download";
   }
 
+  // Expanded check for short answers / long text / paragraphs
   const isLongText =
     multiline ||
     rawType === "LONG_TEXT" ||
@@ -76,8 +94,7 @@ export function MobileReadOnlyField({
     rawType === "TEXTAREA" ||
     rawType === "PARAGRAPH" ||
     rawType === "ESSAY" ||
-    value.length > 100 ||
-    value.includes("\n");
+    (typeof value === "string" && (value.length > 60 || value.includes("\n")));
 
   const formattedValue = !value || value.trim() === "" ? "Not specified" : value;
   const isUnspecified = !value || value.trim() === "";
@@ -111,19 +128,19 @@ export function MobileReadOnlyField({
     );
   }
 
-  // 2. MULTI-LINE LONG TEXT FIELD
+  // 2. MULTI-LINE / LONG TEXT REVIEW FIELD (Handles paragraphs and longer text answers gracefully)
   if (isLongText) {
     return (
-      <div className="col-span-1 flex flex-col gap-1.5 sm:col-span-2">
+      <div className="flex w-full flex-col gap-1.5">
         <label className="style-label-text font-medium text-ink-muted">{displayLabel}</label>
-        <div className={`style-body-text min-h-[140px] w-full whitespace-pre-wrap rounded-xl border border-border-soft/60 bg-[#f5f4f0] p-4 leading-relaxed ${isUnspecified ? "italic text-ink-faint" : "text-ink"}`}>
+        <div className={`style-body-text min-h-[90px] w-full whitespace-pre-wrap rounded-xl border border-border-soft/60 bg-[#f5f4f0] p-3.5 leading-relaxed ${isUnspecified ? "italic text-ink-faint" : "text-ink"}`}>
           {formattedValue}
         </div>
       </div>
     );
   }
 
-  // 3. STANDARD SINGLE-LINE FIELD
+  // 3. STANDARD SINGLE-LINE REVIEW FIELD (For short inputs like Name, Major, Short Answer)
   return (
     <div className="flex flex-col gap-1.5">
       <label className="style-label-text font-medium text-ink-muted">{displayLabel}</label>
