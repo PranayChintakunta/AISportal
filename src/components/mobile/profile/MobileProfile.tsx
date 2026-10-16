@@ -17,7 +17,7 @@ import { ResumeUploadButton } from "@/components/profile/ResumeUploadButton";
 import { UTD_MAJORS, UTD_DEGREES, ACADEMIC_YEARS } from "@/lib/utd-data";
 
 type MobileProfileProps = {
-  profile: Profile & { resumeFile?: { fileName: string } | null };
+  profile: Profile & { resumeFile?: { fileName: string; fileSize: number } | null };
   completion: { percent: number; missingFields: string[] };
   updateProfile: (formData: FormData) => Promise<void>;
   badges: string[];
