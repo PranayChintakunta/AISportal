@@ -24,6 +24,7 @@ import {
   isRequiredField,
   type ApplicationFormLayout,
   type FieldValues,
+  parseQuestionConfigs,
 } from "@/lib/application-form";
 
 export type QuestionType =
@@ -1181,7 +1182,7 @@ export function MobileApplyForm() {
                   .map((step, stepIndex) => (
                     <div key={step} className="flex flex-col gap-[14px]">
                       <div className="flex items-center justify-between">
-                        <p className="style-mobile-body font-bold text-ink">
+                        <p className="style-section-header font-bold text-ink">
                           {step}
                         </p>
                         <button
@@ -1193,14 +1194,20 @@ export function MobileApplyForm() {
                           Edit
                         </button>
                       </div>
-                      {(layout.stepFieldGroups[stepIndex] ?? []).map((label) => (
-                        <MobileReadOnlyField
-                          key={label}
-                          label={label}
-                          value={fieldValues[label] ?? fieldValues[normalizeFieldLabel(label)] ?? ""}
-                          multiline={stepIndex > 0}
-                        />
-                      ))}
+                      {(layout.stepFieldGroups[stepIndex] ?? []).map((label) => {
+                        const cleanLabel = normalizeFieldLabel(label);
+                        const questionConfig = questionsMap[cleanLabel] || questionsMap[label];
+
+                        return (
+                          <MobileReadOnlyField
+                            key={label}
+                            label={label}
+                            value={fieldValues[label] ?? fieldValues[cleanLabel] ?? ""}
+                            config={questionConfig}
+                            multiline={stepIndex > 0}
+                          />
+                        );
+                      })}
                     </div>
                   ))}
               </div>

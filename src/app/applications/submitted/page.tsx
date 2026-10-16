@@ -281,7 +281,7 @@ function SubmittedContent() {
 
                 {/* Answers whose question is no longer on the application —
                     shown so a submitted answer is never silently dropped. */}
-                {extraAnswers.length > 0 ? (
+                {/* {extraAnswers.length > 0 ? (
                   <div className="flex flex-col gap-[14px]">
                     <SectionHeader title="Other Answers" />
                     <div className="grid grid-cols-1 gap-x-[28px] gap-y-[20px] sm:grid-cols-2">
@@ -294,7 +294,7 @@ function SubmittedContent() {
                       ))}
                     </div>
                   </div>
-                ) : null}
+                ) : null} */}
               </div>
             ) : null}
           </div>
