@@ -10,6 +10,7 @@ import type { MemberBadge } from "@/components/admin/members-table";
 import type { MembersQuery } from "@/lib/members/query-params";
 import type { MembersViewModel } from "@/lib/members/view-model";
 import Link from "next/link";
+import { MemberExportButton } from "@/components/admin/member-export-button";
 
 function RoleStatus({ badge }: { badge: MemberBadge }) {
   if (!badge) return null;
@@ -36,10 +37,10 @@ export function MobileAdminMembers({
 
       <div className="flex items-center justify-between gap-[8px]">
         <h2 className="style-mobile-title text-ink">Members</h2>
-        {/* <div className="flex gap-[8px]">
-          <Button variant="ghost" size="sm">Export CSV</Button>
-          <Button variant="primary" size="sm">+ Invite</Button>
-        </div> */}
+        <div className="flex gap-[8px]">
+          <MemberExportButton/>
+          {/* <Button variant="primary" size="sm">+ Invite</Button> */}
+        </div>
       </div>
 
       <div className="grid grid-cols-2 gap-[12px]">
