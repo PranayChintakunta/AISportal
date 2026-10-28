@@ -7,6 +7,7 @@ const PUBLIC_PREFIXES = [
   '/applications',
   '/onboarding',
   // '/sign-in', // safety if somewhere else ppl used sign-in redirects
+  '/api/health',
   '/api/webhooks',
   '/api/onboarding/profile',
   '/api/applications',
